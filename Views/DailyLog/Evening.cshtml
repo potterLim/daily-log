@@ -1,0 +1,45 @@
+﻿@model IEnumerable<string>
+@{
+    ViewData["Title"] = "🌙 저녁 회고 날짜 선택";
+
+    int  offset = (int)ViewData["WeekOffset"];
+    int  prev   = offset - 1;
+    int  next   = offset + 1;
+    string range = ViewData["RangeLabel"]?.ToString() ?? "";
+}
+
+<h2 class="mb-4">
+    🌙 저녁 회고&nbsp;
+    <small class="text-muted fs-6">@range</small>
+    <!-- 좌·우 1주 이동 -->
+    <span class="float-end">
+        <a asp-action="Evening" asp-route-week="@prev" class="btn btn-sm btn-outline-secondary me-1">〈</a>
+        <a asp-action="Evening" asp-route-week="@next" class="btn btn-sm btn-outline-secondary">〉</a>
+    </span>
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">해당 구간에 작성된 회고가 없습니다.</div>
+}
+else
+{
+    <div class="list-group mb-4">
+    @foreach (string d in Model.OrderBy(s => s))
+    {
+        <a class="list-group-item list-group-item-action"
+           asp-action="EveningEdit" asp-route-date="@d">
+            @d
+        </a>
+    }
+    </div>
+}
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+    ← 홈으로
+</a>
+
+@if (TempData["Msg"] is string msg)
+{
+    <div class="alert alert-success mt-3">@msg</div>
+}

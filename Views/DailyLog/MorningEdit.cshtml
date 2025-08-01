@@ -1,0 +1,32 @@
+﻿@model DailyLog.ViewModels.MorningViewModel
+@{
+    ViewData["Title"] = $"☀️ 아침 계획 – {Model.DateString}";
+}
+
+<h2 class="mb-4">☀️ 아침 계획 – @Model.DateString</h2>
+
+<form asp-action="MorningSave" method="post">
+    <input type="hidden" name="DateString" value="@Model.DateString" />
+
+    <!-- Goals -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Goals <small class="text-muted">(줄마다 하나)</small></label>
+        <textarea name="Goals" class="form-control" rows="6">@Model.Goals</textarea>
+    </div>
+
+    <!-- Focus Areas -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Focus Areas</label>
+        <textarea name="Focus" class="form-control" rows="4">@Model.Focus</textarea>
+    </div>
+
+    <!-- Challenges -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">Challenges &amp; Strategies</label>
+        <textarea name="Challenges" class="form-control" rows="4">@Model.Challenges</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">저장</button>
+    <a asp-action="Morning" class="btn btn-outline-secondary ms-2">← 날짜 목록</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">← 홈으로</a>
+</form>

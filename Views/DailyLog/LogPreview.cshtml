@@ -1,0 +1,20 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "로그 상세 보기";
+}
+
+<h2 class="mb-4">📄 로그 상세 보기 – @ViewData["Date"]</h2>
+
+<div class="card">
+    <div class="card-body">
+        @Html.Raw(Model)
+    </div>
+</div>
+
+<a asp-action="Week" class="btn btn-outline-secondary mt-3">
+    ← 주간 목록
+</a>
+<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary mt-3">
+    ← 홈으로
+</a>

@@ -1,0 +1,49 @@
+﻿@model IEnumerable<string>
+@{
+    ViewData["Title"] = "☀️ 아침 계획 날짜 선택";
+}
+
+<h2 class="mb-4">☀️ 이번 주 아침 계획 목록</h2>
+
+<!-- ▼ 새 날짜를 바로 열 수 있는 달력 + 버튼 -->
+<form asp-action="MorningEdit" method="get" class="row gy-2 gx-3 align-items-center mb-4">
+    <div class="col-auto">
+        <input type="date"
+               name="date"
+               class="form-control"
+               value="@ViewData["DefaultDate"]" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">새 날짜 열기</button>
+    </div>
+</form>
+
+<!-- ▼ 이번 주에 이미 작성된 날짜 목록 -->
+@if (Model.Any())
+{
+    <div class="list-group mb-4">
+    @foreach (string d in Model.OrderBy(s => s))
+    {
+        <a class="list-group-item list-group-item-action"
+           asp-action="MorningEdit" asp-route-date="@d">
+            @d
+        </a>
+    }
+    </div>
+}
+else
+{
+    <div class="alert alert-info mb-4">
+        이번 주에 작성된 아침 계획이 없습니다.
+    </div>
+}
+
+<!-- ▼ 홈으로 돌아가기 -->
+<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+    ← 홈으로
+</a>
+
+@if (TempData["Msg"] is string msg)
+{
+    <div class="alert alert-success mt-3">@msg</div>
+}

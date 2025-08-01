@@ -1,0 +1,54 @@
+﻿@model IEnumerable<(DateTime Date, int Achieved, int Total, int Percent)>
+
+@{
+    ViewData["Title"] = "이번 주 성취 통계";
+}
+
+<h2 class="mb-4">이번 주 성취 통계</h2>
+
+<div class="mb-3">
+    <strong>📊 이번 주 전체 성취율:</strong>
+    <ul>
+        <li>총 달성 항목 수: @ViewData["WeekAchieved"]</li>
+        <li>총 목표 항목 수: @ViewData["WeekTotal"]</li>
+        <li>성취율: @ViewData["WeekPercent"]%</li>
+    </ul>
+</div>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>날짜</th>
+            <th>달성률</th>
+            <th>상태</th>
+            <th>보기</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <div style="background-color: #e9ecef; border-radius: 0.25rem; overflow: hidden;">
+                        <div style="width: @item.Percent%; background-color: #198754; color: white; text-align: center;">
+                            @item.Percent%
+                        </div>
+                    </div>
+                </td>
+                <td>@item.Achieved / @item.Total</td>
+                <td class="text-center">
+                    <a asp-action="LogPreview"
+                       asp-route-date="@item.Date.ToString("yyyy-MM-dd")"
+                       class="btn btn-outline-secondary btn-sm">
+                        상세 보기
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary mt-3">
+    ← 홈으로
+</a>

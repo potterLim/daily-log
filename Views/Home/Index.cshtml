@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "홈";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4 text-center fw-bold">📝 Daily Log</h1>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="d-grid gap-3">
+            <a class="btn btn-blue    btn-lg w-100 shadow-sm"
+   asp-controller="DailyLog" asp-action="Morning">☀️ 아침 계획 작성/수정</a>
+
+<a class="btn btn-green   btn-lg w-100 shadow-sm"
+   asp-controller="DailyLog" asp-action="Evening">🌙 저녁 회고 작성/수정</a>
+
+<a class="btn btn-lavender btn-lg w-100 shadow-sm"
+   asp-controller="DailyLog" asp-action="Week">📅 주간 목록 보기</a>
+
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center mt-4" role="alert">
+            로그인을 먼저 해주세요.
+        </div>
+    }
+</div>

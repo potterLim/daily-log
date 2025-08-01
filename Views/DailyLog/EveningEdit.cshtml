@@ -1,0 +1,63 @@
+﻿@model DailyLog.ViewModels.EveningViewModel
+@{
+    ViewData["Title"] = $"🌙 저녁 회고 – {Model.DateString}";
+}
+
+<h2 class="mb-4">🌙 저녁 회고 – @Model.DateString</h2>
+
+<!-- 아침 로그 랜더링된 HTML 표시 -->
+<div class="card mb-4">
+    <div class="card-header bg-light text-dark fw-bold">
+        ☀️ 오늘 아침 기록
+    </div>
+    <div class="card-body">
+        @Html.Raw(ViewData["MorningLogHtml"])
+    </div>
+</div>
+
+
+<form asp-action="EveningSave" method="post">
+    <input type="hidden" name="DateString" value="@Model.DateString" />
+
+    <!-- Goals 체크박스 -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Goals (체크 완료항목 표시)</label>
+        @for (int i = 0; i < Model.Goals.Count; ++i)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       name="Goals[@i].IsDone" value="true"
+                       @(Model.Goals[i].IsDone ? "checked" : "") />
+                <input type="hidden" name="Goals[@i].Text" value="@Model.Goals[i].Text" />
+                <label class="form-check-label">@Model.Goals[i].Text</label>
+            </div>
+        }
+    </div>
+
+    <!-- Achievements -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Achievements</label>
+        <textarea name="Achievements" class="form-control" rows="3">@Model.Achievements</textarea>
+    </div>
+
+    <!-- Improvements -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Improvements</label>
+        <textarea name="Improvements" class="form-control" rows="3">@Model.Improvements</textarea>
+    </div>
+
+    <!-- Gratitude -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Gratitude</label>
+        <textarea name="Gratitude" class="form-control" rows="3">@Model.Gratitude</textarea>
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">Notes for Tomorrow</label>
+        <textarea name="Notes" class="form-control" rows="3">@Model.Notes</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">저장</button>
+    <a asp-action="Evening" class="btn btn-outline-secondary ms-2">← 날짜 선택</a>
+</form>
