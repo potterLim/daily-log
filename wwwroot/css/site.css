@@ -1,0 +1,118 @@
+/* ── palette ─────────────────────────────── */
+:root {
+    --brand: #5b9dff;
+    --brand-dark: #347dff;
+    --surface: #ffffff;
+    --surface-alt: #fafbfd;
+    --border: #e0e5ea;
+    --text: #343a40;
+    --accent-green: #82d49b;
+    --accent-green-h: #9ee6b0;
+    --accent-blue: #70c5ff;
+    --accent-blue-h: #8ad2ff;
+    --accent-yellow: #ffc97d;
+    --accent-yellow-h: #ffd89e;
+    --accent-lavender: #c9c8ff;
+    --accent-lavender-h: #ddd9ff;
+    --outline-bg: #ced4da;
+    --outline-bg-h: #dee2e6;
+}
+
+/* ── base ─────────────────────────────────── */
+body {
+    background: var(--surface-alt);
+    color: var(--text);
+}
+
+a:hover {
+    text-decoration: none
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: .75rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04)
+}
+
+/* ── navbar ───────────────────────────────── */
+.navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+
+.navbar-brand {
+    color: var(--brand);
+    font-weight: 600
+}
+
+/* ── buttons ──────────────────────────────── */
+.btn {
+    font-weight: 500;
+    border-radius: .5rem
+}
+
+/* 기본 파랑(사용처: 필요 시) */
+.btn-primary {
+    background: var(--brand);
+    border: none;
+    color: #fff
+}
+
+    .btn-primary:hover {
+        background: var(--brand-dark)
+    }
+
+/* 아침·저녁용 */
+.btn-blue {
+    background: var(--accent-blue);
+    border: none;
+    color: var(--text)
+}
+
+    .btn-blue:hover {
+        background: var(--accent-blue-h)
+    }
+
+.btn-green {
+    background: var(--accent-green);
+    border: none;
+    color: var(--text)
+}
+
+    .btn-green:hover {
+        background: var(--accent-green-h)
+    }
+
+/* NEW – 주간 목록용 라벤더 */
+.btn-lavender {
+    background: var(--accent-lavender);
+    border: none;
+    color: var(--text)
+}
+
+    .btn-lavender:hover {
+        background: var(--accent-lavender-h)
+    }
+
+/* 노란 포인트(예비) */
+.btn-yellow {
+    background: var(--accent-yellow);
+    border: none;
+    color: var(--text)
+}
+
+    .btn-yellow:hover {
+        background: var(--accent-yellow-h)
+    }
+
+/* 로그인·회원가입·로그아웃 */
+.btn-outline {
+    background: var(--outline-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+    .btn-outline:hover {
+        background: var(--outline-bg-h);
+    }
