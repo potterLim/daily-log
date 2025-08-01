@@ -1,0 +1,61 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.tmp
+*.vsidx
+*.db
+*.db-shm
+*.db-wal
+*.nuget.*
+
+# Packages and scaffolding
+node_modules/
+libman.json
+*.nupkg
+*.snupkg
+*.publish.xml
+*.pubxml
+*.publishproj
+project.assets.json
+project.nuget.cache
+*.csproj.FileListAbsolute.txt
+*.AssemblyInfoInputs.cache
+*.genruntimeconfig.cache
+*.BuildWithSkipAnalyzers
+*.GlobalUsings.g.cs
+*.RazorAssemblyInfo.cs
+*.RazorAssemblyInfo.cache
+*.MvcApplicationPartsAssemblyInfo.*
+*.GeneratedMSBuildEditorConfig.editorconfig
+
+# Local settings
+secrets.json
+launchSettings.json
+appsettings.Development.json
+
+# IDE
+.idea/
+.vscode/
+
+# Static web assets
+!wwwroot/lib/
+!wwwroot/css/site.css
+!wwwroot/js/site.js
+
+# Misc
+*.bak
+*.old
+*.orig
+*.rej
