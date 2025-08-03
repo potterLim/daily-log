@@ -15,7 +15,6 @@ namespace DailyLog.Services
         bool EveningExists(DateTime d);
 
         /* 주간 조회 */
-        IEnumerable<(DateTime Date, bool HasMorning, bool HasEvening)>
-            ListWeek(DateTime refDay);
+        IEnumerable<(DateTime Date, bool HasMorning, bool HasEvening)>ListWeek(DateTime refDay);
     }
 }
