@@ -28,7 +28,7 @@ namespace DailyLog
 
             /* DB + Identity */
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseNpgsql(connectionString));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -89,7 +89,5 @@ namespace DailyLog
                 return Task.CompletedTask;
             });
         }
-
-
     }
 }
