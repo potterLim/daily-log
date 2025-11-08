@@ -15,6 +15,8 @@ namespace DailyLog
 
             WebApplication app = builder.Build();
 
+            app.MigrateDatabase();
+
             ConfigurePipeline(app);
 
             app.Run();
