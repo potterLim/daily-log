@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DailyLog.Data;
+using DailyLog.Extensions;
 
 namespace DailyLog
 {
