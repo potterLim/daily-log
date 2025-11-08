@@ -12,19 +12,19 @@ namespace DailyLog
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            ConfigureServices(builder);
+            configureServices(builder);
 
             WebApplication app = builder.Build();
 
             app.MigrateDatabase();
 
-            ConfigurePipeline(app);
+            configurePipeline(app);
 
             app.Run();
         }
 
         /* ──────────────────────────── 서비스 등록 ──────────────────────────── */
-        private static void ConfigureServices(WebApplicationBuilder builder)
+        private static void configureServices(WebApplicationBuilder builder)
         {
             string? connectionString = builder.Configuration["DATABASE_URL"]
                 ?? builder.Configuration.GetConnectionString("DefaultConnection")
@@ -57,7 +57,7 @@ namespace DailyLog
         }
 
         /* ──────────────────────────── HTTP 파이프라인 ──────────────────────────── */
-        private static void ConfigurePipeline(WebApplication app)
+        private static void configurePipeline(WebApplication app)
         {
             if (app.Environment.IsDevelopment())
             {
