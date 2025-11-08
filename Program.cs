@@ -23,10 +23,10 @@ namespace DailyLog
         /* ──────────────────────────── 서비스 등록 ──────────────────────────── */
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
-            string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            string? connectionString = builder.Configuration["DATABASE_URL"]
+                ?? builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("No connection string found.");
 
-            /* DB + Identity */
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
