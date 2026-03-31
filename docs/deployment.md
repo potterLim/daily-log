@@ -2,11 +2,11 @@
 
 ## Overview
 
-The application is ready to run as a multi-user web service backed by PostgreSQL. User account data is stored in the database, and each user's markdown logs are stored under a dedicated log root path separated by user account id.
+The application is ready to run as a multi-user web service backed by MySQL. User account data is stored in the database, and each user's markdown logs are stored under a dedicated log root path separated by user account id.
 
 ## Runtime Model
 
-- User accounts are stored in PostgreSQL.
+- User accounts are stored in MySQL.
 - Markdown daily logs are stored on disk.
 - The log root path must be mapped to persistent storage in production.
 - The remember-me key must be provided through an environment variable in production.
@@ -30,9 +30,17 @@ The application fails at startup when any of these required values are missing.
 ## Docker Compose Deployment
 
 1. Copy `.env.example` to `.env`.
-2. Replace the default passwords and remember-me key with secure values.
+2. Replace the default MySQL passwords and remember-me key with secure values.
 3. Run `docker compose up -d --build`.
 4. Expose the application through a reverse proxy or load balancer that terminates HTTPS.
+
+The Docker Compose `.env` file should provide:
+
+- `MYSQL_DATABASE`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_ROOT_PASSWORD`
+- `DAY_LOG_REMEMBER_ME_KEY`
 
 ## External Tomcat Deployment
 
@@ -60,12 +68,12 @@ Recommended proxy responsibilities:
 
 Production deployments should persist both of the following:
 
-- PostgreSQL data directory
+- MySQL data directory
 - Application log storage directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
 
 ## Local Verification
 
-Use the local profile when PostgreSQL is not available:
+Use the local profile when MySQL is not available:
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"

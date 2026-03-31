@@ -15,19 +15,19 @@
 - Spring MVC + Thymeleaf
 - Spring Security
 - Spring Data JPA
-- PostgreSQL
+- MySQL
 - WAR packaging for external Tomcat 10.1+
 - Gradle
 
 ## Notes
 
-- Authentication data will live in PostgreSQL.
+- Authentication data will live in MySQL.
 - Daily log documents will remain file-based under the `logs` directory.
 - This project is intentionally structured as a standard Gradle project so it opens naturally in IntelliJ IDEA.
 
 ## Run Locally
 
-Use the local profile when you want to run the application without preparing PostgreSQL first.
+Use the local profile when you want to run the application without preparing MySQL first.
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
@@ -37,7 +37,7 @@ The local profile uses an in-memory H2 database and stores markdown logs under `
 
 ## Production Deployment
 
-The default configuration is intended for PostgreSQL-backed deployment.
+The default configuration is intended for MySQL-backed deployment.
 
 Required environment variables:
 
@@ -77,4 +77,12 @@ docker compose up -d --build
 
 Replace the example secrets in `.env` before exposing the service to real users.
 
-The application persists user accounts in PostgreSQL and markdown logs in the mounted `daylog-logs` volume.
+The Docker Compose `.env` file should provide these values:
+
+- `MYSQL_DATABASE`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_ROOT_PASSWORD`
+- `DAY_LOG_REMEMBER_ME_KEY`
+
+The application persists user accounts in MySQL and markdown logs in the mounted `daylog-logs` volume.

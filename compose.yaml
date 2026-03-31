@@ -1,15 +1,19 @@
 services:
   db:
-    image: postgres:16
+    image: mysql:8.0
     restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-daylog}
-      POSTGRES_USER: ${POSTGRES_USER:-daylog}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-daylog}
+      MYSQL_USER: ${MYSQL_USER:-daylog}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - daylog-postgres-data:/var/lib/postgresql/data
+      - daylog-mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-daylog} -d ${POSTGRES_DB:-daylog}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -24,9 +28,9 @@ services:
         condition: service_healthy
     environment:
       PORT: 8080
-      DATABASE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-daylog}
-      DATABASE_USERNAME: ${POSTGRES_USER:-daylog}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-daylog}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DATABASE_USERNAME: ${MYSQL_USER:-daylog}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
       DAY_LOG_LOGS_ROOT_PATH: /var/daylog/logs
       DAY_LOG_REMEMBER_ME_KEY: ${DAY_LOG_REMEMBER_ME_KEY}
     ports:
@@ -35,5 +39,5 @@ services:
       - daylog-logs:/var/daylog/logs
 
 volumes:
-  daylog-postgres-data:
+  daylog-mysql-data:
   daylog-logs:
