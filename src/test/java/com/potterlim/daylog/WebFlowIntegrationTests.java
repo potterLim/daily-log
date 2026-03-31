@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -114,5 +115,26 @@ class WebFlowIntegrationTests {
         assertTrue(markdownText.contains("- 책 읽기"));
         assertTrue(markdownText.contains("## 🎯 Focus Areas"));
         assertTrue(markdownText.contains("- 집중 업무"));
+    }
+
+    @Test
+    void morningListShouldRenderSavedDate() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("planner", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daily-log/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", "2026-04-01")
+                .param("goals", "운동하기")
+                .param("focus", "중요 업무")
+                .param("challenges", "집중 유지"))
+            .andExpect(status().is3xxRedirection());
+
+        mMockMvc.perform(get("/daily-log/morning")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("2026-04-01")));
     }
 }

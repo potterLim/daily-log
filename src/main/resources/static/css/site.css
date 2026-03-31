@@ -194,6 +194,20 @@ a:hover {
     align-items: center;
 }
 
+.section-status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(215, 224, 236, 0.95);
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+
 .section-title,
 .hero-title {
     margin: 0.95rem 0 0.6rem;
@@ -788,6 +802,14 @@ a:hover {
     flex-wrap: wrap;
 }
 
+.week-nav-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .footer-shell {
     position: relative;
     z-index: 1;
@@ -986,6 +1008,11 @@ textarea.form-control {
     .footer-inner {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .week-nav-wrap {
+        width: 100%;
+        justify-content: flex-start;
     }
 
     .auth-card,
