@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: dayLog
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/daylog}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+server:
+  error:
+    whitelabel:
+      enabled: false
