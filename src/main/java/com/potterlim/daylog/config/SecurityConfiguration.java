@@ -1,6 +1,5 @@
 package com.potterlim.daylog.config;
 
-import java.time.Duration;
 import com.potterlim.daylog.security.SecurityUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +21,11 @@ import org.springframework.security.web.context.SecurityContextRepository;
 @Configuration
 public class SecurityConfiguration {
 
-    private static final String REMEMBER_ME_COOKIE_NAME = "DAY_LOG_REMEMBER_ME";
-    private static final String REMEMBER_ME_KEY = "day-log-remember-me-key";
-    private static final int REMEMBER_ME_TOKEN_VALIDITY_SECONDS = (int) Duration.ofDays(14L).getSeconds();
+    private final DayLogApplicationProperties mDayLogApplicationProperties;
+
+    public SecurityConfiguration(DayLogApplicationProperties dayLogApplicationProperties) {
+        mDayLogApplicationProperties = dayLogApplicationProperties;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -32,6 +33,8 @@ public class SecurityConfiguration {
         RememberMeServices rememberMeServices,
         SecurityContextRepository securityContextRepository
     ) throws Exception {
+        String rememberMeCookieName = mDayLogApplicationProperties.getSecurity().getRememberMeCookieName();
+
         httpSecurity
             .authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
@@ -47,7 +50,7 @@ public class SecurityConfiguration {
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
-                .deleteCookies("JSESSIONID", REMEMBER_ME_COOKIE_NAME))
+                .deleteCookies("JSESSIONID", rememberMeCookieName))
             .csrf(Customizer.withDefaults());
 
         return httpSecurity.build();
@@ -68,12 +71,13 @@ public class SecurityConfiguration {
 
     @Bean
     public RememberMeServices rememberMeServices(SecurityUserDetailsService securityUserDetailsService) {
+        DayLogApplicationProperties.SecurityProperties securityProperties = mDayLogApplicationProperties.getSecurity();
         TokenBasedRememberMeServices tokenBasedRememberMeServices =
-            new TokenBasedRememberMeServices(REMEMBER_ME_KEY, securityUserDetailsService);
+            new TokenBasedRememberMeServices(securityProperties.getRememberMeKey(), securityUserDetailsService);
 
         tokenBasedRememberMeServices.setParameter("rememberMe");
-        tokenBasedRememberMeServices.setCookieName(REMEMBER_ME_COOKIE_NAME);
-        tokenBasedRememberMeServices.setTokenValiditySeconds(REMEMBER_ME_TOKEN_VALIDITY_SECONDS);
+        tokenBasedRememberMeServices.setCookieName(securityProperties.getRememberMeCookieName());
+        tokenBasedRememberMeServices.setTokenValiditySeconds(securityProperties.getRememberMeTokenValiditySeconds());
 
         return tokenBasedRememberMeServices;
     }

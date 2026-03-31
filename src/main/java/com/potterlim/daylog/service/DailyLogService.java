@@ -11,9 +11,9 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.potterlim.daylog.config.DayLogApplicationProperties;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
 import com.potterlim.daylog.support.DailyLogSectionType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -51,8 +51,10 @@ public class DailyLogService implements IDailyLogService {
 
     private final Path mLogsRootPath;
 
-    public DailyLogService(@Value("${day-log.logs-root-path:logs}") String logsRootPath) {
-        mLogsRootPath = Path.of(logsRootPath).toAbsolutePath().normalize();
+    public DailyLogService(DayLogApplicationProperties dayLogApplicationProperties) {
+        mLogsRootPath = Path.of(dayLogApplicationProperties.getStorage().getLogsRootPath())
+            .toAbsolutePath()
+            .normalize();
     }
 
     @Override

@@ -2,9 +2,9 @@ spring:
   application:
     name: dayLog
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/daylog}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:postgres}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -17,10 +17,24 @@ spring:
     init:
       mode: always
   thymeleaf:
-    cache: false
+    cache: true
 server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
   error:
     whitelabel:
       enabled: false
+  shutdown: graceful
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
 day-log:
-  logs-root-path: logs
+  storage:
+    logs-root-path: ${DAY_LOG_LOGS_ROOT_PATH:logs}
+  security:
+    remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
+    remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}
+    remember-me-token-validity-seconds: ${DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}

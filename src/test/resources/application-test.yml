@@ -13,3 +13,8 @@ spring:
       mode: always
   thymeleaf:
     cache: false
+day-log:
+  storage:
+    logs-root-path: build/test-logs
+  security:
+    remember-me-key: test-remember-me-key
