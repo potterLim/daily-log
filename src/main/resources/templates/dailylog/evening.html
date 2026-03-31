@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '🌙 저녁 회고 날짜 선택')}">
-<section>
-    <h2 class="mb-4">
-        🌙 저녁 회고
-        <small class="text-muted fs-6" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</small>
-        <span class="float-end">
-            <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-sm btn-outline-secondary me-1">〈</a>
-            <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-sm btn-outline-secondary">〉</a>
-        </span>
-    </h2>
-
-    <div th:if="${#lists.isEmpty(eveningDates)}" class="alert alert-info">
-        해당 구간에 작성된 회고가 없습니다.
+<section class="page-section">
+    <div class="section-hero section-hero-split">
+        <div>
+            <span class="section-eyebrow">Evening reflection</span>
+            <h1 class="section-title">저녁 회고</h1>
+            <p class="section-subtitle" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</p>
+        </div>
+        <div class="week-nav">
+            <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
+            <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+        </div>
     </div>
 
-    <div th:if="${!#lists.isEmpty(eveningDates)}" class="list-group mb-4">
+    <div th:if="${message}" class="alert flash-alert flash-alert-success mb-4" role="alert" th:text="${message}">
+        저장되었습니다.
+    </div>
+
+    <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state mb-4">
+        <strong>해당 구간에 작성된 회고가 없습니다.</strong>
+        <p>아침 계획을 작성한 날짜를 열어 저녁 회고를 남겨보세요.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(eveningDates)}" class="entry-list mb-4">
         <a th:each="eveningDate : ${eveningDates}"
-           class="list-group-item list-group-item-action"
-           th:href="@{/daily-log/evening/edit(date=${eveningDate})}"
-           th:text="${eveningDate}">
-            2026-04-01
+           class="entry-link"
+           th:href="@{/daily-log/evening/edit(date=${eveningDate})}">
+            <div class="entry-copy">
+                <span class="entry-badge">🌙</span>
+                <strong th:text="${#temporals.format(eveningDate, 'yyyy-MM-dd')}">2026-04-01</strong>
+            </div>
+            <span class="entry-arrow">회고 열기</span>
         </a>
     </div>
 
-    <a th:href="@{/}" class="btn btn-outline-secondary">← 홈으로</a>
-
-    <div th:if="${message}" class="alert alert-success mt-3" role="alert" th:text="${message}">
-        저장되었습니다.
+    <div class="button-row">
+        <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
     </div>
 </section>
 </html>

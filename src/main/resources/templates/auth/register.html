@@ -1,33 +1,57 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '회원가입')}">
-<section>
-    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
-            <h2 class="text-center mb-4">회원가입</h2>
+<section class="auth-shell">
+    <div class="auth-pane auth-visual auth-visual-accent">
+        <span class="section-eyebrow">Create account</span>
+        <h1 class="hero-title auth-title">개인 기록 공간을 바로 시작하세요.</h1>
+        <p class="hero-subtitle">
+            회원가입 후에는 날짜별 계획과 회고, 주간 성취 통계를 모두
+            본인 계정 기준으로 분리해서 사용할 수 있습니다.
+        </p>
+        <div class="auth-points">
+            <div class="auth-point">
+                <strong>개인별 기록 분리</strong>
+                <span>회원별로 독립된 기록 영역에서 안전하게 관리됩니다.</span>
+            </div>
+            <div class="auth-point">
+                <strong>즉시 시작 가능</strong>
+                <span>가입 직후 아침 계획부터 바로 작성할 수 있습니다.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-pane">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <span class="section-eyebrow">Join DailyLog</span>
+                <h2>회원가입</h2>
+                <p>간단한 계정 정보를 입력하고 기록 루틴을 시작하세요.</p>
+            </div>
             <form th:action="@{/register}" th:object="${registerRequestDto}" method="post">
                 <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                 <div class="mb-3">
                     <label for="userName" class="form-label">아이디</label>
-                    <input id="userName" th:field="*{userName}" class="form-control" autocomplete="username" />
+                    <input id="userName" th:field="*{userName}" class="form-control form-control-lg" autocomplete="username" />
                     <div class="text-danger mt-1" th:errors="*{userName}"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="password" class="form-label">비밀번호</label>
-                    <input id="password" th:field="*{password}" type="password" class="form-control" autocomplete="new-password" />
+                    <input id="password" th:field="*{password}" type="password" class="form-control form-control-lg" autocomplete="new-password" />
                     <div class="text-danger mt-1" th:errors="*{password}"></div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="confirmPassword" class="form-label">비밀번호 확인</label>
-                    <input id="confirmPassword" th:field="*{confirmPassword}" type="password" class="form-control" autocomplete="new-password" />
+                    <input id="confirmPassword" th:field="*{confirmPassword}" type="password" class="form-control form-control-lg" autocomplete="new-password" />
                     <div class="text-danger mt-1" th:errors="*{confirmPassword}"></div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 mb-2">회원가입</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">회원가입</button>
 
-                <div class="text-center">
+                <div class="text-center auth-helper">
+                    이미 계정이 있으신가요?
                     <a th:href="@{/login}" class="text-decoration-none">로그인으로 돌아가기</a>
                 </div>
             </form>

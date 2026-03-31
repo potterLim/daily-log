@@ -1,22 +1,85 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '홈')}">
-<section>
-    <div class="container mt-5">
-        <h1 class="mb-4 text-center fw-bold">📝 Daily Log</h1>
+<section class="page-section">
+    <div class="hero-panel">
+        <div class="hero-copy">
+            <span class="section-eyebrow">Daily focus system</span>
+            <h1 class="hero-title">하루의 계획과 회고를 한 흐름으로 이어보세요.</h1>
+            <p class="hero-subtitle">
+                아침에는 오늘의 방향을 정하고, 저녁에는 실제 결과를 남기고,
+                주간 화면에서는 성취 흐름을 한눈에 확인할 수 있습니다.
+            </p>
+        </div>
+        <div class="hero-highlights">
+            <div class="highlight-chip">
+                <strong>Morning</strong>
+                <span>오늘의 목표와 집중 포인트 정리</span>
+            </div>
+            <div class="highlight-chip">
+                <strong>Evening</strong>
+                <span>실행 결과와 개선 포인트 기록</span>
+            </div>
+            <div class="highlight-chip">
+                <strong>Weekly</strong>
+                <span>누적 성취율과 상세 로그 검토</span>
+            </div>
+        </div>
+    </div>
 
-        <div class="d-grid gap-3">
-            <a class="btn btn-blue btn-lg w-100 shadow-sm" th:href="@{/daily-log/morning}">
-                ☀️ 아침 계획 작성/수정
-            </a>
+    <div class="action-grid">
+        <a class="action-tile action-tile-blue" th:href="@{/daily-log/morning}">
+            <span class="action-icon">☀️</span>
+            <div class="action-copy">
+                <strong>아침 계획 작성/수정</strong>
+                <p>오늘의 목표, 집중 포인트, 예상 난관을 미리 정리합니다.</p>
+            </div>
+            <span class="action-cta">바로 열기</span>
+        </a>
 
-            <a class="btn btn-green btn-lg w-100 shadow-sm" th:href="@{/daily-log/evening}">
-                🌙 저녁 회고 작성/수정
-            </a>
+        <a class="action-tile action-tile-green" th:href="@{/daily-log/evening}">
+            <span class="action-icon">🌙</span>
+            <div class="action-copy">
+                <strong>저녁 회고 작성/수정</strong>
+                <p>아침 계획과 연결해서 달성 여부와 하루의 인사이트를 남깁니다.</p>
+            </div>
+            <span class="action-cta">회고 남기기</span>
+        </a>
 
-            <a class="btn btn-lavender btn-lg w-100 shadow-sm" th:href="@{/daily-log/week}">
-                📅 주간 목록 보기
-            </a>
+        <a class="action-tile action-tile-lavender" th:href="@{/daily-log/week}">
+            <span class="action-icon">📅</span>
+            <div class="action-copy">
+                <strong>주간 목록 보기</strong>
+                <p>일자별 달성률과 상세 로그를 확인하면서 흐름을 점검합니다.</p>
+            </div>
+            <span class="action-cta">주간 리포트</span>
+        </a>
+    </div>
+
+    <div class="info-panel">
+        <h2 class="panel-title">기록 흐름</h2>
+        <div class="timeline-grid">
+            <div class="timeline-item">
+                <span class="timeline-step">1</span>
+                <div>
+                    <strong>아침 계획</strong>
+                    <p>줄 단위 목표와 집중 포인트를 가볍게 정리합니다.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-step">2</span>
+                <div>
+                    <strong>저녁 회고</strong>
+                    <p>완료 체크와 함께 성과, 개선점, 감사한 일을 기록합니다.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-step">3</span>
+                <div>
+                    <strong>주간 통계</strong>
+                    <p>누적 성취율을 확인하고 특정 날짜의 로그를 다시 열어봅니다.</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>

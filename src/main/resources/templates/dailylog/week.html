@@ -1,49 +1,70 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '이번 주 성취 통계')}">
-<section>
-    <h2 class="mb-4">이번 주 성취 통계</h2>
-
-    <div class="mb-3">
-        <strong>📊 이번 주 전체 성취율:</strong>
-        <ul>
-            <li th:text="'총 달성 항목 수: ' + ${weekAchieved}">총 달성 항목 수</li>
-            <li th:text="'총 목표 항목 수: ' + ${weekTotal}">총 목표 항목 수</li>
-            <li th:text="'성취율: ' + ${weekPercent} + '%'">성취율</li>
-        </ul>
+<section class="page-section">
+    <div class="section-hero">
+        <div>
+            <span class="section-eyebrow">Weekly progress</span>
+            <h1 class="section-title">이번 주 성취 통계</h1>
+            <p class="section-subtitle">이번 주 목표 달성 흐름을 일자별로 확인하고 상세 로그를 다시 열 수 있습니다.</p>
+        </div>
     </div>
 
-    <table class="table table-bordered">
-        <thead class="table-light">
-        <tr>
-            <th>날짜</th>
-            <th>달성률</th>
-            <th>상태</th>
-            <th>보기</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="progressItem : ${weeklyProgressItems}">
-            <td th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</td>
-            <td>
-                <div style="background-color: #e9ecef; border-radius: 0.25rem; overflow: hidden;">
-                    <div th:style="'width: ' + ${progressItem.percent} + '%; background-color: #198754; color: white; text-align: center;'"
-                         th:text="${progressItem.percent} + '%'">
-                        0%
-                    </div>
-                </div>
-            </td>
-            <td th:text="${progressItem.achieved} + ' / ' + ${progressItem.total}">0 / 0</td>
-            <td class="text-center">
-                <a th:href="@{/daily-log/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
-                   class="btn btn-outline-secondary btn-sm">
-                    상세 보기
-                </a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="metric-grid mb-4">
+        <div class="metric-card">
+            <span class="metric-label">총 달성 항목</span>
+            <strong class="metric-value" th:text="${weekAchieved}">0</strong>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">총 목표 항목</span>
+            <strong class="metric-value" th:text="${weekTotal}">0</strong>
+        </div>
+        <div class="metric-card metric-card-emphasis">
+            <span class="metric-label">이번 주 성취율</span>
+            <strong class="metric-value" th:text="${weekPercent} + '%'">0%</strong>
+        </div>
+    </div>
 
-    <a th:href="@{/}" class="btn btn-outline-secondary mt-3">← 홈으로</a>
+    <div class="content-card">
+        <div class="table-responsive">
+            <table class="table progress-table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>달성률</th>
+                    <th>상태</th>
+                    <th class="text-end">보기</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="progressItem : ${weeklyProgressItems}">
+                    <td th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</td>
+                    <td>
+                        <div class="progress-track">
+                            <div class="progress-bar-fill"
+                                 th:style="'width: ' + ${progressItem.percent} + '%;'"
+                                 th:text="${progressItem.percent} + '%'">
+                                0%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="progress-pill" th:text="${progressItem.achieved} + ' / ' + ${progressItem.total}">0 / 0</span>
+                    </td>
+                    <td class="text-end">
+                        <a th:href="@{/daily-log/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
+                           class="btn btn-outline-secondary btn-sm">
+                            상세 보기
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="button-row mt-4">
+        <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
+    </div>
 </section>
 </html>

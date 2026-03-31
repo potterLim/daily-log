@@ -1,39 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '로그인')}">
-<section>
-    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
-            <h2 class="text-center mb-4">로그인</h2>
+<section class="auth-shell">
+    <div class="auth-pane auth-visual">
+        <span class="section-eyebrow">Welcome back</span>
+        <h1 class="hero-title auth-title">기록을 다시 이어갈 시간입니다.</h1>
+        <p class="hero-subtitle">
+            오늘의 계획부터 주간 리뷰까지, 하루의 흐름을 한 곳에서 정리할 수 있도록
+            차분하고 빠른 기록 경험을 유지했습니다.
+        </p>
+        <div class="auth-points">
+            <div class="auth-point">
+                <strong>집중 흐름 유지</strong>
+                <span>아침 계획과 저녁 회고가 자연스럽게 연결됩니다.</span>
+            </div>
+            <div class="auth-point">
+                <strong>주간 성취 확인</strong>
+                <span>누적 달성률과 일자별 상세 로그를 바로 볼 수 있습니다.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-pane">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <span class="section-eyebrow">Sign in</span>
+                <h2>로그인</h2>
+                <p>계정에 로그인하고 오늘의 기록을 이어가세요.</p>
+            </div>
             <form th:action="@{/login}" th:object="${loginRequestDto}" method="post">
                 <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                <div th:if="${param.logout}" class="alert alert-success mb-3" role="alert">
+                <div th:if="${param.logout}" class="alert flash-alert flash-alert-success mb-3" role="alert">
                     로그아웃되었습니다.
                 </div>
-                <div th:if="${loginErrorMessage}" class="alert alert-danger mb-3" role="alert" th:text="${loginErrorMessage}">
+                <div th:if="${loginErrorMessage}" class="alert flash-alert flash-alert-danger mb-3" role="alert" th:text="${loginErrorMessage}">
                     로그인에 실패했습니다.
                 </div>
 
                 <div class="mb-3">
                     <label for="userName" class="form-label">아이디</label>
-                    <input id="userName" th:field="*{userName}" class="form-control" autocomplete="username" />
+                    <input id="userName" th:field="*{userName}" class="form-control form-control-lg" autocomplete="username" />
                     <div class="text-danger mt-1" th:errors="*{userName}"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="password" class="form-label">비밀번호</label>
-                    <input id="password" th:field="*{password}" type="password" class="form-control" autocomplete="current-password" />
+                    <input id="password" th:field="*{password}" type="password" class="form-control form-control-lg" autocomplete="current-password" />
                     <div class="text-danger mt-1" th:errors="*{password}"></div>
                 </div>
 
-                <div class="mb-3 form-check">
+                <div class="mb-4 form-check modern-check">
                     <input id="rememberMe" th:field="*{rememberMe}" class="form-check-input" type="checkbox" />
                     <label for="rememberMe" class="form-check-label">자동 로그인</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 mb-2">로그인</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">로그인</button>
 
-                <div class="text-center">
+                <div class="text-center auth-helper">
+                    계정이 없으신가요?
                     <a th:href="@{/register}" class="text-decoration-none">회원가입</a>
                 </div>
             </form>
