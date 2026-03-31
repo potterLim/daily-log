@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-daylog}
+      POSTGRES_USER: ${POSTGRES_USER:-daylog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - daylog-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-daylog} -d ${POSTGRES_DB:-daylog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      DATABASE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-daylog}
+      DATABASE_USERNAME: ${POSTGRES_USER:-daylog}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DAY_LOG_LOGS_ROOT_PATH: /var/daylog/logs
+      DAY_LOG_REMEMBER_ME_KEY: ${DAY_LOG_REMEMBER_ME_KEY}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - daylog-logs:/var/daylog/logs
+
+volumes:
+  daylog-postgres-data:
+  daylog-logs:

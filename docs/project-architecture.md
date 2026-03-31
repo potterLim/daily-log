@@ -8,7 +8,10 @@
 
 ```text
 day-log
+├─ Dockerfile
+├─ compose.yaml
 ├─ build.gradle
+├─ docs
 ├─ settings.gradle
 ├─ gradle/wrapper
 ├─ src/main/java/com/potterlim/daylog
@@ -43,6 +46,8 @@ day-log
   - Owns authentication flow, authorization rules, password encoding, and login/logout wiring.
 - `support`
   - Owns reusable date, file path, and helper logic.
+- deployment files
+  - Own container build, runtime environment variables, and persistent storage wiring.
 
 ## Implementation Phases
 
