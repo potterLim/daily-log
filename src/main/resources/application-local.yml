@@ -1,13 +1,16 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./build/daylog-local-db;MODE=PostgreSQL;AUTO_SERVER=TRUE
+    url: jdbc:h2:mem:daylog-local;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
+  sql:
+    init:
+      mode: always
   thymeleaf:
     cache: false
 day-log:

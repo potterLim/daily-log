@@ -23,6 +23,7 @@ public class UserAccount implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long mId;
 
     @Column(name = "user_name", nullable = false, unique = true, length = 100)
