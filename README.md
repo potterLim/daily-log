@@ -16,6 +16,7 @@
 - Spring Security
 - Spring Data JPA
 - PostgreSQL
+- WAR packaging for external Tomcat 10.1+
 - Gradle
 
 ## Notes
@@ -53,6 +54,17 @@ Optional environment variables:
 - `DAY_LOG_LOGS_ROOT_PATH`
 - `DAY_LOG_REMEMBER_ME_COOKIE_NAME`
 - `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS`
+
+## External Tomcat Deployment
+
+The project builds an executable WAR file for external Tomcat deployment.
+
+```powershell
+.\gradlew.bat bootWar
+```
+
+The generated artifact is `build/libs/dayLog.war`.
+Use Tomcat 10.1 or later because Spring Boot 3 requires the Jakarta Servlet API.
 
 ## Docker Compose
 

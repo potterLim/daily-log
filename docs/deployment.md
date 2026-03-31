@@ -34,6 +34,16 @@ The application fails at startup when any of these required values are missing.
 3. Run `docker compose up -d --build`.
 4. Expose the application through a reverse proxy or load balancer that terminates HTTPS.
 
+## External Tomcat Deployment
+
+1. Build the WAR artifact with `.\gradlew.bat bootWar`.
+2. Use the generated `build/libs/dayLog.war` file.
+3. Deploy it to Tomcat 10.1 or later.
+4. Provide the required environment variables to the Tomcat process before startup.
+5. Map persistent storage for the path referenced by `DAY_LOG_LOGS_ROOT_PATH`.
+
+Spring Boot 3 uses the Jakarta Servlet API, so Tomcat 9 or earlier is not compatible.
+
 ## Reverse Proxy Recommendation
 
 For internet-facing deployment, place the application behind a reverse proxy such as Nginx, Caddy, or a managed load balancer.
