@@ -133,6 +133,30 @@ public class DailyLogService implements IDailyLogService {
         return dayStatuses;
     }
 
+    @Override
+    public String readLogFileContent(LocalDate date, Long userAccountId) {
+        Path filePath = resolveFilePath(date, userAccountId);
+
+        if (!Files.exists(filePath)) {
+            return "";
+        }
+
+        return readFile(filePath);
+    }
+
+    @Override
+    public List<String> readCheckedGoalTexts(LocalDate date, Long userAccountId) {
+        List<String> checkedGoalTexts = new ArrayList<>();
+
+        for (String line : splitLines(readLogFileContent(date, userAccountId))) {
+            if (line.startsWith("- [x]") || line.startsWith("- [X]")) {
+                checkedGoalTexts.add(line.substring(5).trim());
+            }
+        }
+
+        return checkedGoalTexts;
+    }
+
     private boolean hasSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType) {
         Path filePath = resolveFilePath(date, userAccountId);
 

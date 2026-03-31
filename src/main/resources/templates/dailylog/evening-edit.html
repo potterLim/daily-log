@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '🌙 저녁 회고')}">
+<section>
+    <h2 class="mb-4">
+        <span th:text="'🌙 저녁 회고 – ' + ${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">🌙 저녁 회고</span>
+    </h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light text-dark fw-bold">
+            ☀️ 오늘 아침 기록
+        </div>
+        <div class="card-body" th:utext="${morningLogHtml}">
+            <p><em>아침 로그가 없습니다.</em></p>
+        </div>
+    </div>
+
+    <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post">
+        <input type="hidden" th:field="*{date}" />
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Goals (체크 완료항목 표시)</label>
+            <div th:if="${#lists.isEmpty(eveningFormDto.goals)}" class="text-muted">
+                아침 목표가 없습니다.
+            </div>
+            <div th:each="goalItem, goalStatus : *{goals}" class="form-check">
+                <input th:id="'goal-' + ${goalStatus.index}"
+                       th:field="*{goals[__${goalStatus.index}__].done}"
+                       class="form-check-input"
+                       type="checkbox" />
+                <input type="hidden" th:field="*{goals[__${goalStatus.index}__].text}" />
+                <label th:for="'goal-' + ${goalStatus.index}"
+                       class="form-check-label"
+                       th:text="${goalItem.text}">
+                    목표
+                </label>
+            </div>
+            <div class="text-danger mt-1" th:errors="*{date}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="achievements" class="form-label fw-bold">Achievements</label>
+            <textarea id="achievements" th:field="*{achievements}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="improvements" class="form-label fw-bold">Improvements</label>
+            <textarea id="improvements" th:field="*{improvements}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="gratitude" class="form-label fw-bold">Gratitude</label>
+            <textarea id="gratitude" th:field="*{gratitude}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="notes" class="form-label fw-bold">Notes for Tomorrow</label>
+            <textarea id="notes" th:field="*{notes}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">저장</button>
+        <a th:href="@{/daily-log/evening}" class="btn btn-outline-secondary ms-2">← 날짜 선택</a>
+    </form>
+</section>
+</html>

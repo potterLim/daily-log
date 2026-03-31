@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '로그 상세 보기')}">
+<section>
+    <h2 class="mb-4">
+        <span th:text="'📄 로그 상세 보기 – ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">📄 로그 상세 보기</span>
+    </h2>
+
+    <div class="card">
+        <div class="card-body" th:utext="${previewHtml}">
+            미리보기 내용
+        </div>
+    </div>
+
+    <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary mt-3">← 주간 목록</a>
+    <a th:href="@{/}" class="btn btn-outline-secondary mt-3">← 홈으로</a>
+</section>
+</html>

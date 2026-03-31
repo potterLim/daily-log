@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '이번 주 성취 통계')}">
+<section>
+    <h2 class="mb-4">이번 주 성취 통계</h2>
+
+    <div class="mb-3">
+        <strong>📊 이번 주 전체 성취율:</strong>
+        <ul>
+            <li th:text="'총 달성 항목 수: ' + ${weekAchieved}">총 달성 항목 수</li>
+            <li th:text="'총 목표 항목 수: ' + ${weekTotal}">총 목표 항목 수</li>
+            <li th:text="'성취율: ' + ${weekPercent} + '%'">성취율</li>
+        </ul>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-light">
+        <tr>
+            <th>날짜</th>
+            <th>달성률</th>
+            <th>상태</th>
+            <th>보기</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="progressItem : ${weeklyProgressItems}">
+            <td th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</td>
+            <td>
+                <div style="background-color: #e9ecef; border-radius: 0.25rem; overflow: hidden;">
+                    <div th:style="'width: ' + ${progressItem.percent} + '%; background-color: #198754; color: white; text-align: center;'"
+                         th:text="${progressItem.percent} + '%'">
+                        0%
+                    </div>
+                </div>
+            </td>
+            <td th:text="${progressItem.achieved} + ' / ' + ${progressItem.total}">0 / 0</td>
+            <td class="text-center">
+                <a th:href="@{/daily-log/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
+                   class="btn btn-outline-secondary btn-sm">
+                    상세 보기
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/}" class="btn btn-outline-secondary mt-3">← 홈으로</a>
+</section>
+</html>

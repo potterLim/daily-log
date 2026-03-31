@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '🌙 저녁 회고 날짜 선택')}">
+<section>
+    <h2 class="mb-4">
+        🌙 저녁 회고
+        <small class="text-muted fs-6" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</small>
+        <span class="float-end">
+            <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-sm btn-outline-secondary me-1">〈</a>
+            <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-sm btn-outline-secondary">〉</a>
+        </span>
+    </h2>
+
+    <div th:if="${#lists.isEmpty(eveningDates)}" class="alert alert-info">
+        해당 구간에 작성된 회고가 없습니다.
+    </div>
+
+    <div th:if="${!#lists.isEmpty(eveningDates)}" class="list-group mb-4">
+        <a th:each="eveningDate : ${eveningDates}"
+           class="list-group-item list-group-item-action"
+           th:href="@{/daily-log/evening/edit(date=${eveningDate})}"
+           th:text="${eveningDate}">
+            2026-04-01
+        </a>
+    </div>
+
+    <a th:href="@{/}" class="btn btn-outline-secondary">← 홈으로</a>
+
+    <div th:if="${message}" class="alert alert-success mt-3" role="alert" th:text="${message}">
+        저장되었습니다.
+    </div>
+</section>
+</html>
