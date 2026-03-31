@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '홈')}">
+<section>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center fw-bold">📝 Daily Log</h1>
+
+        <div class="d-grid gap-3">
+            <a class="btn btn-blue btn-lg w-100 shadow-sm" th:href="@{/daily-log/morning}">
+                ☀️ 아침 계획 작성/수정
+            </a>
+
+            <a class="btn btn-green btn-lg w-100 shadow-sm" th:href="@{/daily-log/evening}">
+                🌙 저녁 회고 작성/수정
+            </a>
+
+            <a class="btn btn-lavender btn-lg w-100 shadow-sm" th:href="@{/daily-log/week}">
+                📅 주간 목록 보기
+            </a>
+        </div>
+    </div>
+</section>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '로그인')}">
+<section>
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+            <h2 class="text-center mb-4">로그인</h2>
+            <form th:action="@{/login}" th:object="${loginRequestDto}" method="post">
+                <div th:if="${param.logout}" class="alert alert-success mb-3" role="alert">
+                    로그아웃되었습니다.
+                </div>
+                <div th:if="${loginErrorMessage}" class="alert alert-danger mb-3" role="alert" th:text="${loginErrorMessage}">
+                    로그인에 실패했습니다.
+                </div>
+
+                <div class="mb-3">
+                    <label for="userName" class="form-label">아이디</label>
+                    <input id="userName" th:field="*{userName}" class="form-control" autocomplete="username" />
+                    <div class="text-danger mt-1" th:errors="*{userName}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">비밀번호</label>
+                    <input id="password" th:field="*{password}" type="password" class="form-control" autocomplete="current-password" />
+                    <div class="text-danger mt-1" th:errors="*{password}"></div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input id="rememberMe" th:field="*{rememberMe}" class="form-check-input" type="checkbox" />
+                    <label for="rememberMe" class="form-check-label">자동 로그인</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2">로그인</button>
+
+                <div class="text-center">
+                    <a th:href="@{/register}" class="text-decoration-none">회원가입</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</html>
