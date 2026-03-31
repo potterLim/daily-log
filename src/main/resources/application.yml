@@ -19,3 +19,5 @@ server:
   error:
     whitelabel:
       enabled: false
+day-log:
+  logs-root-path: logs

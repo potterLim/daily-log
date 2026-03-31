@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '☀️ 아침 계획 날짜 선택')}">
+<section>
+    <h2 class="mb-4">☀️ 이번 주 아침 계획 목록</h2>
+
+    <form th:action="@{/daily-log/morning/edit}" method="get" class="row gy-2 gx-3 align-items-center mb-4">
+        <div class="col-auto">
+            <input type="date"
+                   name="date"
+                   class="form-control"
+                   th:value="${#temporals.format(defaultDate, 'yyyy-MM-dd')}" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">새 날짜 열기</button>
+        </div>
+    </form>
+
+    <div th:if="${#lists.isEmpty(morningDates)}" class="alert alert-info mb-4">
+        이번 주에 작성된 아침 계획이 없습니다.
+    </div>
+
+    <div th:if="${!#lists.isEmpty(morningDates)}" class="list-group mb-4">
+        <a th:each="morningDate : ${morningDates}"
+           class="list-group-item list-group-item-action"
+           th:href="@{/daily-log/morning/edit(date=${morningDate})}"
+           th:text="${morningDate}">
+            2026-04-01
+        </a>
+    </div>
+
+    <a th:href="@{/}" class="btn btn-outline-secondary">← 홈으로</a>
+
+    <div th:if="${message}" class="alert alert-success mt-3" role="alert" th:text="${message}">
+        저장되었습니다.
+    </div>
+</section>
+</html>

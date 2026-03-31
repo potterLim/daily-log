@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '☀️ 아침 계획')}">
+<section>
+    <h2 class="mb-4">
+        <span th:text="'☀️ 아침 계획 – ' + ${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">☀️ 아침 계획</span>
+    </h2>
+
+    <form th:action="@{/daily-log/morning/save}" th:object="${morningFormDto}" method="post">
+        <input type="hidden" th:field="*{date}" />
+
+        <div class="mb-3">
+            <label for="goals" class="form-label fw-bold">Goals <small class="text-muted">(줄마다 하나)</small></label>
+            <textarea id="goals" th:field="*{goals}" class="form-control" rows="6"></textarea>
+            <div class="text-danger mt-1" th:errors="*{date}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="focus" class="form-label fw-bold">Focus Areas</label>
+            <textarea id="focus" th:field="*{focus}" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label for="challenges" class="form-label fw-bold">Challenges &amp; Strategies</label>
+            <textarea id="challenges" th:field="*{challenges}" class="form-control" rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">저장</button>
+        <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary ms-2">← 날짜 목록</a>
+        <a th:href="@{/}" class="btn btn-outline-secondary ms-2">← 홈으로</a>
+    </form>
+</section>
+</html>
