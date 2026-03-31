@@ -16,6 +16,7 @@
     </div>
 
     <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post">
+        <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
         <input type="hidden" th:field="*{date}" />
 
         <div class="mb-3">

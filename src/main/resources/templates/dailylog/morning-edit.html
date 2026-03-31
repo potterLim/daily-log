@@ -7,6 +7,7 @@
     </h2>
 
     <form th:action="@{/daily-log/morning/save}" th:object="${morningFormDto}" method="post">
+        <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
         <input type="hidden" th:field="*{date}" />
 
         <div class="mb-3">

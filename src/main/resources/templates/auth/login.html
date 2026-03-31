@@ -6,6 +6,7 @@
         <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
             <h2 class="text-center mb-4">로그인</h2>
             <form th:action="@{/login}" th:object="${loginRequestDto}" method="post">
+                <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                 <div th:if="${param.logout}" class="alert alert-success mb-3" role="alert">
                     로그아웃되었습니다.
                 </div>

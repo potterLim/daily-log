@@ -18,6 +18,7 @@
             <div class="collapse navbar-collapse justify-content-end">
                 <div sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" class="d-inline">
+                        <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                         <button type="submit" class="btn btn-outline btn-sm">로그아웃</button>
                     </form>
                 </div>

@@ -6,6 +6,7 @@
         <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
             <h2 class="text-center mb-4">회원가입</h2>
             <form th:action="@{/register}" th:object="${registerRequestDto}" method="post">
+                <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                 <div class="mb-3">
                     <label for="userName" class="form-label">아이디</label>
                     <input id="userName" th:field="*{userName}" class="form-control" autocomplete="username" />
