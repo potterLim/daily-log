@@ -42,15 +42,16 @@ The Docker Compose `.env` file should provide:
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
 
-## External Tomcat Deployment
+## Executable JAR Deployment
 
-1. Build the WAR artifact with `.\gradlew.bat bootWar`.
-2. Use the generated `build/libs/dayLog.war` file.
-3. Deploy it to Tomcat 10.1 or later.
-4. Provide the required environment variables to the Tomcat process before startup.
-5. Map persistent storage for the path referenced by `DAY_LOG_LOGS_ROOT_PATH`.
+1. Build the JAR artifact with `.\gradlew.bat bootJar`.
+2. Use the generated `build/libs/dayLog.jar` file.
+3. Install Java 17 on the target server.
+4. Provide the required environment variables before startup.
+5. Start the application with `java -jar build/libs/dayLog.jar`.
+6. Map persistent storage for the path referenced by `DAY_LOG_LOGS_ROOT_PATH`.
 
-Spring Boot 3 uses the Jakarta Servlet API, so Tomcat 9 or earlier is not compatible.
+When you run the application as an executable JAR, embedded Tomcat starts automatically inside the Spring Boot process.
 
 ## Reverse Proxy Recommendation
 
