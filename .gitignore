@@ -1,8 +1,36 @@
+# Gradle and build outputs
 .gradle/
 build/
 out/
+
+# IntelliJ IDEA
 .idea/
 *.iml
+*.ipr
+*.iws
+
+# Runtime files and local artifacts
 logs/
-.env
 local-docs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100/
+.Trashes/
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
