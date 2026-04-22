@@ -66,7 +66,7 @@ com.potterlim.daylog
 Application-wide configuration and framework integration.
 
 - `DayLogApplicationProperties`
-  - binds `day-log.security.*` settings into a strongly typed configuration object
+  - binds `day-log.account.*`, `day-log.mail.*`, and `day-log.security.*` settings into a strongly typed configuration object
 - `SecurityConfiguration`
   - configures authentication, authorization, remember-me, logout, public health endpoints, and password encoding
 - `WebServerConfiguration`
@@ -79,9 +79,12 @@ HTTP entry points and page model composition.
 - `HomeController`
   - renders the home page
 - `AuthController`
-  - renders login and registration pages
+  - renders login, registration, forgot-password, and reset-password pages
   - coordinates registration and auto-login
-  - keeps login feedback generic for authentication failures
+  - keeps login and password recovery feedback generic where account existence must stay hidden
+- `AccountController`
+  - renders the authenticated password change page
+  - verifies the current password before saving a new one
 - `DailyLogController`
   - handles morning, evening, weekly, and preview routes
   - assembles page-ready data from service output
@@ -91,7 +94,7 @@ HTTP entry points and page model composition.
 DTOs are split by feature and intent.
 
 - `dto.auth`
-  - form DTOs for login and registration
+  - form DTOs for login, registration, forgot-password, reset-password, and password change
   - command DTO for registration service input
 - `dto.dailylog`
   - form DTOs for morning and evening flows
@@ -105,6 +108,8 @@ Persistence model and authenticated principal model.
 - `UserAccount`
   - JPA entity
   - also implements `UserDetails`
+- `UserPasswordResetToken`
+  - one-time reset token entity bound to a user account
 - `DailyLogEntry`
   - one persisted daily log per user per date
   - stores the morning and evening sections as text columns
@@ -120,6 +125,10 @@ Data access for relational storage.
 
 - `IUserAccountRepository`
   - JPA repository for user accounts
+  - supports lookup by username, email address, and login identifier
+- `IUserPasswordResetTokenRepository`
+  - JPA repository for one-time password reset tokens
+  - supports token lookup and invalidation of earlier active tokens
 - `IDailyLogEntryRepository`
   - JPA repository for day entries
   - supports lookup by user/date and ordered week queries
@@ -137,9 +146,17 @@ Core business logic.
 
 - `UserAccountService`
   - validates registration input
-  - checks duplicate usernames
+  - checks duplicate usernames and email addresses
   - hashes passwords
   - persists new accounts
+  - changes or resets passwords
+- `PasswordResetTokenService`
+  - generates strong reset tokens
+  - stores only token hashes
+  - enforces token expiration and one-time consumption
+- `IAuthenticationMailService`
+  - abstracts password reset mail delivery
+  - can be backed by SMTP or a diagnostic local mode
 - `DailyLogService`
   - reads and writes day sections
   - creates day entries on first write
@@ -178,7 +195,9 @@ src/main/resources
 - `fragments/layout.html`
   - shared frame, navigation, footer, and background system
 - `auth/*`
-  - login and registration screens
+  - login, registration, forgot-password, and reset-password screens
+- `account/*`
+  - authenticated account settings pages such as password change
 - `dailylog/*`
   - morning list/editor
   - evening list/editor
@@ -200,13 +219,18 @@ src/main/resources
   - creates the account table
 - `db/migration/V2__create_daily_log_entry.sql`
   - creates the daily log entry table with one row per user and date
+- `db/migration/V3__add_email_to_user_account.sql`
+  - adds the unique recovery email column to existing accounts
+- `db/migration/V4__create_user_password_reset_token.sql`
+  - creates the one-time password reset token table
 
 ## Route Map
 
 | Area | Routes | Responsibility |
 | --- | --- | --- |
 | Home | `/` | product landing page for authenticated users |
-| Auth | `/login`, `/register` | authentication entry and account creation |
+| Auth | `/login`, `/register`, `/forgot-password`, `/reset-password` | authentication entry, account creation, and recovery |
+| Account | `/account/password` | authenticated password change |
 | Morning | `/daily-log/morning`, `/daily-log/morning/edit`, `/daily-log/morning/save` | create and update morning plans |
 | Evening | `/daily-log/evening`, `/daily-log/evening/edit`, `/daily-log/evening/save` | complete evening reflections and goal checks |
 | Weekly | `/daily-log/week` | weekly review and completion summary |
@@ -217,12 +241,14 @@ src/main/resources
 
 ## Relational Account Storage
 
-MySQL stores the `user_account` table used for:
+MySQL stores the `user_account` and `user_password_reset_token` tables used for:
 
 - authentication
 - role lookup
 - account lifecycle status
 - username uniqueness
+- email uniqueness and recovery routing
+- one-time password reset token storage
 
 ## Relational Daily Log Storage
 
@@ -270,18 +296,35 @@ Section ordering and header text are controlled by:
 ### Registration Flow
 
 1. render registration page
-2. validate form input
+2. validate user name, email address, and password input
 3. create account through `UserAccountService`
-4. auto-authenticate the new account
-5. redirect to home
+4. catch duplicate user name or duplicate email collisions
+5. auto-authenticate the new account
+6. redirect to home
 
 ### Login Flow
 
 1. render login page
 2. validate form input
-3. authenticate through Spring Security
+3. authenticate through Spring Security with username or email
 4. save the authenticated principal into the session
 5. return a generic login error message when authentication fails
+
+### Password Recovery Flow
+
+1. render the forgot-password page
+2. accept an email address and always return the same success message
+3. when the account exists, generate a one-time token through `PasswordResetTokenService`
+4. deliver the reset link through `IAuthenticationMailService`
+5. consume the token exactly once when the user submits a new password
+
+### Password Change Flow
+
+1. require an authenticated session
+2. render the password change form
+3. verify the current password through `UserAccountService`
+4. hash and persist the new password
+5. redirect back with a success banner
 
 ### Morning Planning Flow
 
@@ -315,6 +358,8 @@ Public routes:
 - `/favicon.ico`
 - `/login`
 - `/register`
+- `/forgot-password`
+- `/reset-password`
 - `/actuator/health`
 - `/actuator/health/**`
 
@@ -323,8 +368,11 @@ All other routes require authentication.
 Additional notes:
 
 - BCrypt password hashing
+- login by username or email address
 - remember-me support via `TokenBasedRememberMeServices`
 - generic login failure feedback
+- generic forgot-password feedback
+- one-time password reset tokens stored as hashes
 - CSRF protection enabled
 - HTTP-only session cookie with `SameSite=Lax`
 - basic security headers for content type, referrer policy, and frame handling
@@ -352,6 +400,9 @@ Current integration coverage includes:
 
 - registration
 - password validation
+- username or email login
+- password reset request and token-based reset
+- authenticated password change
 - generic login failure feedback
 - morning log persistence
 - morning list rendering

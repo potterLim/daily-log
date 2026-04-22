@@ -29,6 +29,9 @@ public class UserAccount implements UserDetails {
     @Column(name = "user_name", nullable = false, unique = true, length = 100)
     private String mUserName;
 
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String mEmailAddress;
+
     @Column(name = "password_hash", nullable = false)
     private String mPasswordHash;
 
@@ -51,20 +54,29 @@ public class UserAccount implements UserDetails {
     protected UserAccount() {
     }
 
-    private UserAccount(String userName, String passwordHash, EUserRole userRole) {
+    private UserAccount(String userName, String emailAddress, String passwordHash, EUserRole userRole) {
         mUserName = userName;
+        mEmailAddress = emailAddress;
         mPasswordHash = passwordHash;
         mUserRole = userRole;
         mIsEnabled = true;
         mIsLocked = false;
     }
 
-    public static UserAccount createRegularUser(String userName, String passwordHash) {
-        return new UserAccount(userName, passwordHash, EUserRole.USER);
+    public static UserAccount createRegularUser(String userName, String emailAddress, String passwordHash) {
+        return new UserAccount(userName, emailAddress, passwordHash, EUserRole.USER);
     }
 
     public UserAccountId getUserAccountId() {
         return UserAccountId.from(mId);
+    }
+
+    public String getEmailAddress() {
+        return mEmailAddress;
+    }
+
+    public void changePasswordHash(String passwordHash) {
+        mPasswordHash = passwordHash;
     }
 
     @Override

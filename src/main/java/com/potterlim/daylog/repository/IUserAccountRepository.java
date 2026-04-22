@@ -14,4 +14,19 @@ public interface IUserAccountRepository extends JpaRepository<UserAccount, Long>
         where userAccount.mUserName = :userName
         """)
     Optional<UserAccount> findByUserName(@Param("userName") String userName);
+
+    @Query("""
+        select userAccount
+        from UserAccount userAccount
+        where lower(userAccount.mEmailAddress) = lower(:emailAddress)
+        """)
+    Optional<UserAccount> findByEmailAddress(@Param("emailAddress") String emailAddress);
+
+    @Query("""
+        select userAccount
+        from UserAccount userAccount
+        where userAccount.mUserName = :loginIdentifier
+            or lower(userAccount.mEmailAddress) = lower(:loginIdentifier)
+        """)
+    Optional<UserAccount> findByLoginIdentifier(@Param("loginIdentifier") String loginIdentifier);
 }

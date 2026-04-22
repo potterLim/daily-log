@@ -49,6 +49,10 @@ management:
     readinessstate:
       enabled: true
 day-log:
+  account:
+    password-reset-token-validity-minutes: ${DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
+  mail:
+    from-address: ${DAY_LOG_MAIL_FROM_ADDRESS:no-reply@daylog.local}
   security:
     remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
     remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}

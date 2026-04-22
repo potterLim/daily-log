@@ -1,40 +1,26 @@
 package com.potterlim.daylog.dto.auth;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public final class RegisterRequestDto {
+public final class ResetPasswordRequestDto {
 
-    @NotBlank(message = "아이디를 입력해주세요.")
-    private String mUserName = "";
+    @NotBlank(message = "재설정 토큰이 필요합니다.")
+    private String mToken = "";
 
-    @NotBlank(message = "이메일을 입력해주세요.")
-    @Email(message = "올바른 이메일 형식을 입력해주세요.")
-    @Size(max = 255, message = "이메일은 255자 이하여야 합니다.")
-    private String mEmailAddress = "";
-
-    @NotBlank(message = "비밀번호를 입력해주세요.")
+    @NotBlank(message = "새 비밀번호를 입력해주세요.")
     @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
     private String mPassword = "";
 
     @NotBlank(message = "비밀번호 확인을 입력해주세요.")
     private String mConfirmPassword = "";
 
-    public String getUserName() {
-        return mUserName;
+    public String getToken() {
+        return mToken;
     }
 
-    public void setUserName(String userName) {
-        mUserName = userName;
-    }
-
-    public String getEmailAddress() {
-        return mEmailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        mEmailAddress = emailAddress;
+    public void setToken(String token) {
+        mToken = token;
     }
 
     public String getPassword() {

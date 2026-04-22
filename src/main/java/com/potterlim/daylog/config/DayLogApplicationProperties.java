@@ -9,10 +9,48 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DayLogApplicationProperties {
 
+    private final AccountProperties mAccount = new AccountProperties();
+    private final MailProperties mMail = new MailProperties();
     private final SecurityProperties mSecurity = new SecurityProperties();
+
+    public AccountProperties getAccount() {
+        return mAccount;
+    }
+
+    public MailProperties getMail() {
+        return mMail;
+    }
 
     public SecurityProperties getSecurity() {
         return mSecurity;
+    }
+
+    public static final class AccountProperties {
+
+        @Positive
+        private int mPasswordResetTokenValidityMinutes = 30;
+
+        public int getPasswordResetTokenValidityMinutes() {
+            return mPasswordResetTokenValidityMinutes;
+        }
+
+        public void setPasswordResetTokenValidityMinutes(int passwordResetTokenValidityMinutes) {
+            mPasswordResetTokenValidityMinutes = passwordResetTokenValidityMinutes;
+        }
+    }
+
+    public static final class MailProperties {
+
+        @NotBlank
+        private String mFromAddress = "no-reply@daylog.local";
+
+        public String getFromAddress() {
+            return mFromAddress;
+        }
+
+        public void setFromAddress(String fromAddress) {
+            mFromAddress = fromAddress;
+        }
     }
 
     public static final class SecurityProperties {

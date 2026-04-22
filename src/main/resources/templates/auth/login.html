@@ -61,18 +61,21 @@
             <div th:if="${param.logout}" class="message-banner message-banner-success" role="alert">
                 로그아웃되었습니다.
             </div>
+            <div th:if="${param.passwordResetSuccess}" class="message-banner message-banner-success" role="alert">
+                비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.
+            </div>
             <div th:if="${loginErrorMessage}" class="message-banner message-banner-danger" role="alert" th:text="${loginErrorMessage}">
                 로그인에 실패했습니다.
             </div>
 
             <div class="form-section">
-                <label for="userName" class="form-label field-label">아이디</label>
-                <input id="userName"
-                       th:field="*{userName}"
+                <label for="loginIdentifier" class="form-label field-label">아이디 또는 이메일</label>
+                <input id="loginIdentifier"
+                       th:field="*{loginIdentifier}"
                        class="form-control form-control-lg"
                        autocomplete="username"
-                       placeholder="아이디를 입력하세요" />
-                <div class="text-danger mt-2" th:errors="*{userName}"></div>
+                       placeholder="아이디 또는 이메일을 입력하세요" />
+                <div class="text-danger mt-2" th:errors="*{loginIdentifier}"></div>
             </div>
 
             <div class="form-section">
@@ -97,6 +100,8 @@
             <button type="submit" class="btn btn-primary btn-lg w-100">로그인</button>
 
             <div class="auth-helper">
+                <a th:href="@{/forgot-password}">비밀번호를 잊으셨나요?</a>
+                <span>•</span>
                 <span>계정이 없으신가요?</span>
                 <a th:href="@{/register}">회원가입하기</a>
             </div>

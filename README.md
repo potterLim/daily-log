@@ -14,6 +14,9 @@ It is built as a multi-user Spring Boot application with:
 - Morning planning with goals, focus areas, and anticipated challenges
 - Evening reflection that reuses morning goals as a completion checklist
 - Weekly review with completion counts and progress percentages
+- Account creation with username, email address, and password
+- Sign-in with either username or email address
+- Email-based password reset and authenticated password change
 - Read-only daily log preview rendered from reconstructed Markdown
 - Per-user isolation at the database level
 - Public health endpoints for runtime monitoring
@@ -58,6 +61,8 @@ It is built as a multi-user Spring Boot application with:
 ### Primary storage
 
 - `user_account` stores identity, password hashes, role, and account status
+- `user_account` also stores the unique email address used for password recovery
+- `user_password_reset_token` stores one-time password reset tokens
 - `daily_log_entry` stores one entry per user per date
 - the daily log sections are persisted as database text columns
 - preview pages reconstruct Markdown from the stored sections instead of reading files from disk
@@ -158,10 +163,20 @@ java -jar build/libs/dayLog.jar
 | --- | --- |
 | `PORT` | `8080` |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
+| `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
+| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
+| `SPRING_MAIL_HOST` | unset |
+| `SPRING_MAIL_PORT` | provider default |
+| `SPRING_MAIL_USERNAME` | unset |
+| `SPRING_MAIL_PASSWORD` | unset |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent |
 
 The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
+
+When SMTP is not configured, the application does not create a real mail sender. In the `local` and `test` profiles, password reset links are emitted through diagnostic logs so the flow can still be verified without external mail infrastructure.
 
 ## Health and Operations
 
@@ -201,9 +216,13 @@ Before exposing the service to real users, replace every example credential and 
 ## Security Notes
 
 - static assets, login, registration, and health checks are public
+- forgot-password and reset-password routes are also public
 - all product pages require authentication
 - passwords are stored with BCrypt hashing
+- login accepts username or email address
 - login failure uses a generic credential error message
+- forgot-password also returns a generic success message
+- password reset uses one-time hashed tokens with expiration
 - remember-me uses `TokenBasedRememberMeServices`
 - CSRF protection remains enabled
 - session cookies are configured as HTTP only with `SameSite=Lax`
@@ -214,6 +233,9 @@ Current integration coverage focuses on the main product flows:
 
 - registration
 - password validation
+- username or email login
+- password reset request and token-based password reset
+- authenticated password change
 - generic login failure feedback
 - morning log persistence
 - morning list rendering

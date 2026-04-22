@@ -56,14 +56,24 @@ Recommended when:
 
 The application is intentionally fail-fast in the default profile. Missing required values should stop startup immediately.
 
+If SMTP values are not provided, password reset requests still return the same generic success response, but no real recovery email will be delivered. In the `local` and `test` profiles, the application logs the generated reset link for verification instead.
+
 ### Optional Environment Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `PORT` | `8080` | application HTTP port |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
+| `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
+| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for password reset email |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
+| `SPRING_MAIL_HOST` | unset | SMTP host for password reset delivery |
+| `SPRING_MAIL_PORT` | provider default | SMTP port |
+| `SPRING_MAIL_USERNAME` | unset | SMTP account username |
+| `SPRING_MAIL_PASSWORD` | unset | SMTP account password |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent | whether SMTP auth is enabled |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent | whether STARTTLS is enabled |
 
 ## Example JDBC URL
 
@@ -139,6 +149,14 @@ DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daylog?useSSL=false&allowPublicKeyRetri
 DATABASE_USERNAME=daylog
 DATABASE_PASSWORD=replace-this
 DAY_LOG_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
+DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
+DAY_LOG_MAIL_FROM_ADDRESS=no-reply@example.com
+SPRING_MAIL_HOST=smtp.example.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=mailer@example.com
+SPRING_MAIL_PASSWORD=replace-this
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
 PORT=8080
 SERVER_SERVLET_SESSION_COOKIE_SECURE=true
 ```
@@ -155,6 +173,7 @@ Use this first run to verify:
 - database connectivity
 - Flyway migration success
 - login and registration flow
+- forgot-password page renders and reset links can be issued
 - `/actuator/health/readiness` returns `UP`
 
 ## Example `systemd` Service
@@ -287,6 +306,8 @@ After deployment, confirm all of the following:
 - home page loads after authentication
 - registration creates a new account
 - login failure shows expected generic feedback
+- password reset mail delivery is configured when SMTP values are present
+- password change works for an authenticated account
 - morning plan can be saved
 - evening reflection can be saved
 - weekly review renders without errors
@@ -297,6 +318,7 @@ After deployment, confirm all of the following:
 - use a real MySQL password, never an example value
 - place the app behind HTTPS
 - set `SERVER_SERVLET_SESSION_COOKIE_SECURE=true` when TLS is terminated before the app
+- configure real SMTP credentials before exposing password recovery to users
 - restrict direct database exposure
 - enable scheduled MySQL backups
 - watch readiness and liveness endpoints from your hosting platform

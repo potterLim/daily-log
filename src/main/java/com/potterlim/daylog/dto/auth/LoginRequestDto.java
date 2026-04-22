@@ -4,20 +4,20 @@ import jakarta.validation.constraints.NotBlank;
 
 public final class LoginRequestDto {
 
-    @NotBlank(message = "아이디를 입력해주세요.")
-    private String mUserName = "";
+    @NotBlank(message = "아이디 또는 이메일을 입력해주세요.")
+    private String mLoginIdentifier = "";
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
     private String mPassword = "";
 
     private boolean mIsRememberMe;
 
-    public String getUserName() {
-        return mUserName;
+    public String getLoginIdentifier() {
+        return mLoginIdentifier;
     }
 
-    public void setUserName(String userName) {
-        mUserName = userName;
+    public void setLoginIdentifier(String loginIdentifier) {
+        mLoginIdentifier = loginIdentifier;
     }
 
     public String getPassword() {

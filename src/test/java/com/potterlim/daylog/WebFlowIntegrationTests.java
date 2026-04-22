@@ -1,10 +1,14 @@
 package com.potterlim.daylog;
 
+import java.net.URI;
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.repository.IDailyLogEntryRepository;
 import com.potterlim.daylog.repository.IUserAccountRepository;
+import com.potterlim.daylog.repository.IUserPasswordResetTokenRepository;
+import com.potterlim.daylog.service.IAuthenticationMailService;
 import com.potterlim.daylog.service.IDailyLogService;
 import com.potterlim.daylog.service.IUserAccountService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +17,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,9 +57,16 @@ class WebFlowIntegrationTests {
     @Autowired
     private IUserAccountRepository mUserAccountRepository;
 
+    @Autowired
+    private IUserPasswordResetTokenRepository mUserPasswordResetTokenRepository;
+
+    @MockitoBean
+    private IAuthenticationMailService mAuthenticationMailService;
+
     @BeforeEach
     void setUpTestEnvironment() {
         mDailyLogEntryRepository.deleteAll();
+        mUserPasswordResetTokenRepository.deleteAll();
         mUserAccountRepository.deleteAll();
     }
 
@@ -57,12 +75,14 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(post("/register")
                 .with(csrf())
                 .param("userName", "tester")
+                .param("emailAddress", "tester@example.com")
                 .param("password", "pass1234")
                 .param("confirmPassword", "pass1234"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
 
         assertTrue(mUserAccountRepository.findByUserName("tester").isPresent());
+        assertTrue(mUserAccountRepository.findByEmailAddress("tester@example.com").isPresent());
     }
 
     @Test
@@ -70,6 +90,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(post("/register")
                 .with(csrf())
                 .param("userName", "tester")
+                .param("emailAddress", "tester@example.com")
                 .param("password", "pass12")
                 .param("confirmPassword", "pass12"))
             .andExpect(status().isOk());
@@ -78,32 +99,132 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void loginShouldShowGenericErrorWhenUserNameDoesNotExist() throws Exception {
+    void loginShouldShowGenericErrorWhenLoginIdentifierDoesNotExist() throws Exception {
         mMockMvc.perform(post("/login")
                 .with(csrf())
-                .param("userName", "missing-user")
+                .param("loginIdentifier", "missing-user")
                 .param("password", "wrong-password"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("아이디 또는 비밀번호가 올바르지 않습니다.")));
+            .andExpect(content().string(containsString("로그인 정보가 올바르지 않습니다.")));
     }
 
     @Test
     void loginShouldShowGenericErrorWhenPasswordIsWrong() throws Exception {
-        mUserAccountService.registerUserAccount(new RegisterUserAccountCommand("tester", "pass1234"));
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("tester", "tester@example.com", "pass1234")
+        );
 
         mMockMvc.perform(post("/login")
                 .with(csrf())
-                .param("userName", "tester")
+                .param("loginIdentifier", "tester")
                 .param("password", "wrong-password")
                 .param("rememberMe", "true"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("아이디 또는 비밀번호가 올바르지 않습니다.")));
+            .andExpect(content().string(containsString("로그인 정보가 올바르지 않습니다.")));
+    }
+
+    @Test
+    void loginShouldAcceptEmailAddress() throws Exception {
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("tester", "tester@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "tester@example.com")
+                .param("password", "pass1234"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void forgotPasswordShouldReturnGenericResponseForUnknownEmailAddress() throws Exception {
+        mMockMvc.perform(post("/forgot-password")
+                .with(csrf())
+                .param("emailAddress", "missing@example.com"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/forgot-password"));
+
+        assertEquals(0, mUserPasswordResetTokenRepository.count());
+        verify(mAuthenticationMailService, never()).sendPasswordResetMail(any(UserAccount.class), anyString());
+    }
+
+    @Test
+    void resetPasswordShouldAllowLoginWithNewPassword() throws Exception {
+        AtomicReference<String> sentResetPasswordUrl = new AtomicReference<>();
+        doAnswer(invocation -> {
+            sentResetPasswordUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendPasswordResetMail(any(UserAccount.class), anyString());
+
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("reset-user", "reset-user@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/forgot-password")
+                .with(csrf())
+                .param("emailAddress", "reset-user@example.com"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/forgot-password"));
+
+        String rawToken = extractTokenFromResetPasswordUrl(sentResetPasswordUrl.get());
+        mMockMvc.perform(post("/reset-password")
+                .with(csrf())
+                .param("token", rawToken)
+                .param("password", "pass6789")
+                .param("confirmPassword", "pass6789"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/login?passwordResetSuccess"));
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "reset-user")
+                .param("password", "pass1234"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("로그인 정보가 올바르지 않습니다.")));
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "reset-user@example.com")
+                .param("password", "pass6789"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void changePasswordShouldPersistNewPassword() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("changer", "changer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/account/password")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("currentPassword", "pass1234")
+                .param("newPassword", "pass6789")
+                .param("confirmNewPassword", "pass6789"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/account/password"));
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "changer")
+                .param("password", "pass1234"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("로그인 정보가 올바르지 않습니다.")));
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "changer")
+                .param("password", "pass6789"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
     }
 
     @Test
     void morningSaveShouldPersistDailyLogEntry() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("writer", "pass1234")
+            new RegisterUserAccountCommand("writer", "writer@example.com", "pass1234")
         );
 
         mMockMvc.perform(post("/daily-log/morning/save")
@@ -129,7 +250,7 @@ class WebFlowIntegrationTests {
     void morningListShouldRenderSavedDate() throws Exception {
         LocalDate morningDate = LocalDate.now();
         UserAccount userAccount = mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("planner", "pass1234")
+            new RegisterUserAccountCommand("planner", "planner@example.com", "pass1234")
         );
 
         mMockMvc.perform(post("/daily-log/morning/save")
@@ -150,7 +271,7 @@ class WebFlowIntegrationTests {
     @Test
     void coreProductPagesShouldRender() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("reviewer", "pass1234")
+            new RegisterUserAccountCommand("reviewer", "reviewer@example.com", "pass1234")
         );
 
         mMockMvc.perform(get("/")
@@ -174,5 +295,19 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/actuator/health"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("\"status\":\"UP\"")));
+    }
+
+    private static String extractTokenFromResetPasswordUrl(String resetPasswordUrl) {
+        assertNotNull(resetPasswordUrl);
+        String query = URI.create(resetPasswordUrl).getQuery();
+        assertNotNull(query);
+
+        for (String queryParameter : query.split("&")) {
+            if (queryParameter.startsWith("token=")) {
+                return queryParameter.substring("token=".length());
+            }
+        }
+
+        throw new IllegalStateException("Reset password token was not found.");
     }
 }

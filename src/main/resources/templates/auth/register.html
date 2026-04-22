@@ -69,6 +69,17 @@
             </div>
 
             <div class="form-section">
+                <label for="emailAddress" class="form-label field-label">이메일</label>
+                <input id="emailAddress"
+                       th:field="*{emailAddress}"
+                       type="email"
+                       class="form-control form-control-lg"
+                       autocomplete="email"
+                       placeholder="비밀번호 복구에 사용할 이메일을 입력하세요" />
+                <div class="text-danger mt-2" th:errors="*{emailAddress}"></div>
+            </div>
+
+            <div class="form-section">
                 <label for="password" class="form-label field-label">비밀번호</label>
                 <input id="password"
                        th:field="*{password}"

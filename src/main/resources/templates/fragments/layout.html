@@ -65,6 +65,7 @@
                     <span class="session-label">현재 워크스페이스</span>
                     <strong sec:authentication="name">user</strong>
                 </div>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/account/password}">비밀번호 변경</a>
                 <form th:action="@{/logout}" method="post">
                     <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                     <button type="submit" class="btn btn-outline-secondary btn-sm">로그아웃</button>
