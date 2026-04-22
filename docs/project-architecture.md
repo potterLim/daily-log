@@ -8,12 +8,12 @@
 - evening reflection
 - weekly progress review
 
-The system intentionally splits storage responsibilities:
+The application now uses a single relational storage model:
 
-- MySQL stores accounts, authentication state, and user lookup data
-- Markdown files on disk store the actual day-by-day planning and reflection content
+- MySQL stores accounts, authentication state, and day-by-day writing
+- Markdown is reconstructed on demand for preview pages instead of being stored as files on disk
 
-This keeps identity and security relational while keeping personal writing easy to inspect, export, and back up.
+This keeps the product easier to back up, scale, and operate in a multi-user deployment.
 
 ## System Shape
 
@@ -22,8 +22,8 @@ Browser
   -> Spring MVC + Thymeleaf
   -> controller layer
   -> service layer
-  -> MySQL for accounts
-  -> file system for Markdown logs
+  -> Spring Data JPA repositories
+  -> MySQL
 ```
 
 ## Top-Level Repository Layout
@@ -66,10 +66,9 @@ com.potterlim.daylog
 Application-wide configuration and framework integration.
 
 - `DayLogApplicationProperties`
-  - binds `day-log.*` settings into a strongly typed configuration object
-  - currently covers log storage and remember-me settings
+  - binds `day-log.security.*` settings into a strongly typed configuration object
 - `SecurityConfiguration`
-  - configures authentication, authorization, remember-me, logout, and password encoding
+  - configures authentication, authorization, remember-me, logout, public health endpoints, and password encoding
 - `WebServerConfiguration`
   - holds embedded web-server customization
 
@@ -82,6 +81,7 @@ HTTP entry points and page model composition.
 - `AuthController`
   - renders login and registration pages
   - coordinates registration and auto-login
+  - keeps login feedback generic for authentication failures
 - `DailyLogController`
   - handles morning, evening, weekly, and preview routes
   - assembles page-ready data from service output
@@ -105,6 +105,10 @@ Persistence model and authenticated principal model.
 - `UserAccount`
   - JPA entity
   - also implements `UserDetails`
+- `DailyLogEntry`
+  - one persisted daily log per user per date
+  - stores the morning and evening sections as text columns
+  - reconstructs Markdown when preview output is needed
 - `UserAccountId`
   - value object wrapper around the account id
 - `EUserRole`
@@ -112,10 +116,13 @@ Persistence model and authenticated principal model.
 
 ### `repository`
 
-Data access for relational account storage.
+Data access for relational storage.
 
 - `IUserAccountRepository`
   - JPA repository for user accounts
+- `IDailyLogEntryRepository`
+  - JPA repository for day entries
+  - supports lookup by user/date and ordered week queries
 
 ### `security`
 
@@ -134,11 +141,11 @@ Core business logic.
   - hashes passwords
   - persists new accounts
 - `DailyLogService`
-  - resolves log file paths by date and user
-  - reads and writes Markdown sections
+  - reads and writes day sections
+  - creates day entries on first write
   - lists weekly day status
   - extracts checked goals
-  - reads full log content
+  - rebuilds Markdown text for previews
 
 ### `support`
 
@@ -155,7 +162,7 @@ Shared helper types outside the controller and service contracts.
 src/main/resources
 ├─ application.yml
 ├─ application-local.yml
-├─ schema.sql
+├─ db/migration
 ├─ static
 │  ├─ css/site.css
 │  └─ js/site.js
@@ -187,6 +194,13 @@ src/main/resources
 - `static/js/site.js`
   - lightweight browser behavior such as scroll-driven header state and textarea auto-resize
 
+### Database Migrations
+
+- `db/migration/V1__create_user_account.sql`
+  - creates the account table
+- `db/migration/V2__create_daily_log_entry.sql`
+  - creates the daily log entry table with one row per user and date
+
 ## Route Map
 
 | Area | Routes | Responsibility |
@@ -197,6 +211,7 @@ src/main/resources
 | Evening | `/daily-log/evening`, `/daily-log/evening/edit`, `/daily-log/evening/save` | complete evening reflections and goal checks |
 | Weekly | `/daily-log/week` | weekly review and completion summary |
 | Preview | `/daily-log/preview` | read-only view of a saved Markdown log |
+| Health | `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` | runtime monitoring without authentication |
 
 ## Storage Model
 
@@ -209,51 +224,45 @@ MySQL stores the `user_account` table used for:
 - account lifecycle status
 - username uniqueness
 
-The base schema is initialized through `schema.sql`.
+## Relational Daily Log Storage
 
-## File-Based Daily Logs
+MySQL stores the `daily_log_entry` table used for:
 
-Daily logs are stored as Markdown files under the configured root path.
+- one row per user per date
+- morning section content
+- evening section content
+- day-level morning/evening completion flags
+- audit timestamps
 
-Example structure:
+Important design notes:
 
-```text
-logs/
-└─ 15/
-   └─ 2026_04_Week4/
-      └─ 2026-04-23.md
-```
+- the unique key is `(user_account_id, log_date)`
+- daily writing is stored as section text, not as one opaque markdown blob
+- preview pages reconstruct Markdown from the stored sections when needed
+- the system no longer depends on local disk files for user-written content
 
-The path is derived from:
+## Daily Log Section Model
 
-- user account id
-- year and month
-- month-local week bucket
-- date file name
+One day's log can contain multiple ordered sections.
 
-Important note:
-
-- `WeekN` is not ISO week numbering
-- it is calculated with `(dayOfMonth - 1) / 7 + 1`
-
-## Markdown Section Model
-
-One day's log file can contain multiple ordered sections.
-
-Typical sections include:
+Morning sections:
 
 - goals
 - focus areas
 - challenges and strategies
-- evening goal check
+
+Evening sections:
+
+- evening goal checklist
 - achievements
 - improvements
 - gratitude
-- notes for tomorrow
+- notes
 
-Section parsing and reconstruction are controlled by:
+Section ordering and header text are controlled by:
 
 - `EDailyLogSectionType`
+- `DailyLogEntry`
 - `DailyLogService`
 
 ## Core Request Flows
@@ -266,20 +275,28 @@ Section parsing and reconstruction are controlled by:
 4. auto-authenticate the new account
 5. redirect to home
 
+### Login Flow
+
+1. render login page
+2. validate form input
+3. authenticate through Spring Security
+4. save the authenticated principal into the session
+5. return a generic login error message when authentication fails
+
 ### Morning Planning Flow
 
 1. open a date
-2. load current goals, focus, and challenges
+2. load current goals, focus, and challenges from `DailyLogService`
 3. submit the morning form
-4. normalize goals into Markdown list items
-5. write updated sections through `DailyLogService`
+4. normalize goals into Markdown-style list lines
+5. write updated sections into `daily_log_entry`
 
 ### Evening Reflection Flow
 
-1. load the morning plan preview
+1. load the reconstructed morning plan preview
 2. convert morning goals into checklist items
 3. submit checked goals and reflection content
-4. persist evening sections back into the same Markdown file
+4. persist evening sections back into the same day entry
 5. redirect to the evening list
 
 ### Weekly Review Flow
@@ -298,6 +315,8 @@ Public routes:
 - `/favicon.ico`
 - `/login`
 - `/register`
+- `/actuator/health`
+- `/actuator/health/**`
 
 All other routes require authentication.
 
@@ -305,8 +324,10 @@ Additional notes:
 
 - BCrypt password hashing
 - remember-me support via `TokenBasedRememberMeServices`
+- generic login failure feedback
 - CSRF protection enabled
 - HTTP-only session cookie with `SameSite=Lax`
+- basic security headers for content type, referrer policy, and frame handling
 
 ## Runtime Profiles
 
@@ -314,12 +335,13 @@ Additional notes:
 
 - MySQL-backed
 - production-oriented
+- Flyway migrations enabled
 - fails fast when required environment variables are missing
 
 ### `local` Profile
 
 - H2 in-memory database in MySQL compatibility mode
-- log root at `build/local-logs`
+- Flyway migrations enabled
 - Thymeleaf cache disabled
 
 ## Testing Strategy
@@ -329,10 +351,12 @@ The test suite focuses on live application behavior rather than only isolated un
 Current integration coverage includes:
 
 - registration
-- login failure feedback
+- password validation
+- generic login failure feedback
 - morning log persistence
 - morning list rendering
 - rendering of core product pages
+- public health endpoint availability
 
 Primary test classes:
 
@@ -344,8 +368,8 @@ Primary test classes:
 Safe extension points usually start in:
 
 - `dto.dailylog` when a page shape changes
-- `DailyLogService` when log storage behavior changes
-- `DailyLogController` when page assembly changes
+- `DailyLogService` when entry-level business logic changes
+- `DailyLogEntry` when section persistence rules change
 - `site.css` when the product presentation changes
 
 Be careful when changing:
@@ -353,6 +377,6 @@ Be careful when changing:
 - Markdown header text
 - section ordering
 - goal list formatting
-- file path naming rules
+- uniqueness rules on user/date
 
-Those areas affect compatibility with already saved user data.
+Those areas affect compatibility with already saved user data and preview rendering.

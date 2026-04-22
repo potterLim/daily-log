@@ -15,8 +15,8 @@ Use this document when you need to understand:
 
 - how the application is structured
 - which packages own which responsibilities
-- how requests move from controller to service to storage
-- how Markdown logs are stored and reconstructed
+- how requests move from controller to service to persistence
+- how daily log sections are stored and reconstructed
 - which parts are the safest extension points
 
 ### [Deployment Guide](deployment.md)
@@ -25,9 +25,9 @@ Use this document when you need to:
 
 - run the application as an executable JAR
 - deploy with Docker Compose
-- configure environment variables
-- prepare persistent storage for MySQL and Markdown logs
-- set up a service manager or reverse proxy
+- configure runtime environment variables
+- place the app behind a reverse proxy or load balancer
+- wire health checks into a VM or container deployment
 
 ## Scope Rules
 

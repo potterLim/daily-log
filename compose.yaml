@@ -31,13 +31,15 @@ services:
       DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-daylog}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       DATABASE_USERNAME: ${MYSQL_USER:-daylog}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
-      DAY_LOG_LOGS_ROOT_PATH: /var/daylog/logs
       DAY_LOG_REMEMBER_ME_KEY: ${DAY_LOG_REMEMBER_ME_KEY}
     ports:
       - "${APP_PORT:-8080}:8080"
-    volumes:
-      - daylog-logs:/var/daylog/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health/readiness | grep '\"status\":\"UP\"' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
 
 volumes:
   daylog-mysql-data:
-  daylog-logs:

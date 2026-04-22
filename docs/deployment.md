@@ -4,9 +4,9 @@
 
 `dayLog` is designed to run as a multi-user web application with:
 
-- MySQL for account data
-- local disk storage for Markdown log files
+- MySQL for account data and daily log content
 - executable JAR deployment as the primary runtime model
+- Actuator health endpoints for readiness and liveness checks
 
 The repository also includes Docker Compose support for environments where packaging the app and MySQL together is preferred.
 
@@ -18,9 +18,8 @@ Recommended when:
 
 - you are deploying to a Linux VM or server directly
 - you want to manage the process with `systemd`
-- you plan to place the app behind Nginx or Caddy
-
-This is the preferred deployment model for compute-based hosting such as Oracle Cloud Compute, VPS providers, or self-managed Linux servers.
+- you plan to place the app behind Nginx, Caddy, or a managed load balancer
+- you want provider-neutral deployment that can later fit AWS, a VPS, or another compute host
 
 ### Option 2. Docker Compose
 
@@ -32,17 +31,17 @@ Recommended when:
 
 ## Runtime Requirements
 
-## Executable JAR Deployment
+### Executable JAR Deployment
 
 - Java 17 installed on the target machine
 - reachable MySQL database
-- writable persistent directory for Markdown logs
+- reverse proxy or load balancer for HTTPS in internet-facing environments
 
-## Docker Compose Deployment
+### Docker Compose Deployment
 
 - Docker Engine
 - Docker Compose plugin
-- writable persistent storage for MySQL data and Markdown logs
+- persistent storage for MySQL data
 
 ## Configuration Reference
 
@@ -62,7 +61,7 @@ The application is intentionally fail-fast in the default profile. Missing requi
 | Variable | Default | Description |
 | --- | --- | --- |
 | `PORT` | `8080` | application HTTP port |
-| `DAY_LOG_LOGS_ROOT_PATH` | `logs` | root directory for Markdown logs |
+| `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
 
@@ -86,7 +85,7 @@ Local profile behavior:
 
 - H2 in-memory database
 - MySQL compatibility mode
-- logs stored under `build/local-logs`
+- Flyway migrations run on startup
 
 ## Build the Executable Artifact
 
@@ -122,7 +121,6 @@ Example:
 
 ```bash
 sudo mkdir -p /opt/day-log
-sudo mkdir -p /var/lib/day-log/logs
 sudo mkdir -p /etc/day-log
 ```
 
@@ -141,22 +139,23 @@ DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daylog?useSSL=false&allowPublicKeyRetri
 DATABASE_USERNAME=daylog
 DATABASE_PASSWORD=replace-this
 DAY_LOG_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
-DAY_LOG_LOGS_ROOT_PATH=/var/lib/day-log/logs
 PORT=8080
+SERVER_SERVLET_SESSION_COOKIE_SECURE=true
 ```
 
 ### 5. Start the application manually once
 
 ```bash
+source /etc/day-log/day-log.env
 java -jar /opt/day-log/dayLog.jar
 ```
 
 Use this first run to verify:
 
 - database connectivity
-- schema initialization
-- log directory permissions
+- Flyway migration success
 - login and registration flow
+- `/actuator/health/readiness` returns `UP`
 
 ## Example `systemd` Service
 
@@ -195,6 +194,20 @@ sudo systemctl start day-log
 sudo systemctl status day-log
 ```
 
+## Health Endpoints
+
+The application exposes:
+
+- `/actuator/health`
+- `/actuator/health/liveness`
+- `/actuator/health/readiness`
+
+Recommended usage:
+
+- load balancer readiness check -> `/actuator/health/readiness`
+- container or process liveness check -> `/actuator/health/liveness`
+- manual smoke checks -> `/actuator/health`
+
 ## Reverse Proxy Recommendation
 
 For internet-facing deployment, place the application behind a reverse proxy such as:
@@ -207,9 +220,9 @@ Recommended responsibilities of the proxy layer:
 
 - HTTPS termination
 - HTTP to HTTPS redirect
-- security headers
-- access logs
 - forwarding traffic to the application port
+- access logs
+- optional rate limiting or WAF integration
 
 ## Docker Compose Workflow
 
@@ -242,49 +255,48 @@ docker compose ps
 docker compose logs -f app
 ```
 
-### 5. Confirm persistence
+### 5. Confirm health
 
-The Compose file expects persistent volumes for:
+The Compose file waits for:
 
-- MySQL data
-- Markdown logs
-
-If those are not persisted, user records or daily logs can be lost when containers are recreated.
+- MySQL health from `mysqladmin ping`
+- application readiness from `/actuator/health/readiness`
 
 ## Operational Notes
 
-- The app uses `ddl-auto=validate`, so the schema must match the entity model
-- `schema.sql` is executed on startup and is expected to initialize `user_account`
+- Flyway manages schema changes
+- `ddl-auto=validate` keeps the entity model aligned with the migrated schema
 - the default server port is `8080` unless overridden by `PORT`
 - graceful shutdown is enabled
 - HTTP session timeout is 30 minutes
 
 ## Backup Considerations
 
-Production backup should cover both:
+Production backup should cover:
 
 - MySQL data
-- the directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
+- application environment secrets stored outside Git
 
-Database backup alone is not enough because user-written day logs live on disk as Markdown files.
+Because day logs live in MySQL now, there is no separate file storage requirement for user-written content.
 
 ## Suggested Post-Deploy Smoke Test
 
 After deployment, confirm all of the following:
 
+- `/actuator/health/readiness` returns `UP`
 - home page loads after authentication
 - registration creates a new account
-- login failure shows expected feedback
+- login failure shows expected generic feedback
 - morning plan can be saved
 - evening reflection can be saved
 - weekly review renders without errors
-- Markdown files appear under the configured log root
 
 ## Recommended First Production Hardening Steps
 
 - generate a strong `DAY_LOG_REMEMBER_ME_KEY`
 - use a real MySQL password, never an example value
-- ensure persistent storage for logs and database data
 - place the app behind HTTPS
+- set `SERVER_SERVLET_SESSION_COOKIE_SECURE=true` when TLS is terminated before the app
 - restrict direct database exposure
-- set up regular backups for both MySQL and Markdown log storage
+- enable scheduled MySQL backups
+- watch readiness and liveness endpoints from your hosting platform

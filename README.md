@@ -1,20 +1,22 @@
 # dayLog
 
-`dayLog` is a daily planning and reflection web application that connects morning intention setting, evening review, and weekly progress tracking in one focused experience.
+`dayLog` is a daily planning and reflection web application that brings morning intention setting, evening review, and weekly progress tracking into one focused product flow.
 
-It is built as a multi-user Spring Boot product with:
+It is built as a multi-user Spring Boot application with:
 
-- account and authentication data in MySQL
-- daily writing stored as Markdown files on disk
-- server-rendered pages designed for a polished, product-style workflow
+- MySQL-backed account and daily log storage
+- Flyway-managed schema changes
+- server-rendered pages designed for a polished product experience
+- executable JAR deployment as the primary runtime model
 
 ## Highlights
 
 - Morning planning with goals, focus areas, and anticipated challenges
 - Evening reflection that reuses morning goals as a completion checklist
 - Weekly review with completion counts and progress percentages
-- Read-only daily log preview rendered from Markdown
-- Per-user isolation for both account data and log file storage
+- Read-only daily log preview rendered from reconstructed Markdown
+- Per-user isolation at the database level
+- Public health endpoints for runtime monitoring
 
 ## Product Flow
 
@@ -22,7 +24,7 @@ It is built as a multi-user Spring Boot product with:
 
 - open a date
 - write goals, focus areas, and likely challenges
-- save structured sections back into the day's Markdown log
+- save the day's morning plan into the daily log entry
 
 ### Evening reflection
 
@@ -45,6 +47,7 @@ It is built as a multi-user Spring Boot product with:
 - Spring Security
 - Spring Data JPA
 - Bean Validation
+- Flyway
 - MySQL
 - H2 for the local development profile
 - Gradle
@@ -52,27 +55,18 @@ It is built as a multi-user Spring Boot product with:
 
 ## Runtime Model
 
-`dayLog` intentionally uses two storage layers.
+### Primary storage
 
-### Account data
+- `user_account` stores identity, password hashes, role, and account status
+- `daily_log_entry` stores one entry per user per date
+- the daily log sections are persisted as database text columns
+- preview pages reconstruct Markdown from the stored sections instead of reading files from disk
 
-- stored in MySQL
-- used for authentication, authorization, and account lookup
+### Operational shape
 
-### Daily logs
-
-- stored as Markdown files on disk
-- separated by user account id
-- grouped into month-local week buckets
-
-Example path:
-
-```text
-logs/
-└─ 15/
-   └─ 2026_04_Week4/
-      └─ 2026-04-23.md
-```
+- executable JAR behind Nginx, Caddy, or a managed load balancer
+- MySQL as the persistent system of record
+- Actuator health endpoints for liveness and readiness checks
 
 ## Repository Guide
 
@@ -100,7 +94,7 @@ src/main/java/com/potterlim/daylog
 src/main/resources
 ├─ application.yml
 ├─ application-local.yml
-├─ schema.sql
+├─ db/migration
 ├─ static
 └─ templates
 ```
@@ -120,8 +114,8 @@ If your local workspace includes `local-docs/`, those files are intentionally ig
 The `local` profile:
 
 - uses in-memory H2 in MySQL compatibility mode
+- runs Flyway migrations on startup
 - disables Thymeleaf template caching
-- stores Markdown logs under `build/local-logs`
 
 ### Run tests
 
@@ -163,11 +157,21 @@ java -jar build/libs/dayLog.jar
 | Variable | Default |
 | --- | --- |
 | `PORT` | `8080` |
-| `DAY_LOG_LOGS_ROOT_PATH` | `logs` |
+| `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
 
 The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
+
+## Health and Operations
+
+The application exposes:
+
+- `/actuator/health`
+- `/actuator/health/liveness`
+- `/actuator/health/readiness`
+
+These endpoints are public so that a reverse proxy, container platform, or load balancer can verify runtime state without authentication.
 
 ## Docker Compose
 
@@ -196,9 +200,10 @@ Before exposing the service to real users, replace every example credential and 
 
 ## Security Notes
 
-- static assets, login, and registration are public
-- all application pages require authentication
+- static assets, login, registration, and health checks are public
+- all product pages require authentication
 - passwords are stored with BCrypt hashing
+- login failure uses a generic credential error message
 - remember-me uses `TokenBasedRememberMeServices`
 - CSRF protection remains enabled
 - session cookies are configured as HTTP only with `SameSite=Lax`
@@ -208,10 +213,12 @@ Before exposing the service to real users, replace every example credential and 
 Current integration coverage focuses on the main product flows:
 
 - registration
-- login failure feedback
-- morning log save behavior
+- password validation
+- generic login failure feedback
+- morning log persistence
 - morning list rendering
 - core page rendering for home, evening, and weekly views
+- public health endpoint availability
 
 Main test files:
 
@@ -220,7 +227,7 @@ Main test files:
 
 ## Deployment Notes
 
-The primary production path is executable JAR deployment on a Linux VM with a reverse proxy in front. Docker Compose is also supported when packaging the app and MySQL together is more convenient.
+The primary production path is executable JAR deployment on a Linux VM behind a reverse proxy. Docker Compose is also supported when packaging the app and MySQL together is more convenient.
 
 For deployment details, use:
 
