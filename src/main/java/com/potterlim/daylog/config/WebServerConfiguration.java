@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 public class WebServerConfiguration {
 
     @Bean
-    public WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> webServerFactoryCustomizer() {
+    public WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> createWebServerFactoryCustomizer() {
         return configurableServletWebServerFactory ->
             configurableServletWebServerFactory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/"));
     }

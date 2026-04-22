@@ -2,7 +2,6 @@ package com.potterlim.daylog.service;
 
 import java.util.Optional;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
-import com.potterlim.daylog.entity.EUserRole;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.repository.IUserAccountRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,11 +31,7 @@ public class UserAccountService implements IUserAccountService {
             throw new DuplicateUserNameException(normalizedUserName);
         }
 
-        UserAccount userAccount = new UserAccount(
-            normalizedUserName,
-            mPasswordEncoder.encode(rawPassword),
-            EUserRole.USER
-        );
+        UserAccount userAccount = UserAccount.createRegularUser(normalizedUserName, mPasswordEncoder.encode(rawPassword));
 
         return mUserAccountRepository.save(userAccount);
     }

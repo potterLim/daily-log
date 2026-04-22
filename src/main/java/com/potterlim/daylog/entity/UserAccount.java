@@ -51,7 +51,7 @@ public class UserAccount implements UserDetails {
     protected UserAccount() {
     }
 
-    public UserAccount(String userName, String passwordHash, EUserRole userRole) {
+    private UserAccount(String userName, String passwordHash, EUserRole userRole) {
         mUserName = userName;
         mPasswordHash = passwordHash;
         mUserRole = userRole;
@@ -59,8 +59,12 @@ public class UserAccount implements UserDetails {
         mIsLocked = false;
     }
 
-    public Long getId() {
-        return mId;
+    public static UserAccount createRegularUser(String userName, String passwordHash) {
+        return new UserAccount(userName, passwordHash, EUserRole.USER);
+    }
+
+    public UserAccountId getUserAccountId() {
+        return UserAccountId.from(mId);
     }
 
     @Override

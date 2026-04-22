@@ -23,7 +23,7 @@ public class DayLogApplicationProperties {
         return mSecurity;
     }
 
-    public static class StorageProperties {
+    public static final class StorageProperties {
 
         @NotBlank
         private String mLogsRootPath = "logs";
@@ -37,14 +37,14 @@ public class DayLogApplicationProperties {
         }
     }
 
-    public static class SecurityProperties {
+    public static final class SecurityProperties {
 
         @NotBlank
         private String mRememberMeKey;
         @NotBlank
         private String mRememberMeCookieName = "DAY_LOG_REMEMBER_ME";
         @Positive
-        private int mRememberMeTokenValiditySeconds = 1209600;
+        private int mRememberMeTokenValiditySeconds = 1_209_600;
 
         public String getRememberMeKey() {
             return mRememberMeKey;

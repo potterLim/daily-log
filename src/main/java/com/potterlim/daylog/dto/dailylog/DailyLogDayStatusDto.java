@@ -5,24 +5,24 @@ import java.time.LocalDate;
 public final class DailyLogDayStatusDto {
 
     private final LocalDate mDate;
-    private final boolean mHasMorning;
-    private final boolean mHasEvening;
+    private final boolean mHasMorningLog;
+    private final boolean mHasEveningLog;
 
-    public DailyLogDayStatusDto(LocalDate date, boolean hasMorning, boolean hasEvening) {
+    public DailyLogDayStatusDto(LocalDate date, boolean hasMorningLog, boolean hasEveningLog) {
         mDate = date;
-        mHasMorning = hasMorning;
-        mHasEvening = hasEvening;
+        mHasMorningLog = hasMorningLog;
+        mHasEveningLog = hasEveningLog;
     }
 
     public LocalDate getDate() {
         return mDate;
     }
 
-    public boolean hasMorning() {
-        return mHasMorning;
+    public boolean hasMorningLog() {
+        return mHasMorningLog;
     }
 
-    public boolean hasEvening() {
-        return mHasEvening;
+    public boolean hasEveningLog() {
+        return mHasEveningLog;
     }
 }

@@ -17,7 +17,7 @@ public class SimpleMarkdownRenderer {
      *
      * @return HTML markup safe to inject into the Thymeleaf view with {@code th:utext}.
      */
-    public String render(String markdownTextOrNull) {
+    public String renderMarkdown(String markdownTextOrNull) {
         if (markdownTextOrNull == null || markdownTextOrNull.isBlank()) {
             return "";
         }

@@ -13,6 +13,7 @@ import com.potterlim.daylog.dto.dailylog.EveningGoalItemDto;
 import com.potterlim.daylog.dto.dailylog.MorningFormDto;
 import com.potterlim.daylog.dto.dailylog.WeeklyProgressItemDto;
 import com.potterlim.daylog.entity.UserAccount;
+import com.potterlim.daylog.entity.UserAccountId;
 import com.potterlim.daylog.service.IDailyLogService;
 import com.potterlim.daylog.support.EDailyLogSectionType;
 import com.potterlim.daylog.support.SimpleMarkdownRenderer;
@@ -35,6 +36,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/daily-log")
 public class DailyLogController {
 
+    private static final String EMPTY_MORNING_LOG_HTML = "<p><em>아침 로그가 없습니다.</em></p>";
+
     private final IDailyLogService mDailyLogService;
     private final SimpleMarkdownRenderer mSimpleMarkdownRenderer;
 
@@ -45,14 +48,16 @@ public class DailyLogController {
 
     @GetMapping("/morning")
     public String showMorningDateList(@AuthenticationPrincipal UserAccount userAccount, Model model) {
-        List<String> morningDates = mDailyLogService.listWeek(LocalDate.now(), userAccount.getId())
+        LocalDate currentDate = LocalDate.now();
+        UserAccountId userAccountId = userAccount.getUserAccountId();
+        List<String> morningDates = mDailyLogService.listWeek(currentDate, userAccountId)
             .stream()
-            .filter(DailyLogDayStatusDto::hasMorning)
+            .filter(DailyLogDayStatusDto::hasMorningLog)
             .map(dailyLogDayStatusDto -> dailyLogDayStatusDto.getDate().toString())
-            .collect(Collectors.toList());
+            .toList();
 
         model.addAttribute("morningDates", morningDates);
-        model.addAttribute("defaultDate", LocalDate.now());
+        model.addAttribute("defaultDate", currentDate);
         return "dailylog/morning";
     }
 
@@ -62,11 +67,12 @@ public class DailyLogController {
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
+        UserAccountId userAccountId = userAccount.getUserAccountId();
         MorningFormDto morningFormDto = new MorningFormDto();
         morningFormDto.setDate(date);
-        morningFormDto.setGoals(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.GOALS));
-        morningFormDto.setFocus(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.FOCUS));
-        morningFormDto.setChallenges(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.CHALLENGES));
+        morningFormDto.setGoals(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.GOALS));
+        morningFormDto.setFocus(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.FOCUS));
+        morningFormDto.setChallenges(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.CHALLENGES));
 
         model.addAttribute("morningFormDto", morningFormDto);
         return "dailylog/morning-edit";
@@ -83,12 +89,13 @@ public class DailyLogController {
             return "dailylog/morning-edit";
         }
 
+        UserAccountId userAccountId = userAccount.getUserAccountId();
         String goalsMarkdownList = buildGoalMarkdownList(morningFormDto.getGoals());
-        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), EDailyLogSectionType.GOALS, goalsMarkdownList);
-        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), EDailyLogSectionType.FOCUS, morningFormDto.getFocus());
+        mDailyLogService.writeSection(morningFormDto.getDate(), userAccountId, EDailyLogSectionType.GOALS, goalsMarkdownList);
+        mDailyLogService.writeSection(morningFormDto.getDate(), userAccountId, EDailyLogSectionType.FOCUS, morningFormDto.getFocus());
         mDailyLogService.writeSection(
             morningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.CHALLENGES,
             morningFormDto.getChallenges()
         );
@@ -106,12 +113,13 @@ public class DailyLogController {
         LocalDate referenceDate = LocalDate.now().plusDays((long) weekOffset * 7L);
         LocalDate startDate = referenceDate.minusDays(3L);
         LocalDate endDate = startDate.plusDays(6L);
+        UserAccountId userAccountId = userAccount.getUserAccountId();
 
-        List<String> eveningDates = mDailyLogService.listWeek(referenceDate, userAccount.getId())
+        List<String> eveningDates = mDailyLogService.listWeek(referenceDate, userAccountId)
             .stream()
-            .filter(dailyLogDayStatusDto -> dailyLogDayStatusDto.hasMorning() || dailyLogDayStatusDto.hasEvening())
+            .filter(dailyLogDayStatusDto -> dailyLogDayStatusDto.hasMorningLog() || dailyLogDayStatusDto.hasEveningLog())
             .map(dailyLogDayStatusDto -> dailyLogDayStatusDto.getDate().toString())
-            .collect(Collectors.toList());
+            .toList();
 
         model.addAttribute("eveningDates", eveningDates);
         model.addAttribute("weekOffset", weekOffset);
@@ -127,8 +135,9 @@ public class DailyLogController {
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
-        model.addAttribute("morningLogHtml", buildMorningLogHtmlForDate(date, userAccount.getId()));
-        model.addAttribute("eveningFormDto", buildEveningFormDto(date, userAccount.getId()));
+        UserAccountId userAccountId = userAccount.getUserAccountId();
+        model.addAttribute("morningLogHtml", buildMorningLogHtmlForDate(date, userAccountId));
+        model.addAttribute("eveningFormDto", buildEveningFormDto(date, userAccountId));
         return "dailylog/evening-edit";
     }
 
@@ -141,37 +150,41 @@ public class DailyLogController {
         RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("morningLogHtml", buildMorningLogHtmlForDate(eveningFormDto.getDate(), userAccount.getId()));
+            model.addAttribute(
+                "morningLogHtml",
+                buildMorningLogHtmlForDate(eveningFormDto.getDate(), userAccount.getUserAccountId())
+            );
             return "dailylog/evening-edit";
         }
 
+        UserAccountId userAccountId = userAccount.getUserAccountId();
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.EVENING_GOALS,
             buildCheckedGoalMarkdownList(eveningFormDto.getGoals())
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.ACHIEVEMENTS,
             eveningFormDto.getAchievements()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.IMPROVEMENTS,
             eveningFormDto.getImprovements()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.GRATITUDE,
             eveningFormDto.getGratitude()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
-            userAccount.getId(),
+            userAccountId,
             EDailyLogSectionType.NOTES,
             eveningFormDto.getNotes()
         );
@@ -182,22 +195,22 @@ public class DailyLogController {
 
     @GetMapping("/week")
     public String showWeekPage(@AuthenticationPrincipal UserAccount userAccount, Model model) {
+        UserAccountId userAccountId = userAccount.getUserAccountId();
         List<WeeklyProgressItemDto> weeklyProgressItems = new ArrayList<>();
         int weekAchieved = 0;
         int weekTotal = 0;
 
-        for (DailyLogDayStatusDto dailyLogDayStatusDto : mDailyLogService.listWeek(LocalDate.now(), userAccount.getId())) {
+        for (DailyLogDayStatusDto dailyLogDayStatusDto : mDailyLogService.listWeek(LocalDate.now(), userAccountId)) {
             List<String> goals = splitNonBlankLines(
-                mDailyLogService.readSection(dailyLogDayStatusDto.getDate(), userAccount.getId(), EDailyLogSectionType.GOALS)
+                mDailyLogService.readSection(dailyLogDayStatusDto.getDate(), userAccountId, EDailyLogSectionType.GOALS)
             );
 
             int total = goals.size();
             int achieved = 0;
 
-            if (dailyLogDayStatusDto.hasEvening()) {
-                Set<String> checkedGoalTexts = new HashSet<>(
-                    mDailyLogService.readCheckedGoalTexts(dailyLogDayStatusDto.getDate(), userAccount.getId())
-                );
+            if (dailyLogDayStatusDto.hasEveningLog()) {
+                Set<String> checkedGoalTexts =
+                    new HashSet<>(mDailyLogService.readCheckedGoalTexts(dailyLogDayStatusDto.getDate(), userAccountId));
 
                 for (String goal : goals) {
                     if (checkedGoalTexts.contains(goal)) {
@@ -227,14 +240,18 @@ public class DailyLogController {
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
-        String markdownText = mDailyLogService.readLogFileContent(date, userAccount.getId());
+        UserAccountId userAccountId = userAccount.getUserAccountId();
+        String markdownText = mDailyLogService.readLogFileContent(date, userAccountId);
 
         if (markdownText.isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         model.addAttribute("previewDate", date);
-        model.addAttribute("previewHtml", mSimpleMarkdownRenderer.render(normalizePreviewMarkdownForRendering(markdownText)));
+        model.addAttribute(
+            "previewHtml",
+            mSimpleMarkdownRenderer.renderMarkdown(normalizePreviewMarkdownForRendering(markdownText))
+        );
         return "dailylog/log-preview";
     }
 
@@ -259,9 +276,9 @@ public class DailyLogController {
      *
      * @return HTML markup ready for the evening view.
      */
-    private String buildMorningLogHtmlForDate(LocalDate dateOrNull, Long userAccountId) {
+    private String buildMorningLogHtmlForDate(LocalDate dateOrNull, UserAccountId userAccountId) {
         if (dateOrNull == null) {
-            return "<p><em>아침 로그가 없습니다.</em></p>";
+            return EMPTY_MORNING_LOG_HTML;
         }
 
         String goals = mDailyLogService.readSection(dateOrNull, userAccountId, EDailyLogSectionType.GOALS);
@@ -270,13 +287,13 @@ public class DailyLogController {
 
         String markdownText = buildMorningPreviewMarkdownText(goals, focus, challenges);
         if (markdownText.isBlank()) {
-            return "<p><em>아침 로그가 없습니다.</em></p>";
+            return EMPTY_MORNING_LOG_HTML;
         }
 
-        return mSimpleMarkdownRenderer.render(normalizePreviewMarkdownForRendering(markdownText));
+        return mSimpleMarkdownRenderer.renderMarkdown(normalizePreviewMarkdownForRendering(markdownText));
     }
 
-    private EveningFormDto buildEveningFormDto(LocalDate date, Long userAccountId) {
+    private EveningFormDto buildEveningFormDto(LocalDate date, UserAccountId userAccountId) {
         String goals = mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.GOALS);
         Set<String> checkedGoalTexts = new HashSet<>(mDailyLogService.readCheckedGoalTexts(date, userAccountId));
 
@@ -389,6 +406,6 @@ public class DailyLogController {
         return textOrNull.lines()
             .map(String::trim)
             .filter(line -> !line.isEmpty())
-            .collect(Collectors.toList());
+            .toList();
     }
 }

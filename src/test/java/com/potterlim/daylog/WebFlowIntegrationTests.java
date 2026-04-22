@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.stream.Stream;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
@@ -45,12 +46,12 @@ class WebFlowIntegrationTests {
     private IUserAccountRepository mUserAccountRepository;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUpTestEnvironment() throws IOException {
         mUserAccountRepository.deleteAll();
 
         if (Files.exists(TEST_LOGS_ROOT_PATH)) {
             try (Stream<Path> paths = Files.walk(TEST_LOGS_ROOT_PATH)) {
-                paths.sorted((leftPath, rightPath) -> rightPath.compareTo(leftPath))
+                paths.sorted(Comparator.reverseOrder())
                     .forEach(path -> {
                         try {
                             Files.deleteIfExists(path);
@@ -105,7 +106,7 @@ class WebFlowIntegrationTests {
             .andExpect(redirectedUrl("/daily-log/morning"));
 
         Path markdownFilePath = TEST_LOGS_ROOT_PATH
-            .resolve(String.valueOf(userAccount.getId()))
+            .resolve(String.valueOf(userAccount.getUserAccountId().getValue()))
             .resolve("2026_04_Week1")
             .resolve(LocalDate.of(2026, 4, 1) + ".md");
 
@@ -138,4 +139,5 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString(morningDate.toString())));
     }
+
 }

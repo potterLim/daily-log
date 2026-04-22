@@ -3,6 +3,7 @@ package com.potterlim.daylog.service;
 import java.time.LocalDate;
 import java.util.List;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
+import com.potterlim.daylog.entity.UserAccountId;
 import com.potterlim.daylog.support.EDailyLogSectionType;
 
 public interface IDailyLogService {
@@ -15,7 +16,7 @@ public interface IDailyLogService {
      *
      * @return The section body with list prefixes removed for form editing.
      */
-    String readSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType);
+    String readSection(LocalDate date, UserAccountId userAccountId, EDailyLogSectionType dailyLogSectionType);
 
     /**
      * Writes a markdown section for a specific user and date.
@@ -26,7 +27,7 @@ public interface IDailyLogService {
      *
      * @return Nothing. Successful execution updates the markdown file on disk.
      */
-    void writeSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType, String bodyOrNull);
+    void writeSection(LocalDate date, UserAccountId userAccountId, EDailyLogSectionType dailyLogSectionType, String bodyOrNull);
 
     /**
      * Lists the available daily log files for the week that contains the reference date.
@@ -36,7 +37,7 @@ public interface IDailyLogService {
      *
      * @return Ordered day status entries for the matching week.
      */
-    List<DailyLogDayStatusDto> listWeek(LocalDate referenceDate, Long userAccountId);
+    List<DailyLogDayStatusDto> listWeek(LocalDate referenceDate, UserAccountId userAccountId);
 
     /**
      * Reads the raw markdown file content for preview rendering and detailed analysis.
@@ -46,7 +47,7 @@ public interface IDailyLogService {
      *
      * @return The full markdown file content, or an empty string when the file is missing.
      */
-    String readLogFileContent(LocalDate date, Long userAccountId);
+    String readLogFileContent(LocalDate date, UserAccountId userAccountId);
 
     /**
      * Reads the goal texts that are marked as completed in the evening section.
@@ -56,5 +57,5 @@ public interface IDailyLogService {
      *
      * @return Checked goal texts in the order they appear in the file.
      */
-    List<String> readCheckedGoalTexts(LocalDate date, Long userAccountId);
+    List<String> readCheckedGoalTexts(LocalDate date, UserAccountId userAccountId);
 }

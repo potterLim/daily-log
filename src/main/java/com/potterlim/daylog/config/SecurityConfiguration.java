@@ -28,7 +28,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
+    public SecurityFilterChain buildSecurityFilterChain(
         HttpSecurity httpSecurity,
         RememberMeServices rememberMeServices,
         SecurityContextRepository securityContextRepository
@@ -57,7 +57,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
+    public AuthenticationManager createAuthenticationManager(
         UserDetailsService userDetailsService,
         PasswordEncoder passwordEncoder
     ) {
@@ -69,7 +69,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public RememberMeServices rememberMeServices(SecurityUserDetailsService securityUserDetailsService) {
+    public RememberMeServices createRememberMeServices(SecurityUserDetailsService securityUserDetailsService) {
         DayLogApplicationProperties.SecurityProperties securityProperties = mDayLogApplicationProperties.getSecurity();
         TokenBasedRememberMeServices tokenBasedRememberMeServices =
             new TokenBasedRememberMeServices(securityProperties.getRememberMeKey(), securityUserDetailsService);
@@ -82,12 +82,12 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityContextRepository securityContextRepository() {
+    public SecurityContextRepository createSecurityContextRepository() {
         return new HttpSessionSecurityContextRepository();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder createPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
