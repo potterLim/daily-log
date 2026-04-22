@@ -8,14 +8,25 @@
 - evening reflection
 - weekly progress review
 
-The project combines two storage models:
+The system intentionally splits storage responsibilities:
 
-- MySQL for account and authentication data
-- Markdown files on disk for daily log content
+- MySQL stores accounts, authentication state, and user lookup data
+- Markdown files on disk store the actual day-by-day planning and reflection content
 
-This split is intentional. User identity and access control stay relational, while daily writing remains file-based and easy to inspect or back up.
+This keeps identity and security relational while keeping personal writing easy to inspect, export, and back up.
 
-## Top-Level Structure
+## System Shape
+
+```text
+Browser
+  -> Spring MVC + Thymeleaf
+  -> controller layer
+  -> service layer
+  -> MySQL for accounts
+  -> file system for Markdown logs
+```
+
+## Top-Level Repository Layout
 
 ```text
 day-log
@@ -52,67 +63,66 @@ com.potterlim.daylog
 
 ### `config`
 
-Application-wide configuration.
+Application-wide configuration and framework integration.
 
 - `DayLogApplicationProperties`
-  - binds `day-log.*` configuration into a typed object
+  - binds `day-log.*` settings into a strongly typed configuration object
   - currently covers log storage and remember-me settings
 - `SecurityConfiguration`
   - configures authentication, authorization, remember-me, logout, and password encoding
 - `WebServerConfiguration`
-  - holds web-server-level customization
+  - holds embedded web-server customization
 
 ### `controller`
 
-Web request orchestration and view composition.
+HTTP entry points and page model composition.
 
 - `HomeController`
   - renders the home page
 - `AuthController`
-  - handles login and registration pages
-  - performs registration flow and auto-login behavior
+  - renders login and registration pages
+  - coordinates registration and auto-login
 - `DailyLogController`
   - handles morning, evening, weekly, and preview routes
-  - converts service data into page-ready models
+  - assembles page-ready data from service output
 
 ### `dto`
 
-Separated by feature and responsibility.
+DTOs are split by feature and intent.
 
 - `dto.auth`
-  - request DTOs for login and registration
-  - service command object for account registration
+  - form DTOs for login and registration
+  - command DTO for registration service input
 - `dto.dailylog`
-  - page form DTOs
+  - form DTOs for morning and evening flows
   - checklist item DTOs
-  - weekly progress DTOs
-  - per-day status DTOs
+  - weekly status and per-day progress DTOs
 
 ### `entity`
 
-Persistence and authenticated user model.
+Persistence model and authenticated principal model.
 
 - `UserAccount`
   - JPA entity
   - also implements `UserDetails`
 - `UserAccountId`
-  - value object for stronger typing than raw `Long`
+  - value object wrapper around the account id
 - `EUserRole`
   - role enum used by security and persistence
 
 ### `repository`
 
-Persistence access layer.
+Data access for relational account storage.
 
 - `IUserAccountRepository`
   - JPA repository for user accounts
 
 ### `security`
 
-Security integration layer.
+Spring Security integration layer.
 
 - `SecurityUserDetailsService`
-  - loads `UserAccount` by username for Spring Security
+  - resolves `UserAccount` by username for authentication
 
 ### `service`
 
@@ -124,22 +134,22 @@ Core business logic.
   - hashes passwords
   - persists new accounts
 - `DailyLogService`
-  - resolves file paths by user and date
+  - resolves log file paths by date and user
   - reads and writes Markdown sections
-  - lists weekly status
+  - lists weekly day status
   - extracts checked goals
   - reads full log content
 
 ### `support`
 
-Shared non-controller helper types.
+Shared helper types outside the controller and service contracts.
 
 - `EDailyLogSectionType`
-  - defines Markdown section headers and section ordering
+  - defines Markdown section headers and logical order
 - `SimpleMarkdownRenderer`
-  - renders the subset of Markdown used by the application
+  - renders the supported Markdown subset used by the app
 
-## Resources
+## Main Resource Layout
 
 ```text
 src/main/resources
@@ -159,30 +169,49 @@ src/main/resources
 ### Templates
 
 - `fragments/layout.html`
-  - shared page frame, navigation, footer, and background
+  - shared frame, navigation, footer, and background system
 - `auth/*`
   - login and registration screens
 - `dailylog/*`
-  - morning plan, evening reflection, weekly review, and preview pages
+  - morning list/editor
+  - evening list/editor
+  - weekly review
+  - read-only log preview
 - `home/index.html`
   - landing page and product overview
 
-### Static assets
+### Static Assets
 
 - `static/css/site.css`
-  - global design system and responsive layout rules
+  - global visual system, product surfaces, responsive layout, and interaction styling
 - `static/js/site.js`
-  - small UI enhancements such as scroll behavior and textarea auto-resize
+  - lightweight browser behavior such as scroll-driven header state and textarea auto-resize
+
+## Route Map
+
+| Area | Routes | Responsibility |
+| --- | --- | --- |
+| Home | `/` | product landing page for authenticated users |
+| Auth | `/login`, `/register` | authentication entry and account creation |
+| Morning | `/daily-log/morning`, `/daily-log/morning/edit`, `/daily-log/morning/save` | create and update morning plans |
+| Evening | `/daily-log/evening`, `/daily-log/evening/edit`, `/daily-log/evening/save` | complete evening reflections and goal checks |
+| Weekly | `/daily-log/week` | weekly review and completion summary |
+| Preview | `/daily-log/preview` | read-only view of a saved Markdown log |
 
 ## Storage Model
 
-## MySQL
+## Relational Account Storage
 
-MySQL stores the `user_account` table used for authentication and account lookup.
+MySQL stores the `user_account` table used for:
 
-Current schema is initialized through `schema.sql`.
+- authentication
+- role lookup
+- account lifecycle status
+- username uniqueness
 
-## Markdown logs
+The base schema is initialized through `schema.sql`.
+
+## File-Based Daily Logs
 
 Daily logs are stored as Markdown files under the configured root path.
 
@@ -202,55 +231,63 @@ The path is derived from:
 - month-local week bucket
 - date file name
 
-## Markdown section model
+Important note:
 
-One day's file can contain multiple sections, including both morning and evening content.
+- `WeekN` is not ISO week numbering
+- it is calculated with `(dayOfMonth - 1) / 7 + 1`
 
-Examples:
+## Markdown Section Model
+
+One day's log file can contain multiple ordered sections.
+
+Typical sections include:
 
 - goals
-- focus
-- challenges
+- focus areas
+- challenges and strategies
 - evening goal check
 - achievements
 - improvements
 - gratitude
-- notes
+- notes for tomorrow
 
-Section parsing and reconstruction are controlled by `EDailyLogSectionType` and `DailyLogService`.
+Section parsing and reconstruction are controlled by:
 
-## Request Flow Summary
+- `EDailyLogSectionType`
+- `DailyLogService`
 
-### Registration
+## Core Request Flows
+
+### Registration Flow
 
 1. render registration page
 2. validate form input
 3. create account through `UserAccountService`
-4. auto-authenticate
+4. auto-authenticate the new account
 5. redirect to home
 
-### Morning plan
+### Morning Planning Flow
 
-1. open date
-2. load goals, focus, and challenges for that date
-3. submit form
+1. open a date
+2. load current goals, focus, and challenges
+3. submit the morning form
 4. normalize goals into Markdown list items
-5. write sections back through `DailyLogService`
+5. write updated sections through `DailyLogService`
 
-### Evening reflection
+### Evening Reflection Flow
 
-1. load morning plan preview
-2. build checklist DTOs from morning goals
-3. submit reflection form
-4. write checked goals and reflection sections
-5. redirect to evening list
+1. load the morning plan preview
+2. convert morning goals into checklist items
+3. submit checked goals and reflection content
+4. persist evening sections back into the same Markdown file
+5. redirect to the evening list
 
-### Weekly review
+### Weekly Review Flow
 
-1. collect week status
-2. read goals and checked goals per date
+1. list the current week's saved day status
+2. read total goals and checked goals per day
 3. calculate totals and percentages
-4. render daily progress cards
+4. render progress cards and links to preview pages
 
 ## Security Model
 
@@ -264,32 +301,32 @@ Public routes:
 
 All other routes require authentication.
 
-Additional security notes:
+Additional notes:
 
 - BCrypt password hashing
-- remember-me token support
+- remember-me support via `TokenBasedRememberMeServices`
 - CSRF protection enabled
-- HTTP-only session cookie
+- HTTP-only session cookie with `SameSite=Lax`
 
 ## Runtime Profiles
 
-### Default profile
+### Default Profile
 
 - MySQL-backed
 - production-oriented
 - fails fast when required environment variables are missing
 
-### `local` profile
+### `local` Profile
 
-- uses H2 in MySQL compatibility mode
-- stores logs under `build/local-logs`
-- disables Thymeleaf cache
+- H2 in-memory database in MySQL compatibility mode
+- log root at `build/local-logs`
+- Thymeleaf cache disabled
 
-## Testing Approach
+## Testing Strategy
 
-The test suite focuses on the main application flows rather than only isolated unit logic.
+The test suite focuses on live application behavior rather than only isolated units.
 
-Main coverage includes:
+Current integration coverage includes:
 
 - registration
 - login failure feedback
@@ -297,11 +334,25 @@ Main coverage includes:
 - morning list rendering
 - rendering of core product pages
 
-## Design Intent
+Primary test classes:
 
-The project is intentionally kept close to a standard Spring Boot structure so that:
+- `DayLogApplicationTests`
+- `WebFlowIntegrationTests`
 
-- it opens naturally in IntelliJ IDEA
-- new contributors can navigate it quickly
-- deployment remains simple through either executable JAR or Docker Compose
+## Extension Guidance
 
+Safe extension points usually start in:
+
+- `dto.dailylog` when a page shape changes
+- `DailyLogService` when log storage behavior changes
+- `DailyLogController` when page assembly changes
+- `site.css` when the product presentation changes
+
+Be careful when changing:
+
+- Markdown header text
+- section ordering
+- goal list formatting
+- file path naming rules
+
+Those areas affect compatibility with already saved user data.

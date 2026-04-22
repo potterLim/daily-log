@@ -1,37 +1,42 @@
 # dayLog
 
-`dayLog` is a focused daily planning and reflection application built with Spring Boot.
-It helps users start the day with a clear plan, close the day with a structured reflection, and review weekly progress through a clean web experience.
+`dayLog` is a daily planning and reflection web application that connects morning intention setting, evening review, and weekly progress tracking in one focused experience.
 
-## What dayLog does
+It is built as a multi-user Spring Boot product with:
 
-- Create a morning plan for a selected date
-- Reuse morning goals as an evening reflection checklist
-- Track weekly completion progress across saved entries
-- Render each day's Markdown log as a readable preview
-- Separate user accounts in MySQL and daily logs on disk
+- account and authentication data in MySQL
+- daily writing stored as Markdown files on disk
+- server-rendered pages designed for a polished, product-style workflow
 
-## Product flow
+## Highlights
+
+- Morning planning with goals, focus areas, and anticipated challenges
+- Evening reflection that reuses morning goals as a completion checklist
+- Weekly review with completion counts and progress percentages
+- Read-only daily log preview rendered from Markdown
+- Per-user isolation for both account data and log file storage
+
+## Product Flow
 
 ### Morning planning
 
 - open a date
-- write goals, focus areas, and anticipated challenges
-- save goals as a structured Markdown list
+- write goals, focus areas, and likely challenges
+- save structured sections back into the day's Markdown log
 
 ### Evening reflection
 
-- reopen the same day's context
-- check completed goals from the morning plan
-- capture achievements, improvements, gratitude, and notes for tomorrow
+- reopen the same date
+- review the morning plan in read-only form
+- mark completed goals and capture achievements, improvements, gratitude, and notes
 
 ### Weekly review
 
-- calculate weekly goal totals and completion rates
-- browse daily progress cards
-- open any saved day in a read-only preview view
+- scan the current week's saved entries
+- compare total goals against completed goals
+- open any saved day in a detailed preview
 
-## Tech stack
+## Technology Stack
 
 - Java 17
 - Spring Boot 3.5.9
@@ -39,63 +44,28 @@ It helps users start the day with a clear plan, close the day with a structured 
 - Thymeleaf
 - Spring Security
 - Spring Data JPA
+- Bean Validation
 - MySQL
-- H2 for local development
+- H2 for the local development profile
 - Gradle
 - Executable JAR packaging
 
-## Project structure
+## Runtime Model
 
-```text
-day-log
-├─ build.gradle
-├─ compose.yaml
-├─ Dockerfile
-├─ docs
-├─ gradle
-├─ src
-│  ├─ main
-│  │  ├─ java/com/potterlim/daylog
-│  │  │  ├─ config
-│  │  │  ├─ controller
-│  │  │  ├─ dto
-│  │  │  ├─ entity
-│  │  │  ├─ repository
-│  │  │  ├─ security
-│  │  │  ├─ service
-│  │  │  └─ support
-│  │  └─ resources
-│  │     ├─ static
-│  │     ├─ templates
-│  │     ├─ application.yml
-│  │     ├─ application-local.yml
-│  │     └─ schema.sql
-│  └─ test
-└─ settings.gradle
-```
-
-For additional tracked documentation, see:
-
-- [Project Architecture](docs/project-architecture.md)
-- [Deployment Guide](docs/deployment.md)
-
-## Storage model
-
-dayLog uses two storage layers with different responsibilities.
+`dayLog` intentionally uses two storage layers.
 
 ### Account data
 
 - stored in MySQL
-- managed through JPA
-- used for authentication and authorization
+- used for authentication, authorization, and account lookup
 
 ### Daily logs
 
 - stored as Markdown files on disk
 - separated by user account id
-- organized into date-based folders
+- grouped into month-local week buckets
 
-Example log path:
+Example path:
 
 ```text
 logs/
@@ -104,39 +74,54 @@ logs/
       └─ 2026-04-23.md
 ```
 
-## Running locally
+## Repository Guide
 
-The recommended local workflow uses the `local` profile so you can start the application without preparing MySQL first.
+### Tracked documentation
+
+- [docs/README.md](docs/README.md)
+- [docs/project-architecture.md](docs/project-architecture.md)
+- [docs/deployment.md](docs/deployment.md)
+
+### Main application areas
+
+```text
+src/main/java/com/potterlim/daylog
+├─ config
+├─ controller
+├─ dto
+├─ entity
+├─ repository
+├─ security
+├─ service
+└─ support
+```
+
+```text
+src/main/resources
+├─ application.yml
+├─ application-local.yml
+├─ schema.sql
+├─ static
+└─ templates
+```
+
+### Local-only working documents
+
+If your local workspace includes `local-docs/`, those files are intentionally ignored by Git and can be used for deeper private onboarding or working notes.
+
+## Quick Start
+
+### Run locally with the `local` profile
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
 ```
 
-Local profile behavior:
+The `local` profile:
 
 - uses in-memory H2 in MySQL compatibility mode
 - disables Thymeleaf template caching
 - stores Markdown logs under `build/local-logs`
-
-## Environment variables
-
-### Required in the default profile
-
-- `DATABASE_URL`
-- `DATABASE_USERNAME`
-- `DATABASE_PASSWORD`
-- `DAY_LOG_REMEMBER_ME_KEY`
-
-The application is intentionally configured to fail fast if these values are missing in the default runtime profile.
-
-### Optional
-
-- `PORT`
-- `DAY_LOG_LOGS_ROOT_PATH`
-- `DAY_LOG_REMEMBER_ME_COOKIE_NAME`
-- `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS`
-
-## Build
 
 ### Run tests
 
@@ -144,7 +129,7 @@ The application is intentionally configured to fail fast if these values are mis
 .\gradlew.bat test --offline
 ```
 
-### Build executable JAR
+### Build the executable JAR
 
 ```powershell
 .\gradlew.bat bootJar --offline
@@ -162,9 +147,31 @@ Run it with:
 java -jar build/libs/dayLog.jar
 ```
 
+## Configuration
+
+### Required in the default profile
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | MySQL JDBC URL |
+| `DATABASE_USERNAME` | MySQL account name |
+| `DATABASE_PASSWORD` | MySQL account password |
+| `DAY_LOG_REMEMBER_ME_KEY` | remember-me signing key |
+
+### Optional
+
+| Variable | Default |
+| --- | --- |
+| `PORT` | `8080` |
+| `DAY_LOG_LOGS_ROOT_PATH` | `logs` |
+| `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
+| `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
+
+The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
+
 ## Docker Compose
 
-This repository includes:
+The repository includes:
 
 - `Dockerfile`
 - `compose.yaml`
@@ -177,9 +184,7 @@ Copy-Item .env.example .env
 docker compose up -d --build
 ```
 
-Before exposing the service to real users, replace all example credentials and secrets in `.env`.
-
-The Compose setup expects these main values:
+Main Compose values:
 
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
@@ -187,18 +192,20 @@ The Compose setup expects these main values:
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
 
-## Security notes
+Before exposing the service to real users, replace every example credential and secret in `.env`.
+
+## Security Notes
 
 - static assets, login, and registration are public
 - all application pages require authentication
 - passwords are stored with BCrypt hashing
-- remember-me is enabled through `TokenBasedRememberMeServices`
+- remember-me uses `TokenBasedRememberMeServices`
 - CSRF protection remains enabled
 - session cookies are configured as HTTP only with `SameSite=Lax`
 
-## Testing
+## Testing Snapshot
 
-Integration coverage currently focuses on the main user flows:
+Current integration coverage focuses on the main product flows:
 
 - registration
 - login failure feedback
@@ -211,8 +218,14 @@ Main test files:
 - `src/test/java/com/potterlim/daylog/DayLogApplicationTests.java`
 - `src/test/java/com/potterlim/daylog/WebFlowIntegrationTests.java`
 
-## Development notes
+## Deployment Notes
 
-- The project is structured to open cleanly in IntelliJ IDEA.
-- Java code follows the active project coding standard.
-- Local-only working documents are intentionally excluded from Git through `.gitignore`.
+The primary production path is executable JAR deployment on a Linux VM with a reverse proxy in front. Docker Compose is also supported when packaging the app and MySQL together is more convenient.
+
+For deployment details, use:
+
+- [docs/deployment.md](docs/deployment.md)
+
+For code structure and request flow details, use:
+
+- [docs/project-architecture.md](docs/project-architecture.md)

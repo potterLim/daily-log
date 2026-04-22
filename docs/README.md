@@ -1,16 +1,36 @@
-# Docs
+# Documentation Index
 
-This directory contains tracked project documents that are useful for contributors and deployers.
+This directory contains the tracked project documents that should stay aligned with the committed codebase.
 
-## Included documents
+## Reading Order
 
-- [Project Architecture](project-architecture.md)
-  - package layout, storage model, request flow, and runtime structure
-- [Deployment Guide](deployment.md)
-  - JAR deployment, Docker Compose deployment, runtime variables, and operational notes
+1. [Project Architecture](project-architecture.md)
+2. [Deployment Guide](deployment.md)
 
-## Notes
+## Included Documents
 
-- These documents are intended to stay accurate to the current tracked codebase.
-- Local working notes and non-tracked documents belong outside this directory.
+### [Project Architecture](project-architecture.md)
 
+Use this document when you need to understand:
+
+- how the application is structured
+- which packages own which responsibilities
+- how requests move from controller to service to storage
+- how Markdown logs are stored and reconstructed
+- which parts are the safest extension points
+
+### [Deployment Guide](deployment.md)
+
+Use this document when you need to:
+
+- run the application as an executable JAR
+- deploy with Docker Compose
+- configure environment variables
+- prepare persistent storage for MySQL and Markdown logs
+- set up a service manager or reverse proxy
+
+## Scope Rules
+
+- Files in this directory are part of the repository and should be kept accurate.
+- Local working notes and private onboarding documents belong outside this directory.
+- If `local-docs/` exists in a workspace, it is intentionally treated as local-only material and is not part of the tracked repository documentation set.

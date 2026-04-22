@@ -8,57 +8,63 @@
 - local disk storage for Markdown log files
 - executable JAR deployment as the primary runtime model
 
-The repository also includes Docker Compose support for environments where running the app and MySQL together in containers is preferred.
+The repository also includes Docker Compose support for environments where packaging the app and MySQL together is preferred.
 
-## Deployment Options
+## Supported Deployment Models
 
-## Option 1. Executable JAR
+### Option 1. Executable JAR on a VM
 
 Recommended when:
 
-- you are deploying to a VM or server directly
+- you are deploying to a Linux VM or server directly
 - you want to manage the process with `systemd`
-- you plan to put the app behind Nginx or Caddy
+- you plan to place the app behind Nginx or Caddy
 
-## Option 2. Docker Compose
+This is the preferred deployment model for compute-based hosting such as Oracle Cloud Compute, VPS providers, or self-managed Linux servers.
+
+### Option 2. Docker Compose
 
 Recommended when:
 
-- you want the app and MySQL packaged together
-- you prefer containerized local or server deployment
-- you want simpler environment replication across machines
+- you want the app and MySQL defined together
+- you prefer containerized deployment
+- you want an easy local-to-server runtime match
 
 ## Runtime Requirements
 
-## JAR deployment
+## Executable JAR Deployment
 
 - Java 17 installed on the target machine
 - reachable MySQL database
-- persistent directory for Markdown logs
+- writable persistent directory for Markdown logs
 
-## Docker Compose deployment
+## Docker Compose Deployment
 
 - Docker Engine
 - Docker Compose plugin
-- writable persistent volume or bind mount for logs and MySQL data
+- writable persistent storage for MySQL data and Markdown logs
 
-## Environment Variables
+## Configuration Reference
 
-### Required
+### Required Environment Variables
 
-- `DATABASE_URL`
-- `DATABASE_USERNAME`
-- `DATABASE_PASSWORD`
-- `DAY_LOG_REMEMBER_ME_KEY`
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | MySQL JDBC URL used by the app |
+| `DATABASE_USERNAME` | MySQL account for the app |
+| `DATABASE_PASSWORD` | MySQL password for the app |
+| `DAY_LOG_REMEMBER_ME_KEY` | remember-me signing key |
 
-The application fails fast on startup when any required value is missing in the default profile.
+The application is intentionally fail-fast in the default profile. Missing required values should stop startup immediately.
 
-### Optional
+### Optional Environment Variables
 
-- `PORT`
-- `DAY_LOG_LOGS_ROOT_PATH`
-- `DAY_LOG_REMEMBER_ME_COOKIE_NAME`
-- `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS`
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PORT` | `8080` | application HTTP port |
+| `DAY_LOG_LOGS_ROOT_PATH` | `logs` | root directory for Markdown logs |
+| `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
+| `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
 
 ## Example JDBC URL
 
@@ -66,11 +72,11 @@ The application fails fast on startup when any required value is missing in the 
 jdbc:mysql://localhost:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 ```
 
-Adjust host, port, and database name for your environment.
+Adjust host, port, and database name for your own environment.
 
-## Local Verification
+## Local Verification Before Deployment
 
-Use the local profile when you want to verify application behavior without preparing MySQL first.
+Use the local profile when you want to validate application behavior without preparing MySQL first.
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
@@ -82,7 +88,7 @@ Local profile behavior:
 - MySQL compatibility mode
 - logs stored under `build/local-logs`
 
-## Build the Executable JAR
+## Build the Executable Artifact
 
 ```powershell
 .\gradlew.bat test bootJar --offline
@@ -102,7 +108,7 @@ build/libs/dayLog.jar
 .\gradlew.bat bootJar --offline
 ```
 
-### 2. Copy the JAR to the server
+### 2. Copy the JAR to the target server
 
 Example target:
 
@@ -117,13 +123,18 @@ Example:
 ```bash
 sudo mkdir -p /opt/day-log
 sudo mkdir -p /var/lib/day-log/logs
+sudo mkdir -p /etc/day-log
 ```
 
-### 4. Provide environment variables
+### 4. Create an environment file
 
-A common pattern is to place them in a dedicated environment file.
+Example file:
 
-Example:
+```text
+/etc/day-log/day-log.env
+```
+
+Example contents:
 
 ```bash
 DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -134,13 +145,20 @@ DAY_LOG_LOGS_ROOT_PATH=/var/lib/day-log/logs
 PORT=8080
 ```
 
-### 5. Run the application
+### 5. Start the application manually once
 
 ```bash
 java -jar /opt/day-log/dayLog.jar
 ```
 
-## Example systemd Service
+Use this first run to verify:
+
+- database connectivity
+- schema initialization
+- log directory permissions
+- login and registration flow
+
+## Example `systemd` Service
 
 Example file:
 
@@ -193,15 +211,6 @@ Recommended responsibilities of the proxy layer:
 - access logs
 - forwarding traffic to the application port
 
-## Persistent Data
-
-Production deployment should persist both:
-
-- MySQL data
-- the directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
-
-Without persistent storage for logs, user-written daily records will be lost when the server or container is recreated.
-
 ## Docker Compose Workflow
 
 ### 1. Copy the example environment file
@@ -210,7 +219,7 @@ Without persistent storage for logs, user-written daily records will be lost whe
 Copy-Item .env.example .env
 ```
 
-### 2. Replace all example secrets
+### 2. Replace every example secret
 
 Update:
 
@@ -233,18 +242,49 @@ docker compose ps
 docker compose logs -f app
 ```
 
+### 5. Confirm persistence
+
+The Compose file expects persistent volumes for:
+
+- MySQL data
+- Markdown logs
+
+If those are not persisted, user records or daily logs can be lost when containers are recreated.
+
 ## Operational Notes
 
-- The app uses `ddl-auto=validate`, so the schema must exist and match the entity model.
-- `schema.sql` is executed on startup and is expected to initialize the `user_account` table.
-- The default server port is `8080` unless overridden by `PORT`.
-- The app uses graceful shutdown and a 30-minute session timeout.
+- The app uses `ddl-auto=validate`, so the schema must match the entity model
+- `schema.sql` is executed on startup and is expected to initialize `user_account`
+- the default server port is `8080` unless overridden by `PORT`
+- graceful shutdown is enabled
+- HTTP session timeout is 30 minutes
 
-## Suggested First Production Checklist
+## Backup Considerations
+
+Production backup should cover both:
+
+- MySQL data
+- the directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
+
+Database backup alone is not enough because user-written day logs live on disk as Markdown files.
+
+## Suggested Post-Deploy Smoke Test
+
+After deployment, confirm all of the following:
+
+- home page loads after authentication
+- registration creates a new account
+- login failure shows expected feedback
+- morning plan can be saved
+- evening reflection can be saved
+- weekly review renders without errors
+- Markdown files appear under the configured log root
+
+## Recommended First Production Hardening Steps
 
 - generate a strong `DAY_LOG_REMEMBER_ME_KEY`
-- use a real MySQL password, not an example value
-- map persistent log storage
+- use a real MySQL password, never an example value
+- ensure persistent storage for logs and database data
 - place the app behind HTTPS
-- confirm login, registration, morning save, and weekly review in the deployed environment
-
+- restrict direct database exposure
+- set up regular backups for both MySQL and Markdown log storage
