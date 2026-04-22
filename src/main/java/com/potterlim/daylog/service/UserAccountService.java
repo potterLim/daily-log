@@ -58,5 +58,10 @@ public class UserAccountService implements IUserAccountService {
         if (registerUserAccountCommand.getRawPassword() == null || registerUserAccountCommand.getRawPassword().isBlank()) {
             throw new IllegalArgumentException("rawPassword must not be blank.");
         }
+
+        int rawPasswordLength = registerUserAccountCommand.getRawPassword().length();
+        if (rawPasswordLength < 8 || rawPasswordLength > 72) {
+            throw new IllegalArgumentException("rawPassword length must be between 8 and 72.");
+        }
     }
 }

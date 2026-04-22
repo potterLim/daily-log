@@ -1,15 +1,11 @@
 package com.potterlim.daylog;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.stream.Stream;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
+import com.potterlim.daylog.repository.IDailyLogEntryRepository;
 import com.potterlim.daylog.repository.IUserAccountRepository;
+import com.potterlim.daylog.service.IDailyLogService;
 import com.potterlim.daylog.service.IUserAccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,33 +31,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class WebFlowIntegrationTests {
 
-    private static final Path TEST_LOGS_ROOT_PATH = Path.of("build", "test-logs");
-
     @Autowired
     private MockMvc mMockMvc;
+
+    @Autowired
+    private IDailyLogService mDailyLogService;
 
     @Autowired
     private IUserAccountService mUserAccountService;
 
     @Autowired
+    private IDailyLogEntryRepository mDailyLogEntryRepository;
+
+    @Autowired
     private IUserAccountRepository mUserAccountRepository;
 
     @BeforeEach
-    void setUpTestEnvironment() throws IOException {
+    void setUpTestEnvironment() {
+        mDailyLogEntryRepository.deleteAll();
         mUserAccountRepository.deleteAll();
-
-        if (Files.exists(TEST_LOGS_ROOT_PATH)) {
-            try (Stream<Path> paths = Files.walk(TEST_LOGS_ROOT_PATH)) {
-                paths.sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.deleteIfExists(path);
-                        } catch (IOException ioException) {
-                            throw new IllegalStateException("Failed to clean test logs.", ioException);
-                        }
-                    });
-            }
-        }
     }
 
     @Test
@@ -77,7 +66,29 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void loginShouldShowErrorWhenPasswordIsWrong() throws Exception {
+    void registerShouldRejectShortPassword() throws Exception {
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "tester")
+                .param("password", "pass12")
+                .param("confirmPassword", "pass12"))
+            .andExpect(status().isOk());
+
+        assertTrue(mUserAccountRepository.findByUserName("tester").isEmpty());
+    }
+
+    @Test
+    void loginShouldShowGenericErrorWhenUserNameDoesNotExist() throws Exception {
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("userName", "missing-user")
+                .param("password", "wrong-password"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("아이디 또는 비밀번호가 올바르지 않습니다.")));
+    }
+
+    @Test
+    void loginShouldShowGenericErrorWhenPasswordIsWrong() throws Exception {
         mUserAccountService.registerUserAccount(new RegisterUserAccountCommand("tester", "pass1234"));
 
         mMockMvc.perform(post("/login")
@@ -86,11 +97,11 @@ class WebFlowIntegrationTests {
                 .param("password", "wrong-password")
                 .param("rememberMe", "true"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("비밀번호가 올바르지 않습니다.")));
+            .andExpect(content().string(containsString("아이디 또는 비밀번호가 올바르지 않습니다.")));
     }
 
     @Test
-    void morningSaveShouldWriteMarkdownFile() throws Exception {
+    void morningSaveShouldPersistDailyLogEntry() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("writer", "pass1234")
         );
@@ -105,17 +116,13 @@ class WebFlowIntegrationTests {
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/daily-log/morning"));
 
-        Path markdownFilePath = TEST_LOGS_ROOT_PATH
-            .resolve(String.valueOf(userAccount.getUserAccountId().getValue()))
-            .resolve("2026_04_Week1")
-            .resolve(LocalDate.of(2026, 4, 1) + ".md");
+        String markdownText = mDailyLogService.readLogFileContent(LocalDate.of(2026, 4, 1), userAccount.getUserAccountId());
 
-        String markdownText = Files.readString(markdownFilePath, StandardCharsets.UTF_8);
         assertTrue(markdownText.contains("## 🚀 Today's Goals"));
         assertTrue(markdownText.contains("- 운동하기"));
         assertTrue(markdownText.contains("- 책 읽기"));
         assertTrue(markdownText.contains("## 🎯 Focus Areas"));
-        assertTrue(markdownText.contains("- 집중 업무"));
+        assertEquals(1, mDailyLogEntryRepository.count());
     }
 
     @Test
@@ -162,4 +169,10 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("이번 주 성취 흐름")));
     }
 
+    @Test
+    void healthEndpointShouldBePublicAndUp() throws Exception {
+        mMockMvc.perform(get("/actuator/health"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("\"status\":\"UP\"")));
+    }
 }

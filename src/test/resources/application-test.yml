@@ -8,13 +8,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-  sql:
-    init:
-      mode: always
+  flyway:
+    enabled: true
   thymeleaf:
     cache: false
 day-log:
-  storage:
-    logs-root-path: build/test-logs
   security:
     remember-me-key: test-remember-me-key

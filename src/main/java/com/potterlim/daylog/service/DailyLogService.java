@@ -1,68 +1,37 @@
 package com.potterlim.daylog.service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import com.potterlim.daylog.config.DayLogApplicationProperties;
+import java.util.Optional;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
+import com.potterlim.daylog.entity.DailyLogEntry;
+import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.entity.UserAccountId;
+import com.potterlim.daylog.repository.IDailyLogEntryRepository;
+import com.potterlim.daylog.repository.IUserAccountRepository;
 import com.potterlim.daylog.support.EDailyLogSectionType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DailyLogService implements IDailyLogService {
 
-    private static final List<EDailyLogSectionType> SECTION_ORDER = List.of(
-        EDailyLogSectionType.GOALS,
-        EDailyLogSectionType.FOCUS,
-        EDailyLogSectionType.CHALLENGES,
-        EDailyLogSectionType.EVENING_GOALS,
-        EDailyLogSectionType.ACHIEVEMENTS,
-        EDailyLogSectionType.IMPROVEMENTS,
-        EDailyLogSectionType.GRATITUDE,
-        EDailyLogSectionType.NOTES
-    );
+    private final IDailyLogEntryRepository mDailyLogEntryRepository;
+    private final IUserAccountRepository mUserAccountRepository;
 
-    private static final EnumSet<EDailyLogSectionType> MORNING_SECTIONS = EnumSet.of(
-        EDailyLogSectionType.GOALS,
-        EDailyLogSectionType.FOCUS,
-        EDailyLogSectionType.CHALLENGES
-    );
-
-    private static final String MORNING_TEMPLATE = String.join(
-        "\r\n",
-        EDailyLogSectionType.GOALS.getHeaderText(),
-        "",
-        "",
-        EDailyLogSectionType.FOCUS.getHeaderText(),
-        "",
-        "",
-        EDailyLogSectionType.CHALLENGES.getHeaderText(),
-        "",
-        ""
-    );
-
-    private final Path mLogsRootPath;
-
-    public DailyLogService(DayLogApplicationProperties dayLogApplicationProperties) {
-        mLogsRootPath = Path.of(dayLogApplicationProperties.getStorage().getLogsRootPath())
-            .toAbsolutePath()
-            .normalize();
+    public DailyLogService(IDailyLogEntryRepository dailyLogEntryRepository, IUserAccountRepository userAccountRepository) {
+        mDailyLogEntryRepository = dailyLogEntryRepository;
+        mUserAccountRepository = userAccountRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String readSection(LocalDate date, UserAccountId userAccountId, EDailyLogSectionType dailyLogSectionType) {
-        Path filePath = resolveFilePath(date, userAccountId);
-        Map<EDailyLogSectionType, String> sectionBodyByType = readSectionBodiesByType(filePath);
-        String body = sectionBodyByType.getOrDefault(dailyLogSectionType, "");
+        String body = findDailyLogEntry(date, userAccountId)
+            .map(dailyLogEntry -> dailyLogEntry.readSection(dailyLogSectionType))
+            .orElse("");
 
         if (body.isBlank()) {
             return "";
@@ -85,52 +54,32 @@ public class DailyLogService implements IDailyLogService {
     }
 
     @Override
+    @Transactional
     public void writeSection(
         LocalDate date,
         UserAccountId userAccountId,
         EDailyLogSectionType dailyLogSectionType,
         String bodyOrNull
     ) {
-        Path filePath = resolveFilePath(date, userAccountId);
-        String fileText;
+        DailyLogEntry dailyLogEntry = findDailyLogEntry(date, userAccountId)
+            .orElseGet(() -> createDailyLogEntry(date, userAccountId));
 
-        if (Files.exists(filePath)) {
-            fileText = readFileText(filePath);
-        } else if (MORNING_SECTIONS.contains(dailyLogSectionType)) {
-            fileText = MORNING_TEMPLATE;
-        } else {
-            fileText = "";
-        }
-
-        Map<EDailyLogSectionType, String> sectionBodyByType = parseSectionBodies(fileText);
-        sectionBodyByType.put(dailyLogSectionType, normalizeSectionBody(bodyOrNull));
-
-        try {
-            Files.createDirectories(filePath.getParent());
-            Files.writeString(filePath, buildMarkdownFileText(sectionBodyByType), StandardCharsets.UTF_8);
-        } catch (IOException ioException) {
-            throw new IllegalStateException("Failed to write daily log file.", ioException);
-        }
+        dailyLogEntry.writeSection(dailyLogSectionType, normalizeSectionBody(bodyOrNull));
+        mDailyLogEntryRepository.save(dailyLogEntry);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DailyLogDayStatusDto> listWeek(LocalDate referenceDate, UserAccountId userAccountId) {
-        List<DailyLogDayStatusDto> dayStatuses = new ArrayList<>();
         LocalDate monday = referenceDate.minusDays(referenceDate.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
+        LocalDate sunday = monday.plusDays(6L);
+        List<DailyLogDayStatusDto> dayStatuses = new ArrayList<>();
 
-        for (int dayOffset = 0; dayOffset < 7; ++dayOffset) {
-            LocalDate currentDate = monday.plusDays(dayOffset);
-            Path filePath = resolveFilePath(currentDate, userAccountId);
-            Map<EDailyLogSectionType, String> sectionBodyByType = readSectionBodiesByType(filePath);
-
-            if (sectionBodyByType.isEmpty()) {
-                continue;
-            }
-
+        for (DailyLogEntry dailyLogEntry : mDailyLogEntryRepository.findWeekEntries(userAccountId.getValue(), monday, sunday)) {
             dayStatuses.add(new DailyLogDayStatusDto(
-                currentDate,
-                hasStoredSection(sectionBodyByType, EDailyLogSectionType.GOALS),
-                hasStoredSection(sectionBodyByType, EDailyLogSectionType.ACHIEVEMENTS)
+                dailyLogEntry.getLogDate(),
+                dailyLogEntry.hasMorningLog(),
+                dailyLogEntry.hasEveningLog()
             ));
         }
 
@@ -138,97 +87,28 @@ public class DailyLogService implements IDailyLogService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String readLogFileContent(LocalDate date, UserAccountId userAccountId) {
-        Path filePath = resolveFilePath(date, userAccountId);
-
-        if (!Files.exists(filePath)) {
-            return "";
-        }
-
-        return readFileText(filePath);
+        return findDailyLogEntry(date, userAccountId)
+            .map(DailyLogEntry::buildMarkdownText)
+            .orElse("");
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> readCheckedGoalTexts(LocalDate date, UserAccountId userAccountId) {
-        List<String> checkedGoalTexts = new ArrayList<>();
-
-        for (String line : splitLines(readLogFileContent(date, userAccountId))) {
-            if (line.startsWith("- [x]") || line.startsWith("- [X]")) {
-                checkedGoalTexts.add(line.substring(5).trim());
-            }
-        }
-
-        return checkedGoalTexts;
+        return findDailyLogEntry(date, userAccountId)
+            .map(DailyLogEntry::readCheckedGoalTexts)
+            .orElse(List.of());
     }
 
-    private static boolean hasStoredSection(
-        Map<EDailyLogSectionType, String> sectionBodyByType,
-        EDailyLogSectionType dailyLogSectionType
-    ) {
-        return sectionBodyByType.containsKey(dailyLogSectionType);
+    private Optional<DailyLogEntry> findDailyLogEntry(LocalDate date, UserAccountId userAccountId) {
+        return mDailyLogEntryRepository.findByUserAccountIdAndLogDate(userAccountId.getValue(), date);
     }
 
-    private Map<EDailyLogSectionType, String> readSectionBodiesByType(Path filePath) {
-        if (!Files.exists(filePath)) {
-            return Map.of();
-        }
-
-        return parseSectionBodies(readFileText(filePath));
-    }
-
-    private Map<EDailyLogSectionType, String> parseSectionBodies(String fileText) {
-        Map<EDailyLogSectionType, StringBuilder> sectionLinesByType = new LinkedHashMap<>();
-        EDailyLogSectionType currentSectionType = null;
-
-        for (String line : splitLines(fileText)) {
-            EDailyLogSectionType matchedSectionType = findSectionTypeOrNull(line.stripTrailing());
-
-            if (matchedSectionType != null) {
-                currentSectionType = matchedSectionType;
-                sectionLinesByType.putIfAbsent(currentSectionType, new StringBuilder());
-                continue;
-            }
-
-            if (currentSectionType != null) {
-                sectionLinesByType.get(currentSectionType).append(line).append("\r\n");
-            }
-        }
-
-        Map<EDailyLogSectionType, String> sectionBodyByType = new LinkedHashMap<>();
-        for (Map.Entry<EDailyLogSectionType, StringBuilder> entry : sectionLinesByType.entrySet()) {
-            sectionBodyByType.put(entry.getKey(), entry.getValue().toString().stripTrailing());
-        }
-
-        return sectionBodyByType;
-    }
-
-    private String buildMarkdownFileText(Map<EDailyLogSectionType, String> sectionBodyByType) {
-        List<String> blocks = new ArrayList<>();
-
-        for (EDailyLogSectionType dailyLogSectionType : SECTION_ORDER) {
-            if (!sectionBodyByType.containsKey(dailyLogSectionType)) {
-                continue;
-            }
-
-            List<String> blockLines = new ArrayList<>();
-            blockLines.add(dailyLogSectionType.getHeaderText());
-
-            String body = sectionBodyByType.get(dailyLogSectionType).strip();
-            if (!body.isEmpty()) {
-                for (String line : splitLines(body)) {
-                    if (line.isBlank()) {
-                        continue;
-                    }
-
-                    String normalizedLine = line.stripLeading().replaceFirst("^-\\s*", "").trim();
-                    blockLines.add("- " + normalizedLine);
-                }
-            }
-
-            blocks.add(String.join("\r\n", blockLines));
-        }
-
-        return String.join("\r\n\r\n", blocks).stripTrailing();
+    private DailyLogEntry createDailyLogEntry(LocalDate date, UserAccountId userAccountId) {
+        UserAccount userAccount = mUserAccountRepository.getReferenceById(userAccountId.getValue());
+        return DailyLogEntry.create(userAccount, date);
     }
 
     private static String normalizeSectionBody(String bodyOrNull) {
@@ -250,43 +130,11 @@ public class DailyLogService implements IDailyLogService {
         return String.join("\r\n", normalizedLines);
     }
 
-    private static EDailyLogSectionType findSectionTypeOrNull(String headerLine) {
-        for (EDailyLogSectionType dailyLogSectionType : EDailyLogSectionType.values()) {
-            if (dailyLogSectionType.getHeaderText().equals(headerLine)) {
-                return dailyLogSectionType;
-            }
-        }
-
-        return null;
-    }
-
     private static String[] splitLines(String textOrNull) {
         if (textOrNull == null || textOrNull.isEmpty()) {
             return new String[0];
         }
 
         return textOrNull.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1);
-    }
-
-    private static String readFileText(Path filePath) {
-        try {
-            return Files.readString(filePath, StandardCharsets.UTF_8);
-        } catch (IOException ioException) {
-            throw new IllegalStateException("Failed to read daily log file.", ioException);
-        }
-    }
-
-    private Path resolveFilePath(LocalDate date, UserAccountId userAccountId) {
-        String folderName = String.format(
-            "%d_%02d_Week%d",
-            date.getYear(),
-            date.getMonthValue(),
-            ((date.getDayOfMonth() - 1) / 7) + 1
-        );
-
-        return mLogsRootPath
-            .resolve(String.valueOf(userAccountId.getValue()))
-            .resolve(folderName)
-            .resolve(date + ".md");
     }
 }

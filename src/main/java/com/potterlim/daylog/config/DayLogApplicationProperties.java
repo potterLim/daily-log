@@ -1,6 +1,5 @@
 package com.potterlim.daylog.config;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,31 +9,10 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DayLogApplicationProperties {
 
-    @Valid
-    private final StorageProperties mStorage = new StorageProperties();
-    @Valid
     private final SecurityProperties mSecurity = new SecurityProperties();
-
-    public StorageProperties getStorage() {
-        return mStorage;
-    }
 
     public SecurityProperties getSecurity() {
         return mSecurity;
-    }
-
-    public static final class StorageProperties {
-
-        @NotBlank
-        private String mLogsRootPath = "logs";
-
-        public String getLogsRootPath() {
-            return mLogsRootPath;
-        }
-
-        public void setLogsRootPath(String logsRootPath) {
-            mLogsRootPath = logsRootPath;
-        }
     }
 
     public static final class SecurityProperties {

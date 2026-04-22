@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 
 @Configuration
 public class SecurityConfiguration {
@@ -38,6 +39,8 @@ public class SecurityConfiguration {
         httpSecurity
             .authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
+                    .requestMatchers("/actuator/health", "/actuator/health/**")
+                    .permitAll()
                     .requestMatchers("/css/**", "/js/**", "/favicon.ico", "/login", "/register")
                     .permitAll()
                     .anyRequest()
@@ -46,6 +49,10 @@ public class SecurityConfiguration {
                 exceptionHandling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
             .securityContext(securityContext ->
                 securityContext.securityContextRepository(securityContextRepository))
+            .headers(headers -> headers
+                .contentTypeOptions(Customizer.withDefaults())
+                .referrerPolicy(referrerPolicy -> referrerPolicy.policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .frameOptions(frameOptions -> frameOptions.sameOrigin()))
             .rememberMe(rememberMe -> rememberMe.rememberMeServices(rememberMeServices))
             .logout(logout -> logout
                 .logoutUrl("/logout")
@@ -63,7 +70,6 @@ public class SecurityConfiguration {
     ) {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
 
         return new ProviderManager(daoAuthenticationProvider);
     }

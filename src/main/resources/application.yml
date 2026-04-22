@@ -13,9 +13,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  sql:
-    init:
-      mode: always
+  flyway:
+    enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   thymeleaf:
     cache: true
 server:
@@ -30,10 +31,24 @@ server:
       timeout: 30m
       cookie:
         http-only: true
+        secure: ${SERVER_SERVLET_SESSION_COOKIE_SECURE:false}
         same-site: lax
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 day-log:
-  storage:
-    logs-root-path: ${DAY_LOG_LOGS_ROOT_PATH:logs}
   security:
     remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
     remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}

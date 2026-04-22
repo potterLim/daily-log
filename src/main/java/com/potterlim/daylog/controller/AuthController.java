@@ -8,13 +8,11 @@ import com.potterlim.daylog.service.IUserAccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
@@ -71,38 +69,27 @@ public class AuthController {
             return "auth/login";
         }
 
-        if (mUserAccountService.findUserAccountByUserName(loginRequestDto.getUserName()).isEmpty()) {
-            bindingResult.rejectValue("userName", "login.userName", "존재하지 않는 아이디입니다.");
-            return "auth/login";
-        }
+        String normalizedUserName = loginRequestDto.getUserName().trim();
 
         try {
             if (loginRequestDto.isRememberMe()) {
                 authenticateUserWithRememberMe(
-                    loginRequestDto.getUserName(),
+                    normalizedUserName,
                     loginRequestDto.getPassword(),
                     httpServletRequest,
                     httpServletResponse
                 );
             } else {
                 authenticateUser(
-                    loginRequestDto.getUserName(),
+                    normalizedUserName,
                     loginRequestDto.getPassword(),
                     httpServletRequest,
                     httpServletResponse
                 );
             }
-        } catch (BadCredentialsException badCredentialsException) {
+        } catch (AuthenticationException authenticationException) {
             mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
-            bindingResult.rejectValue("password", "login.password", "비밀번호가 올바르지 않습니다.");
-            return "auth/login";
-        } catch (LockedException lockedException) {
-            mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
-            model.addAttribute("loginErrorMessage", "계정이 잠겼습니다. 잠시 후 다시 시도해주세요.");
-            return "auth/login";
-        } catch (DisabledException disabledException) {
-            mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
-            model.addAttribute("loginErrorMessage", "계정이 비활성화되어 있습니다.");
+            model.addAttribute("loginErrorMessage", "아이디 또는 비밀번호가 올바르지 않습니다.");
             return "auth/login";
         }
 
@@ -138,7 +125,7 @@ public class AuthController {
         }
 
         RegisterUserAccountCommand registerUserAccountCommand =
-            new RegisterUserAccountCommand(registerRequestDto.getUserName(), registerRequestDto.getPassword());
+            new RegisterUserAccountCommand(registerRequestDto.getUserName().trim(), registerRequestDto.getPassword());
 
         try {
             mUserAccountService.registerUserAccount(registerUserAccountCommand);
@@ -148,7 +135,7 @@ public class AuthController {
         }
 
         authenticateUser(
-            registerRequestDto.getUserName(),
+            registerRequestDto.getUserName().trim(),
             registerRequestDto.getPassword(),
             httpServletRequest,
             httpServletResponse
