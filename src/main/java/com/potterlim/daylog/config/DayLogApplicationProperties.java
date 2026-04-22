@@ -71,6 +71,8 @@ public class DayLogApplicationProperties {
     public static final class OperationsProperties {
 
         private String mAlertWebhookUrl = "";
+        private final ProductionReadinessProperties mProductionReadiness = new ProductionReadinessProperties();
+        private final WeeklySummaryProperties mWeeklySummary = new WeeklySummaryProperties();
 
         public String getAlertWebhookUrl() {
             return mAlertWebhookUrl;
@@ -78,6 +80,97 @@ public class DayLogApplicationProperties {
 
         public void setAlertWebhookUrl(String alertWebhookUrl) {
             mAlertWebhookUrl = alertWebhookUrl;
+        }
+
+        public ProductionReadinessProperties getProductionReadiness() {
+            return mProductionReadiness;
+        }
+
+        public WeeklySummaryProperties getWeeklySummary() {
+            return mWeeklySummary;
+        }
+    }
+
+    public static final class ProductionReadinessProperties {
+
+        private boolean mIsEnabled;
+        private boolean mRequireSmtp;
+        private boolean mRequireAlertWebhook;
+        private boolean mRequireSecureSessionCookie;
+        @Positive
+        private int mMinimumRememberMeKeyLength = 32;
+
+        public boolean isEnabled() {
+            return mIsEnabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            mIsEnabled = enabled;
+        }
+
+        public boolean isRequireSmtp() {
+            return mRequireSmtp;
+        }
+
+        public void setRequireSmtp(boolean requireSmtp) {
+            mRequireSmtp = requireSmtp;
+        }
+
+        public boolean isRequireAlertWebhook() {
+            return mRequireAlertWebhook;
+        }
+
+        public void setRequireAlertWebhook(boolean requireAlertWebhook) {
+            mRequireAlertWebhook = requireAlertWebhook;
+        }
+
+        public boolean isRequireSecureSessionCookie() {
+            return mRequireSecureSessionCookie;
+        }
+
+        public void setRequireSecureSessionCookie(boolean requireSecureSessionCookie) {
+            mRequireSecureSessionCookie = requireSecureSessionCookie;
+        }
+
+        public int getMinimumRememberMeKeyLength() {
+            return mMinimumRememberMeKeyLength;
+        }
+
+        public void setMinimumRememberMeKeyLength(int minimumRememberMeKeyLength) {
+            mMinimumRememberMeKeyLength = minimumRememberMeKeyLength;
+        }
+    }
+
+    public static final class WeeklySummaryProperties {
+
+        private boolean mIsEnabled;
+        @NotBlank
+        private String mCron = "0 0 9 * * MON";
+        @NotBlank
+        private String mZone = "Asia/Seoul";
+
+        public boolean isEnabled() {
+            return mIsEnabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            mIsEnabled = enabled;
+        }
+
+        public String getCron() {
+            return mCron;
+        }
+
+        public void setCron(String cron) {
+            mCron = cron;
+        }
+
+        public String getZone() {
+            return mZone;
+        }
+
+        public void setZone(String zone) {
+            mZone = zone;
         }
     }
 

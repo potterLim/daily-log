@@ -33,4 +33,16 @@ public interface IDailyLogEntryRepository extends JpaRepository<DailyLogEntry, L
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
+
+    @Query("""
+        select dailyLogEntry
+        from DailyLogEntry dailyLogEntry
+        join fetch dailyLogEntry.mUserAccount
+        where dailyLogEntry.mLogDate between :startDate and :endDate
+        order by dailyLogEntry.mLogDate asc
+        """)
+    List<DailyLogEntry> findEntriesWithinDateRange(
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
 }

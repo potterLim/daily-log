@@ -67,6 +67,9 @@ Application-wide configuration and framework integration.
 
 - `DayLogApplicationProperties`
   - binds `day-log.account.*`, `day-log.mail.*`, `day-log.operations.*`, and `day-log.security.*` settings into a strongly typed configuration object
+- `ProductionReadinessValidator`
+  - enforces strict runtime checks in the `production` profile
+  - blocks startup when SMTP, alerting, secure cookies, or remember-me secrets do not meet the configured baseline
 - `SecurityConfiguration`
   - configures authentication, authorization, remember-me, logout, public health endpoints, and password encoding
 - `WebServerConfiguration`
@@ -176,6 +179,10 @@ Core business logic.
 - `IAlertNotificationService`
   - abstracts operational alert delivery
   - can fall back to logging or send to an external webhook
+- `WeeklyOperationsSummaryService`
+  - calculates operator-facing weekly metrics such as total registrations, weekly active writers, writing frequency, and checklist completion rate
+- `WeeklyOperationsSummaryScheduler`
+  - emits the weekly operator summary log on a configurable schedule
 - `DailyLogService`
   - reads and writes day sections
   - creates day entries on first write
@@ -419,6 +426,12 @@ Additional notes:
 - Flyway migrations enabled
 - fails fast when required environment variables are missing
 
+### `production` Profile
+
+- turns on strict production readiness validation
+- enables weekly operator summary logging
+- defaults the session cookie to `secure=true`
+
 ### `local` Profile
 
 - H2 in-memory database in MySQL compatibility mode
@@ -448,6 +461,7 @@ Primary test classes:
 - `DayLogApplicationTests`
 - `WebFlowIntegrationTests`
 - `MySqlIntegrationTests`
+- `WeeklyOperationsSummaryServiceTests`
 
 ## Extension Guidance
 

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnMissingBean(IAlertNotificationService.class)
+@ConditionalOnMissingBean(WebhookAlertNotificationService.class)
 public class LoggingAlertNotificationService implements IAlertNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingAlertNotificationService.class);

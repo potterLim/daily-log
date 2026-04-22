@@ -9,6 +9,7 @@
 - Actuator health endpoints for readiness and liveness checks
 - rolling application logs and embedded Tomcat access logs
 - provider-neutral webhook alerts for operational failures
+- weekly operator summary logs in the production profile
 
 The repository also includes Docker Compose support for environments where packaging the app and MySQL together is preferred.
 
@@ -70,16 +71,25 @@ If SMTP values are not provided, password reset requests still return the same g
 | `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
 | `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for password reset email |
 | `DAY_LOG_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
+| `DAY_LOG_WEEKLY_SUMMARY_ENABLED` | `false` | enables scheduled weekly operator summary logging |
+| `DAY_LOG_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` | cron for the weekly operator summary job |
+| `DAY_LOG_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` | time zone for the weekly operator summary job |
 | `DAY_LOG_LOG_DIR` | `./logs` | application log output directory |
 | `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | base directory for embedded Tomcat access logs |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
+| `DAY_LOG_PRODUCTION_READINESS_ENABLED` | `false` | turns on strict production fail-fast validation |
+| `DAY_LOG_REQUIRE_SMTP` | `false` | requires SMTP configuration when production readiness validation is enabled |
+| `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` | requires an alert webhook when production readiness validation is enabled |
+| `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` | requires secure session cookies when production readiness validation is enabled |
+| `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` | minimum allowed remember-me key length when production readiness validation is enabled |
 | `SPRING_MAIL_HOST` | unset | SMTP host for password reset delivery |
 | `SPRING_MAIL_PORT` | provider default | SMTP port |
 | `SPRING_MAIL_USERNAME` | unset | SMTP account username |
 | `SPRING_MAIL_PASSWORD` | unset | SMTP account password |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent | whether SMTP auth is enabled |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent | whether STARTTLS is enabled |
+| `SPRING_PROFILES_ACTIVE` | unset | active Spring profile such as `production` |
 
 ## Example JDBC URL
 
@@ -103,7 +113,11 @@ Local profile behavior:
 - MySQL compatibility mode
 - Flyway migrations run on startup
 
-For real MySQL-backed integration verification, the repository also includes Testcontainers-based tests. When Docker is available, they run against an actual MySQL container during `gradlew test`.
+For real MySQL-backed integration verification, the repository includes Testcontainers-based tests. Run them explicitly with:
+
+```powershell
+.\gradlew.bat mysqlIntegrationTest
+```
 
 ## Build the Executable Artifact
 
@@ -161,6 +175,11 @@ DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
 DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES=1440
 DAY_LOG_MAIL_FROM_ADDRESS=no-reply@example.com
 DAY_LOG_ALERT_WEBHOOK_URL=https://example.com/alerts/day-log
+DAY_LOG_WEEKLY_SUMMARY_ENABLED=true
+DAY_LOG_PRODUCTION_READINESS_ENABLED=true
+DAY_LOG_REQUIRE_SMTP=true
+DAY_LOG_REQUIRE_ALERT_WEBHOOK=true
+DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE=true
 DAY_LOG_LOG_DIR=/var/log/day-log/app
 DAY_LOG_TOMCAT_BASE_DIR=/var/log/day-log/tomcat
 SPRING_MAIL_HOST=smtp.example.com
@@ -171,13 +190,14 @@ SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
 PORT=8080
 SERVER_SERVLET_SESSION_COOKIE_SECURE=true
+SPRING_PROFILES_ACTIVE=production
 ```
 
 ### 5. Start the application manually once
 
 ```bash
 source /etc/day-log/day-log.env
-java -jar /opt/day-log/dayLog.jar
+java -jar /opt/day-log/dayLog.jar --spring.profiles.active=production
 ```
 
 Use this first run to verify:
@@ -268,13 +288,19 @@ Copy-Item .env.example .env
 
 Update:
 
+- `SPRING_PROFILES_ACTIVE`
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
+- `SERVER_SERVLET_SESSION_COOKIE_SECURE`
 - `DAY_LOG_MAIL_FROM_ADDRESS`
 - `DAY_LOG_ALERT_WEBHOOK_URL` when you want webhook alerts
+- `SPRING_MAIL_HOST`
+- `SPRING_MAIL_PORT`
+- `SPRING_MAIL_USERNAME`
+- `SPRING_MAIL_PASSWORD`
 
 ### 3. Start the stack
 
@@ -312,6 +338,7 @@ docker compose --profile ops run --rm backup
 - application logs roll under `DAY_LOG_LOG_DIR`
 - embedded Tomcat access logs roll under `DAY_LOG_TOMCAT_BASE_DIR/logs`
 - delivery failures in verification or recovery mail can emit webhook alerts through `DAY_LOG_ALERT_WEBHOOK_URL`
+- the production profile logs `WEEKLY_OPERATIONS_SUMMARY` once per week by default
 
 ## Backup Considerations
 
@@ -326,12 +353,16 @@ Repository-provided helpers:
 
 - `ops/backup/mysql-backup.sh`
 - `ops/backup/mysql-restore.sh`
+- `ops/backup/day-log-backup.service`
+- `ops/backup/day-log-backup.timer`
 
 Recommended production pattern:
 
 - run `mysql-backup.sh` from cron or a systemd timer
 - write backups to persistent storage
+- keep checksum files next to backup archives
 - periodically rehearse `mysql-restore.sh` against a non-production database
+- let backup failures emit alert webhooks through `DAY_LOG_ALERT_WEBHOOK_URL` when possible
 
 ## Suggested Post-Deploy Smoke Test
 

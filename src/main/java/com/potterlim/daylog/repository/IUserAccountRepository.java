@@ -1,5 +1,6 @@
 package com.potterlim.daylog.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import com.potterlim.daylog.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +30,15 @@ public interface IUserAccountRepository extends JpaRepository<UserAccount, Long>
             or lower(userAccount.mEmailAddress) = lower(:loginIdentifier)
         """)
     Optional<UserAccount> findByLoginIdentifier(@Param("loginIdentifier") String loginIdentifier);
+
+    @Query("""
+        select count(userAccount)
+        from UserAccount userAccount
+        where userAccount.mCreatedAt >= :startDateTime
+            and userAccount.mCreatedAt < :endExclusiveDateTime
+        """)
+    long countCreatedWithin(
+        @Param("startDateTime") LocalDateTime startDateTime,
+        @Param("endExclusiveDateTime") LocalDateTime endExclusiveDateTime
+    );
 }

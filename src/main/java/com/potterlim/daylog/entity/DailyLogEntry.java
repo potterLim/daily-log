@@ -124,6 +124,10 @@ public class DailyLogEntry {
         return mLogDate;
     }
 
+    public UserAccountId getUserAccountId() {
+        return mUserAccount.getUserAccountId();
+    }
+
     public boolean hasMorningLog() {
         return mHasMorningLog;
     }

@@ -21,6 +21,7 @@ It is built as a multi-user Spring Boot application with:
 - Per-user isolation at the database level
 - Public health endpoints for runtime monitoring
 - Rolling application logs, Tomcat access logs, and provider-neutral alert webhook support
+- Weekly operator summary logs for registrations, active writers, and completion rates
 
 ## Product Flow
 
@@ -76,6 +77,7 @@ It is built as a multi-user Spring Boot application with:
 - Actuator health endpoints for liveness and readiness checks
 - rolling application logs and embedded Tomcat access logs
 - optional webhook-based operational alerts for delivery failures
+- weekly operator summary logs in the production profile
 - backup scripts under `ops/backup`
 
 ## Repository Guide
@@ -138,6 +140,14 @@ The `local` profile:
 .\gradlew.bat test
 ```
 
+### Run real MySQL integration tests
+
+Docker is required because these tests use Testcontainers.
+
+```powershell
+.\gradlew.bat mysqlIntegrationTest
+```
+
 ### Build the executable JAR
 
 ```powershell
@@ -177,16 +187,25 @@ java -jar build/libs/dayLog.jar
 | `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
 | `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` |
 | `DAY_LOG_ALERT_WEBHOOK_URL` | unset |
+| `DAY_LOG_WEEKLY_SUMMARY_ENABLED` | `false` |
+| `DAY_LOG_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` |
+| `DAY_LOG_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` |
 | `DAY_LOG_LOG_DIR` | `./logs` |
 | `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
+| `DAY_LOG_PRODUCTION_READINESS_ENABLED` | `false` |
+| `DAY_LOG_REQUIRE_SMTP` | `false` |
+| `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` |
+| `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` |
+| `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` |
 | `SPRING_MAIL_HOST` | unset |
 | `SPRING_MAIL_PORT` | provider default |
 | `SPRING_MAIL_USERNAME` | unset |
 | `SPRING_MAIL_PASSWORD` | unset |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent |
+| `SPRING_PROFILES_ACTIVE` | unset |
 
 The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
 
@@ -207,7 +226,8 @@ Runtime operations also include:
 - rolling application logs written to `DAY_LOG_LOG_DIR`
 - embedded Tomcat access logs written under `DAY_LOG_TOMCAT_BASE_DIR/logs`
 - optional webhook alerts for critical mail delivery failures
-- MySQL backup and restore scripts under `ops/backup`
+- weekly operator summary logs in the `WEEKLY_OPERATIONS_SUMMARY` format
+- MySQL backup, restore, and host scheduler helpers under `ops/backup`
 
 ## Docker Compose
 
@@ -226,13 +246,19 @@ docker compose up -d --build
 
 Main Compose values:
 
+- `SPRING_PROFILES_ACTIVE`
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
+- `SERVER_SERVLET_SESSION_COOKIE_SECURE`
 - `DAY_LOG_MAIL_FROM_ADDRESS`
 - `DAY_LOG_ALERT_WEBHOOK_URL`
+- `SPRING_MAIL_HOST`
+- `SPRING_MAIL_PORT`
+- `SPRING_MAIL_USERNAME`
+- `SPRING_MAIL_PASSWORD`
 
 Before exposing the service to real users, replace every example credential and secret in `.env`.
 
@@ -241,6 +267,11 @@ For an on-demand backup from the Compose stack:
 ```powershell
 docker compose --profile ops run --rm backup
 ```
+
+For unattended backups on a Linux host, the repository also includes:
+
+- `ops/backup/day-log-backup.service`
+- `ops/backup/day-log-backup.timer`
 
 ## Security Notes
 
@@ -280,6 +311,7 @@ Main test files:
 - `src/test/java/com/potterlim/daylog/DayLogApplicationTests.java`
 - `src/test/java/com/potterlim/daylog/WebFlowIntegrationTests.java`
 - `src/test/java/com/potterlim/daylog/MySqlIntegrationTests.java`
+- `src/test/java/com/potterlim/daylog/WeeklyOperationsSummaryServiceTests.java`
 
 ## Deployment Notes
 

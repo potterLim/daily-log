@@ -42,6 +42,21 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    filter {
+        excludeTestsMatching 'com.potterlim.daylog.MySqlIntegrationTests'
+    }
+}
+
+tasks.register('mysqlIntegrationTest', Test) {
+    description = 'Runs MySQL-backed integration tests with Testcontainers.'
+    group = 'verification'
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching 'com.potterlim.daylog.MySqlIntegrationTests'
+    }
+    shouldRunAfter tasks.named('test')
 }
 
 bootJar {

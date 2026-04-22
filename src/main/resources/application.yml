@@ -65,6 +65,16 @@ day-log:
     from-address: ${DAY_LOG_MAIL_FROM_ADDRESS:no-reply@daylog.local}
   operations:
     alert-webhook-url: ${DAY_LOG_ALERT_WEBHOOK_URL:}
+    production-readiness:
+      enabled: ${DAY_LOG_PRODUCTION_READINESS_ENABLED:false}
+      require-smtp: ${DAY_LOG_REQUIRE_SMTP:false}
+      require-alert-webhook: ${DAY_LOG_REQUIRE_ALERT_WEBHOOK:false}
+      require-secure-session-cookie: ${DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE:false}
+      minimum-remember-me-key-length: ${DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
+    weekly-summary:
+      enabled: ${DAY_LOG_WEEKLY_SUMMARY_ENABLED:false}
+      cron: ${DAY_LOG_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
+      zone: ${DAY_LOG_WEEKLY_SUMMARY_ZONE:Asia/Seoul}
   security:
     remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
     remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}

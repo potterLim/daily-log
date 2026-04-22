@@ -4,13 +4,13 @@ import java.util.Map;
 import com.potterlim.daylog.config.DayLogApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
-@ConditionalOnProperty(prefix = "day-log.operations", name = "alert-webhook-url")
+@ConditionalOnExpression("T(org.springframework.util.StringUtils).hasText('${day-log.operations.alert-webhook-url:}')")
 public class WebhookAlertNotificationService implements IAlertNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebhookAlertNotificationService.class);
