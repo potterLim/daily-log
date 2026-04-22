@@ -7,6 +7,8 @@
 - MySQL for account data and daily log content
 - executable JAR deployment as the primary runtime model
 - Actuator health endpoints for readiness and liveness checks
+- rolling application logs and embedded Tomcat access logs
+- provider-neutral webhook alerts for operational failures
 
 The repository also includes Docker Compose support for environments where packaging the app and MySQL together is preferred.
 
@@ -65,7 +67,11 @@ If SMTP values are not provided, password reset requests still return the same g
 | `PORT` | `8080` | application HTTP port |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
 | `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
+| `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
 | `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for password reset email |
+| `DAY_LOG_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
+| `DAY_LOG_LOG_DIR` | `./logs` | application log output directory |
+| `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | base directory for embedded Tomcat access logs |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
 | `SPRING_MAIL_HOST` | unset | SMTP host for password reset delivery |
@@ -97,10 +103,12 @@ Local profile behavior:
 - MySQL compatibility mode
 - Flyway migrations run on startup
 
+For real MySQL-backed integration verification, the repository also includes Testcontainers-based tests. When Docker is available, they run against an actual MySQL container during `gradlew test`.
+
 ## Build the Executable Artifact
 
 ```powershell
-.\gradlew.bat test bootJar --offline
+.\gradlew.bat test bootJar
 ```
 
 Generated artifact:
@@ -114,7 +122,7 @@ build/libs/dayLog.jar
 ### 1. Build the artifact
 
 ```powershell
-.\gradlew.bat bootJar --offline
+.\gradlew.bat bootJar
 ```
 
 ### 2. Copy the JAR to the target server
@@ -150,7 +158,11 @@ DATABASE_USERNAME=daylog
 DATABASE_PASSWORD=replace-this
 DAY_LOG_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
 DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
+DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES=1440
 DAY_LOG_MAIL_FROM_ADDRESS=no-reply@example.com
+DAY_LOG_ALERT_WEBHOOK_URL=https://example.com/alerts/day-log
+DAY_LOG_LOG_DIR=/var/log/day-log/app
+DAY_LOG_TOMCAT_BASE_DIR=/var/log/day-log/tomcat
 SPRING_MAIL_HOST=smtp.example.com
 SPRING_MAIL_PORT=587
 SPRING_MAIL_USERNAME=mailer@example.com
@@ -173,7 +185,8 @@ Use this first run to verify:
 - database connectivity
 - Flyway migration success
 - login and registration flow
-- forgot-password page renders and reset links can be issued
+- email verification links can be issued and consumed
+- forgot-password requests can issue either verification or reset links as expected
 - `/actuator/health/readiness` returns `UP`
 
 ## Example `systemd` Service
@@ -260,6 +273,8 @@ Update:
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
+- `DAY_LOG_MAIL_FROM_ADDRESS`
+- `DAY_LOG_ALERT_WEBHOOK_URL` when you want webhook alerts
 
 ### 3. Start the stack
 
@@ -281,6 +296,12 @@ The Compose file waits for:
 - MySQL health from `mysqladmin ping`
 - application readiness from `/actuator/health/readiness`
 
+### 6. Run an on-demand backup
+
+```powershell
+docker compose --profile ops run --rm backup
+```
+
 ## Operational Notes
 
 - Flyway manages schema changes
@@ -288,6 +309,9 @@ The Compose file waits for:
 - the default server port is `8080` unless overridden by `PORT`
 - graceful shutdown is enabled
 - HTTP session timeout is 30 minutes
+- application logs roll under `DAY_LOG_LOG_DIR`
+- embedded Tomcat access logs roll under `DAY_LOG_TOMCAT_BASE_DIR/logs`
+- delivery failures in verification or recovery mail can emit webhook alerts through `DAY_LOG_ALERT_WEBHOOK_URL`
 
 ## Backup Considerations
 
@@ -298,6 +322,17 @@ Production backup should cover:
 
 Because day logs live in MySQL now, there is no separate file storage requirement for user-written content.
 
+Repository-provided helpers:
+
+- `ops/backup/mysql-backup.sh`
+- `ops/backup/mysql-restore.sh`
+
+Recommended production pattern:
+
+- run `mysql-backup.sh` from cron or a systemd timer
+- write backups to persistent storage
+- periodically rehearse `mysql-restore.sh` against a non-production database
+
 ## Suggested Post-Deploy Smoke Test
 
 After deployment, confirm all of the following:
@@ -305,6 +340,7 @@ After deployment, confirm all of the following:
 - `/actuator/health/readiness` returns `UP`
 - home page loads after authentication
 - registration creates a new account
+- email verification link flow succeeds
 - login failure shows expected generic feedback
 - password reset mail delivery is configured when SMTP values are present
 - password change works for an authenticated account
@@ -319,6 +355,7 @@ After deployment, confirm all of the following:
 - place the app behind HTTPS
 - set `SERVER_SERVLET_SESSION_COOKIE_SECURE=true` when TLS is terminated before the app
 - configure real SMTP credentials before exposing password recovery to users
+- configure a real alert webhook before relying on unattended mail delivery
 - restrict direct database exposure
 - enable scheduled MySQL backups
 - watch readiness and liveness endpoints from your hosting platform

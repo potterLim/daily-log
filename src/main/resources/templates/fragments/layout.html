@@ -82,6 +82,35 @@
 
 <main class="app-main">
     <div class="app-frame">
+        <div class="page-flash-stack">
+            <div th:if="${emailVerificationSuccessMessage}" class="message-banner message-banner-success" role="alert"
+                 th:text="${emailVerificationSuccessMessage}">
+                이메일 인증이 완료되었습니다.
+            </div>
+            <div th:if="${emailVerificationWarningMessage}" class="message-banner message-banner-warning" role="alert"
+                 th:text="${emailVerificationWarningMessage}">
+                인증 메일 전송에 문제가 있습니다.
+            </div>
+            <div th:if="${emailVerificationErrorMessage}" class="message-banner message-banner-danger" role="alert"
+                 th:text="${emailVerificationErrorMessage}">
+                인증 링크를 확인할 수 없습니다.
+            </div>
+        </div>
+
+        <div sec:authorize="isAuthenticated()" th:if="${isEmailVerificationRequired}" class="message-banner message-banner-warning verification-banner" role="alert">
+            <div class="verification-banner-copy">
+                <strong>이메일 소유 확인이 아직 끝나지 않았습니다.</strong>
+                <p>
+                    <span th:text="${currentUserEmailAddress}">user@example.com</span> 주소를 인증하면
+                    비밀번호 복구 메일을 안정적으로 받을 수 있습니다.
+                </p>
+            </div>
+            <form th:action="@{/account/email-verification/resend}" method="post" class="verification-banner-action">
+                <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+                <button type="submit" class="btn btn-outline-secondary btn-sm">인증 메일 다시 보내기</button>
+            </form>
+        </div>
+
         <div class="page-stage" th:replace="${content}">
             <section></section>
         </div>

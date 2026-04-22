@@ -7,16 +7,15 @@ import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.dto.auth.ResetPasswordRequestDto;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.entity.UserAccountId;
+import com.potterlim.daylog.service.AuthenticationMailWorkflowService;
 import com.potterlim.daylog.service.DuplicateEmailException;
 import com.potterlim.daylog.service.DuplicateUserNameException;
-import com.potterlim.daylog.service.IAuthenticationMailService;
+import com.potterlim.daylog.service.IEmailVerificationTokenService;
 import com.potterlim.daylog.service.IPasswordResetTokenService;
 import com.potterlim.daylog.service.IUserAccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,16 +33,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
 public class AuthController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
-
     private final IUserAccountService mUserAccountService;
     private final IPasswordResetTokenService mPasswordResetTokenService;
-    private final IAuthenticationMailService mAuthenticationMailService;
+    private final IEmailVerificationTokenService mEmailVerificationTokenService;
+    private final AuthenticationMailWorkflowService mAuthenticationMailWorkflowService;
     private final AuthenticationManager mAuthenticationManager;
     private final SecurityContextRepository mSecurityContextRepository;
     private final RememberMeServices mRememberMeServices;
@@ -51,14 +48,16 @@ public class AuthController {
     public AuthController(
         IUserAccountService userAccountService,
         IPasswordResetTokenService passwordResetTokenService,
-        IAuthenticationMailService authenticationMailService,
+        IEmailVerificationTokenService emailVerificationTokenService,
+        AuthenticationMailWorkflowService authenticationMailWorkflowService,
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
         RememberMeServices rememberMeServices
     ) {
         mUserAccountService = userAccountService;
         mPasswordResetTokenService = passwordResetTokenService;
-        mAuthenticationMailService = authenticationMailService;
+        mEmailVerificationTokenService = emailVerificationTokenService;
+        mAuthenticationMailWorkflowService = authenticationMailWorkflowService;
         mAuthenticationManager = authenticationManager;
         mSecurityContextRepository = securityContextRepository;
         mRememberMeServices = rememberMeServices;
@@ -134,7 +133,8 @@ public class AuthController {
         @Valid @ModelAttribute("registerRequestDto") RegisterRequestDto registerRequestDto,
         BindingResult bindingResult,
         HttpServletRequest httpServletRequest,
-        HttpServletResponse httpServletResponse
+        HttpServletResponse httpServletResponse,
+        RedirectAttributes redirectAttributes
     ) {
         if (!registerRequestDto.hasMatchingPassword()) {
             bindingResult.rejectValue("confirmPassword", "register.confirmPassword", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
@@ -151,8 +151,10 @@ public class AuthController {
                 registerRequestDto.getPassword()
             );
 
+        UserAccount userAccount;
+
         try {
-            mUserAccountService.registerUserAccount(registerUserAccountCommand);
+            userAccount = mUserAccountService.registerUserAccount(registerUserAccountCommand);
         } catch (DuplicateUserNameException duplicateUserNameException) {
             bindingResult.rejectValue("userName", "register.userName", "이미 사용 중인 아이디입니다.");
             return "auth/register";
@@ -161,12 +163,27 @@ public class AuthController {
             return "auth/register";
         }
 
+        boolean wasVerificationMailSent =
+            mAuthenticationMailWorkflowService.sendEmailVerificationInstructions(userAccount, httpServletRequest);
+
         authenticateUser(
             registerRequestDto.getUserName().trim(),
             registerRequestDto.getPassword(),
             httpServletRequest,
             httpServletResponse
         );
+
+        if (wasVerificationMailSent) {
+            redirectAttributes.addFlashAttribute(
+                "emailVerificationSuccessMessage",
+                "가입이 완료되었습니다. 입력하신 이메일로 인증 링크를 보냈습니다."
+            );
+        } else {
+            redirectAttributes.addFlashAttribute(
+                "emailVerificationWarningMessage",
+                "가입은 완료되었지만 인증 메일 전송에 문제가 있어 계정에서 다시 요청해 주세요."
+            );
+        }
 
         return "redirect:/";
     }
@@ -192,11 +209,11 @@ public class AuthController {
         }
 
         mUserAccountService.findUserAccountByEmailAddress(forgotPasswordRequestDto.getEmailAddress())
-            .ifPresent(userAccount -> sendPasswordResetMail(userAccount, httpServletRequest));
+            .ifPresent(userAccount -> mAuthenticationMailWorkflowService.sendRecoveryInstructions(userAccount, httpServletRequest));
 
         redirectAttributes.addFlashAttribute(
             "forgotPasswordSuccessMessage",
-            "입력하신 이메일로 재설정 안내를 보낼 수 있으면 바로 전송했습니다."
+            "입력하신 이메일로 계정 복구 또는 인증 안내를 보낼 수 있으면 바로 전송했습니다."
         );
         return "redirect:/forgot-password";
     }
@@ -219,6 +236,28 @@ public class AuthController {
         }
 
         return "auth/reset-password";
+    }
+
+    @GetMapping("/verify-email")
+    public String verifyEmailAddress(
+        @RequestParam(name = "token", required = false) String tokenOrNull,
+        Authentication authenticationOrNull,
+        RedirectAttributes redirectAttributes
+    ) {
+        boolean wasEmailVerified = mEmailVerificationTokenService.verifyEmailAddress(tokenOrNull);
+        if (wasEmailVerified) {
+            redirectAttributes.addFlashAttribute(
+                "emailVerificationSuccessMessage",
+                "이메일 소유 확인이 완료되었습니다. 이제 복구 메일도 정상적으로 받을 수 있습니다."
+            );
+        } else {
+            redirectAttributes.addFlashAttribute(
+                "emailVerificationErrorMessage",
+                "이메일 인증 링크가 유효하지 않거나 이미 만료되었습니다."
+            );
+        }
+
+        return isAuthenticated(authenticationOrNull) ? "redirect:/" : "redirect:/login";
     }
 
     @PostMapping("/reset-password")
@@ -299,24 +338,4 @@ public class AuthController {
         return authentication;
     }
 
-    private void sendPasswordResetMail(UserAccount userAccount, HttpServletRequest httpServletRequest) {
-        try {
-            String rawPasswordResetToken = mPasswordResetTokenService.issuePasswordResetToken(userAccount);
-            String resetPasswordUrl = ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
-                .replacePath(httpServletRequest.getContextPath() + "/reset-password")
-                .replaceQuery(null)
-                .queryParam("token", rawPasswordResetToken)
-                .build()
-                .toUriString();
-
-            mAuthenticationMailService.sendPasswordResetMail(userAccount, resetPasswordUrl);
-        } catch (RuntimeException runtimeException) {
-            LOGGER.warn(
-                "Password reset mail delivery failed. userName={}, emailAddress={}",
-                userAccount.getUsername(),
-                userAccount.getEmailAddress(),
-                runtimeException
-            );
-        }
-    }
 }

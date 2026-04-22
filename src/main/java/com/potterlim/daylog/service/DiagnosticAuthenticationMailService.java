@@ -22,6 +22,32 @@ public class DiagnosticAuthenticationMailService implements IAuthenticationMailS
     }
 
     @Override
+    public void sendEmailVerificationMail(UserAccount userAccount, String verificationUrl) {
+        if (userAccount == null) {
+            throw new IllegalArgumentException("userAccount must not be null.");
+        }
+
+        if (verificationUrl == null || verificationUrl.isBlank()) {
+            throw new IllegalArgumentException("verificationUrl must not be blank.");
+        }
+
+        if (mEnvironment.acceptsProfiles(Profiles.of("local", "test", "mysql-integration-test"))) {
+            LOGGER.info(
+                "Email verification mail delivery is running in diagnostic mode. userName={}, emailAddress={}, verificationUrl={}",
+                userAccount.getUsername(),
+                userAccount.getEmailAddress(),
+                verificationUrl
+            );
+            return;
+        }
+
+        LOGGER.warn(
+            "Email verification mail requested for emailAddress={} but SMTP is not configured.",
+            userAccount.getEmailAddress()
+        );
+    }
+
+    @Override
     public void sendPasswordResetMail(UserAccount userAccount, String resetPasswordUrl) {
         if (userAccount == null) {
             throw new IllegalArgumentException("userAccount must not be null.");
@@ -31,7 +57,7 @@ public class DiagnosticAuthenticationMailService implements IAuthenticationMailS
             throw new IllegalArgumentException("resetPasswordUrl must not be blank.");
         }
 
-        if (mEnvironment.acceptsProfiles(Profiles.of("local", "test"))) {
+        if (mEnvironment.acceptsProfiles(Profiles.of("local", "test", "mysql-integration-test"))) {
             LOGGER.info(
                 "Password reset mail delivery is running in diagnostic mode. userName={}, emailAddress={}, resetPasswordUrl={}",
                 userAccount.getUsername(),

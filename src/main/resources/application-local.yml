@@ -13,5 +13,7 @@ spring:
   thymeleaf:
     cache: false
 day-log:
+  account:
+    email-verification-token-validity-minutes: 1440
   security:
     remember-me-key: local-development-remember-me-key

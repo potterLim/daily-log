@@ -32,14 +32,40 @@ services:
       DATABASE_USERNAME: ${MYSQL_USER:-daylog}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
       DAY_LOG_REMEMBER_ME_KEY: ${DAY_LOG_REMEMBER_ME_KEY}
+      DAY_LOG_MAIL_FROM_ADDRESS: ${DAY_LOG_MAIL_FROM_ADDRESS:-no-reply@example.com}
+      DAY_LOG_ALERT_WEBHOOK_URL: ${DAY_LOG_ALERT_WEBHOOK_URL:-}
+      DAY_LOG_LOG_DIR: /app/ops/runtime/logs
+      DAY_LOG_TOMCAT_BASE_DIR: /app/ops/runtime/tomcat
     ports:
       - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./ops/runtime:/app/ops/runtime
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health/readiness | grep '\"status\":\"UP\"' || exit 1"]
       interval: 30s
       timeout: 5s
       start_period: 30s
       retries: 5
+
+  backup:
+    image: mysql:8.0
+    profiles: ["ops"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-daylog}
+      MYSQL_USER: ${MYSQL_USER:-daylog}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DAY_LOG_BACKUP_DIR: /backups
+      DAY_LOG_BACKUP_RETENTION_DAYS: ${DAY_LOG_BACKUP_RETENTION_DAYS:-14}
+      DAY_LOG_ALERT_WEBHOOK_URL: ${DAY_LOG_ALERT_WEBHOOK_URL:-}
+    volumes:
+      - ./ops/backup:/opt/day-log/backup:ro
+      - ./ops/runtime/backups:/backups
+    entrypoint: ["/bin/bash", "/opt/day-log/backup/mysql-backup.sh"]
 
 volumes:
   daylog-mysql-data:

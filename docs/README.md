@@ -26,6 +26,7 @@ Use this document when you need to:
 - run the application as an executable JAR
 - deploy with Docker Compose
 - configure runtime environment variables
+- understand log, backup, and alerting minimums
 - place the app behind a reverse proxy or load balancer
 - wire health checks into a VM or container deployment
 

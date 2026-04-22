@@ -66,7 +66,7 @@ com.potterlim.daylog
 Application-wide configuration and framework integration.
 
 - `DayLogApplicationProperties`
-  - binds `day-log.account.*`, `day-log.mail.*`, and `day-log.security.*` settings into a strongly typed configuration object
+  - binds `day-log.account.*`, `day-log.mail.*`, `day-log.operations.*`, and `day-log.security.*` settings into a strongly typed configuration object
 - `SecurityConfiguration`
   - configures authentication, authorization, remember-me, logout, public health endpoints, and password encoding
 - `WebServerConfiguration`
@@ -80,11 +80,14 @@ HTTP entry points and page model composition.
   - renders the home page
 - `AuthController`
   - renders login, registration, forgot-password, and reset-password pages
-  - coordinates registration and auto-login
+  - coordinates registration, auto-login, and public email verification
   - keeps login and password recovery feedback generic where account existence must stay hidden
 - `AccountController`
   - renders the authenticated password change page
+  - resends verification mail for the signed-in user
   - verifies the current password before saving a new one
+- `AuthenticatedUserModelAttributeControllerAdvice`
+  - injects current account verification state into page models for the shared layout banner
 - `DailyLogController`
   - handles morning, evening, weekly, and preview routes
   - assembles page-ready data from service output
@@ -108,6 +111,8 @@ Persistence model and authenticated principal model.
 - `UserAccount`
   - JPA entity
   - also implements `UserDetails`
+- `UserEmailVerificationToken`
+  - one-time email ownership verification token entity bound to a user account
 - `UserPasswordResetToken`
   - one-time reset token entity bound to a user account
 - `DailyLogEntry`
@@ -126,6 +131,9 @@ Data access for relational storage.
 - `IUserAccountRepository`
   - JPA repository for user accounts
   - supports lookup by username, email address, and login identifier
+- `IUserEmailVerificationTokenRepository`
+  - JPA repository for one-time email verification tokens
+  - supports token lookup and invalidation of earlier active tokens
 - `IUserPasswordResetTokenRepository`
   - JPA repository for one-time password reset tokens
   - supports token lookup and invalidation of earlier active tokens
@@ -150,13 +158,24 @@ Core business logic.
   - hashes passwords
   - persists new accounts
   - changes or resets passwords
+- `EmailVerificationTokenService`
+  - generates strong verification tokens
+  - stores only token hashes
+  - enforces token expiration and one-time consumption
 - `PasswordResetTokenService`
   - generates strong reset tokens
   - stores only token hashes
   - enforces token expiration and one-time consumption
 - `IAuthenticationMailService`
-  - abstracts password reset mail delivery
+  - abstracts verification and password reset mail delivery
   - can be backed by SMTP or a diagnostic local mode
+- `AuthenticationMailWorkflowService`
+  - chooses between verification and recovery delivery flows
+  - builds absolute verification and reset URLs from the current request
+  - reports delivery failures to operations alerts
+- `IAlertNotificationService`
+  - abstracts operational alert delivery
+  - can fall back to logging or send to an external webhook
 - `DailyLogService`
   - reads and writes day sections
   - creates day entries on first write
@@ -223,31 +242,34 @@ src/main/resources
   - adds the unique recovery email column to existing accounts
 - `db/migration/V4__create_user_password_reset_token.sql`
   - creates the one-time password reset token table
+- `db/migration/V5__add_email_verification_state_to_user_account.sql`
+  - adds email verification state to user accounts
+- `db/migration/V6__create_user_email_verification_token.sql`
+  - creates the one-time email verification token table
 
 ## Route Map
 
 | Area | Routes | Responsibility |
 | --- | --- | --- |
 | Home | `/` | product landing page for authenticated users |
-| Auth | `/login`, `/register`, `/forgot-password`, `/reset-password` | authentication entry, account creation, and recovery |
-| Account | `/account/password` | authenticated password change |
+| Auth | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | authentication entry, account creation, verification, and recovery |
+| Account | `/account/password`, `/account/email-verification/resend` | authenticated password maintenance and verification resend |
 | Morning | `/daily-log/morning`, `/daily-log/morning/edit`, `/daily-log/morning/save` | create and update morning plans |
 | Evening | `/daily-log/evening`, `/daily-log/evening/edit`, `/daily-log/evening/save` | complete evening reflections and goal checks |
 | Weekly | `/daily-log/week` | weekly review and completion summary |
 | Preview | `/daily-log/preview` | read-only view of a saved Markdown log |
 | Health | `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` | runtime monitoring without authentication |
 
-## Storage Model
-
 ## Relational Account Storage
 
-MySQL stores the `user_account` and `user_password_reset_token` tables used for:
+MySQL stores the `user_account`, `user_email_verification_token`, and `user_password_reset_token` tables used for:
 
 - authentication
 - role lookup
 - account lifecycle status
 - username uniqueness
-- email uniqueness and recovery routing
+- email uniqueness, ownership verification, and recovery routing
+- one-time email verification token storage
 - one-time password reset token storage
 
 ## Relational Daily Log Storage
@@ -299,8 +321,17 @@ Section ordering and header text are controlled by:
 2. validate user name, email address, and password input
 3. create account through `UserAccountService`
 4. catch duplicate user name or duplicate email collisions
-5. auto-authenticate the new account
-6. redirect to home
+5. issue and deliver an email ownership verification link
+6. auto-authenticate the new account
+7. redirect to home
+
+### Email Verification Flow
+
+1. issue a one-time token through `EmailVerificationTokenService`
+2. deliver the verification link through `IAuthenticationMailService`
+3. consume the token exactly once when the user opens the link
+4. mark the user account email as verified
+5. remove the verification banner from subsequent page renders
 
 ### Login Flow
 
@@ -314,9 +345,9 @@ Section ordering and header text are controlled by:
 
 1. render the forgot-password page
 2. accept an email address and always return the same success message
-3. when the account exists, generate a one-time token through `PasswordResetTokenService`
-4. deliver the reset link through `IAuthenticationMailService`
-5. consume the token exactly once when the user submits a new password
+3. when the account exists and the email is verified, generate a one-time token through `PasswordResetTokenService`
+4. when the account exists but the email is still unverified, resend the ownership verification link instead
+5. consume the password reset token exactly once when the user submits a new password
 
 ### Password Change Flow
 
@@ -360,6 +391,7 @@ Public routes:
 - `/register`
 - `/forgot-password`
 - `/reset-password`
+- `/verify-email`
 - `/actuator/health`
 - `/actuator/health/**`
 
@@ -372,6 +404,7 @@ Additional notes:
 - remember-me support via `TokenBasedRememberMeServices`
 - generic login failure feedback
 - generic forgot-password feedback
+- email ownership verification with one-time hashed tokens
 - one-time password reset tokens stored as hashes
 - CSRF protection enabled
 - HTTP-only session cookie with `SameSite=Lax`
@@ -399,6 +432,7 @@ The test suite focuses on live application behavior rather than only isolated un
 Current integration coverage includes:
 
 - registration
+- email verification
 - password validation
 - username or email login
 - password reset request and token-based reset
@@ -413,6 +447,7 @@ Primary test classes:
 
 - `DayLogApplicationTests`
 - `WebFlowIntegrationTests`
+- `MySqlIntegrationTests`
 
 ## Extension Guidance
 

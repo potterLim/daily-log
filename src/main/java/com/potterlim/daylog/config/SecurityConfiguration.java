@@ -41,7 +41,16 @@ public class SecurityConfiguration {
                 authorizeHttpRequests
                     .requestMatchers("/actuator/health", "/actuator/health/**")
                     .permitAll()
-                    .requestMatchers("/css/**", "/js/**", "/favicon.ico", "/login", "/register", "/forgot-password", "/reset-password")
+                    .requestMatchers(
+                        "/css/**",
+                        "/js/**",
+                        "/favicon.ico",
+                        "/login",
+                        "/register",
+                        "/forgot-password",
+                        "/reset-password",
+                        "/verify-email"
+                    )
                     .permitAll()
                     .anyRequest()
                     .authenticated())

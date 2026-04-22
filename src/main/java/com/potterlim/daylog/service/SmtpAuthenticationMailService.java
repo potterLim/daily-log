@@ -23,6 +23,32 @@ public class SmtpAuthenticationMailService implements IAuthenticationMailService
     }
 
     @Override
+    public void sendEmailVerificationMail(UserAccount userAccount, String verificationUrl) {
+        if (userAccount == null) {
+            throw new IllegalArgumentException("userAccount must not be null.");
+        }
+
+        if (verificationUrl == null || verificationUrl.isBlank()) {
+            throw new IllegalArgumentException("verificationUrl must not be blank.");
+        }
+
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setTo(userAccount.getEmailAddress());
+        simpleMailMessage.setFrom(mDayLogApplicationProperties.getMail().getFromAddress());
+        simpleMailMessage.setSubject("DailyLog 이메일 인증 안내");
+        simpleMailMessage.setText("""
+            안녕하세요, %s님.
+
+            아래 링크를 열면 DailyLog 계정의 이메일 소유 확인이 완료됩니다.
+            %s
+
+            본인이 요청하지 않았다면 이 메일을 무시하셔도 됩니다.
+            """.formatted(userAccount.getUsername(), verificationUrl));
+
+        mJavaMailSender.send(simpleMailMessage);
+    }
+
+    @Override
     public void sendPasswordResetMail(UserAccount userAccount, String resetPasswordUrl) {
         if (userAccount == null) {
             throw new IllegalArgumentException("userAccount must not be null.");

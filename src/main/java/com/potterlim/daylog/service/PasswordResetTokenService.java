@@ -1,12 +1,7 @@
 package com.potterlim.daylog.service;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Optional;
 import com.potterlim.daylog.config.DayLogApplicationProperties;
 import com.potterlim.daylog.entity.UserAccount;
@@ -43,11 +38,15 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
         LocalDateTime issuedAt = LocalDateTime.now();
         LocalDateTime expiresAt =
             issuedAt.plusMinutes(mDayLogApplicationProperties.getAccount().getPasswordResetTokenValidityMinutes());
-        String rawToken = generateRawToken();
+        String rawToken = AuthenticationTokenSupport.generateRawToken(mSecureRandom, TOKEN_BYTE_LENGTH);
 
         mUserPasswordResetTokenRepository.expireActiveTokens(userAccount, issuedAt, issuedAt);
         mUserPasswordResetTokenRepository.save(
-            UserPasswordResetToken.issueToken(userAccount, hashToken(rawToken), expiresAt)
+            UserPasswordResetToken.issueToken(
+                userAccount,
+                AuthenticationTokenSupport.hashToken(rawToken),
+                expiresAt
+            )
         );
 
         return rawToken;
@@ -60,7 +59,7 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
             return false;
         }
 
-        return mUserPasswordResetTokenRepository.findByTokenHash(hashToken(rawTokenOrNull))
+        return mUserPasswordResetTokenRepository.findByTokenHash(AuthenticationTokenSupport.hashToken(rawTokenOrNull))
             .filter(userPasswordResetToken -> userPasswordResetToken.isAvailableAt(LocalDateTime.now()))
             .isPresent();
     }
@@ -74,30 +73,11 @@ public class PasswordResetTokenService implements IPasswordResetTokenService {
 
         LocalDateTime consumedAt = LocalDateTime.now();
 
-        return mUserPasswordResetTokenRepository.findByTokenHashForUpdate(hashToken(rawTokenOrNull))
+        return mUserPasswordResetTokenRepository.findByTokenHashForUpdate(AuthenticationTokenSupport.hashToken(rawTokenOrNull))
             .filter(userPasswordResetToken -> userPasswordResetToken.isAvailableAt(consumedAt))
             .map(userPasswordResetToken -> {
                 userPasswordResetToken.markUsedAt(consumedAt);
                 return userPasswordResetToken.getUserAccountId();
             });
-    }
-
-    /**
-     * Hashes the externally shared reset token before persistence so the database never stores the
-     * bearer token itself.
-     */
-    private static String hashToken(String rawToken) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(messageDigest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new IllegalStateException("SHA-256 algorithm must be available.", noSuchAlgorithmException);
-        }
-    }
-
-    private String generateRawToken() {
-        byte[] tokenBytes = new byte[TOKEN_BYTE_LENGTH];
-        mSecureRandom.nextBytes(tokenBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
 }

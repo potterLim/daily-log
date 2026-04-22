@@ -1,0 +1,111 @@
+package com.potterlim.daylog.service;
+
+import com.potterlim.daylog.entity.UserAccount;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+@Service
+public class AuthenticationMailWorkflowService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationMailWorkflowService.class);
+
+    private final IPasswordResetTokenService mPasswordResetTokenService;
+    private final IEmailVerificationTokenService mEmailVerificationTokenService;
+    private final IAuthenticationMailService mAuthenticationMailService;
+    private final IAlertNotificationService mAlertNotificationService;
+
+    public AuthenticationMailWorkflowService(
+        IPasswordResetTokenService passwordResetTokenService,
+        IEmailVerificationTokenService emailVerificationTokenService,
+        IAuthenticationMailService authenticationMailService,
+        IAlertNotificationService alertNotificationService
+    ) {
+        mPasswordResetTokenService = passwordResetTokenService;
+        mEmailVerificationTokenService = emailVerificationTokenService;
+        mAuthenticationMailService = authenticationMailService;
+        mAlertNotificationService = alertNotificationService;
+    }
+
+    public boolean sendRecoveryInstructions(UserAccount userAccount, HttpServletRequest httpServletRequest) {
+        if (userAccount.hasVerifiedEmailAddress()) {
+            return sendPasswordResetInstructions(userAccount, httpServletRequest);
+        }
+
+        return sendEmailVerificationInstructions(userAccount, httpServletRequest);
+    }
+
+    public boolean sendPasswordResetInstructions(UserAccount userAccount, HttpServletRequest httpServletRequest) {
+        try {
+            String rawPasswordResetToken = mPasswordResetTokenService.issuePasswordResetToken(userAccount);
+            String resetPasswordUrl = buildAbsoluteUrl(
+                httpServletRequest,
+                "/reset-password",
+                "token",
+                rawPasswordResetToken
+            );
+
+            mAuthenticationMailService.sendPasswordResetMail(userAccount, resetPasswordUrl);
+            return true;
+        } catch (RuntimeException runtimeException) {
+            reportMailDeliveryFailure("password-reset-mail-failed", userAccount, runtimeException);
+            return false;
+        }
+    }
+
+    public boolean sendEmailVerificationInstructions(UserAccount userAccount, HttpServletRequest httpServletRequest) {
+        try {
+            if (userAccount.hasVerifiedEmailAddress()) {
+                return true;
+            }
+
+            String rawEmailVerificationToken = mEmailVerificationTokenService.issueEmailVerificationToken(userAccount);
+            String verificationUrl = buildAbsoluteUrl(
+                httpServletRequest,
+                "/verify-email",
+                "token",
+                rawEmailVerificationToken
+            );
+
+            mAuthenticationMailService.sendEmailVerificationMail(userAccount, verificationUrl);
+            return true;
+        } catch (RuntimeException runtimeException) {
+            reportMailDeliveryFailure("email-verification-mail-failed", userAccount, runtimeException);
+            return false;
+        }
+    }
+
+    private static String buildAbsoluteUrl(
+        HttpServletRequest httpServletRequest,
+        String path,
+        String queryParameterName,
+        String queryParameterValue
+    ) {
+        return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
+            .replacePath(httpServletRequest.getContextPath() + path)
+            .replaceQuery(null)
+            .queryParam(queryParameterName, queryParameterValue)
+            .build()
+            .toUriString();
+    }
+
+    private void reportMailDeliveryFailure(
+        String alertType,
+        UserAccount userAccount,
+        RuntimeException runtimeException
+    ) {
+        LOGGER.error(
+            "Authentication mail delivery failed. alertType={}, userName={}, emailAddress={}",
+            alertType,
+            userAccount.getUsername(),
+            userAccount.getEmailAddress(),
+            runtimeException
+        );
+        mAlertNotificationService.sendOperationalAlert(
+            alertType,
+            "userName=%s, emailAddress=%s".formatted(userAccount.getUsername(), userAccount.getEmailAddress())
+        );
+    }
+}

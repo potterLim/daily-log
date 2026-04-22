@@ -26,6 +26,15 @@ server:
     whitelabel:
       enabled: false
   shutdown: graceful
+  tomcat:
+    basedir: ${DAY_LOG_TOMCAT_BASE_DIR:./ops/runtime/tomcat}
+    accesslog:
+      enabled: true
+      directory: logs
+      prefix: access
+      suffix: .log
+      rename-on-rotate: true
+      pattern: '%h %l %u %t "%r" %s %b %D'
   servlet:
     session:
       timeout: 30m
@@ -51,9 +60,23 @@ management:
 day-log:
   account:
     password-reset-token-validity-minutes: ${DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
+    email-verification-token-validity-minutes: ${DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES:1440}
   mail:
     from-address: ${DAY_LOG_MAIL_FROM_ADDRESS:no-reply@daylog.local}
+  operations:
+    alert-webhook-url: ${DAY_LOG_ALERT_WEBHOOK_URL:}
   security:
     remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
     remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}
     remember-me-token-validity-seconds: ${DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
+logging:
+  file:
+    path: ${DAY_LOG_LOG_DIR:./logs}
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36} - %msg%n'
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 14
+      total-size-cap: 1GB

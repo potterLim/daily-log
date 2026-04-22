@@ -7,6 +7,7 @@ import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.repository.IDailyLogEntryRepository;
 import com.potterlim.daylog.repository.IUserAccountRepository;
+import com.potterlim.daylog.repository.IUserEmailVerificationTokenRepository;
 import com.potterlim.daylog.repository.IUserPasswordResetTokenRepository;
 import com.potterlim.daylog.service.IAuthenticationMailService;
 import com.potterlim.daylog.service.IDailyLogService;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -60,6 +62,9 @@ class WebFlowIntegrationTests {
     @Autowired
     private IUserPasswordResetTokenRepository mUserPasswordResetTokenRepository;
 
+    @Autowired
+    private IUserEmailVerificationTokenRepository mUserEmailVerificationTokenRepository;
+
     @MockitoBean
     private IAuthenticationMailService mAuthenticationMailService;
 
@@ -67,11 +72,18 @@ class WebFlowIntegrationTests {
     void setUpTestEnvironment() {
         mDailyLogEntryRepository.deleteAll();
         mUserPasswordResetTokenRepository.deleteAll();
+        mUserEmailVerificationTokenRepository.deleteAll();
         mUserAccountRepository.deleteAll();
     }
 
     @Test
     void registerShouldCreateUserAndRedirectToHome() throws Exception {
+        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
+        doAnswer(invocation -> {
+            sentVerificationUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
+
         mMockMvc.perform(post("/register")
                 .with(csrf())
                 .param("userName", "tester")
@@ -81,8 +93,10 @@ class WebFlowIntegrationTests {
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
 
-        assertTrue(mUserAccountRepository.findByUserName("tester").isPresent());
-        assertTrue(mUserAccountRepository.findByEmailAddress("tester@example.com").isPresent());
+        UserAccount userAccount = mUserAccountRepository.findByUserName("tester").orElseThrow();
+        assertEquals("tester@example.com", userAccount.getEmailAddress());
+        assertFalse(userAccount.hasVerifiedEmailAddress());
+        assertNotNull(sentVerificationUrl.get());
     }
 
     @Test
@@ -147,19 +161,56 @@ class WebFlowIntegrationTests {
 
         assertEquals(0, mUserPasswordResetTokenRepository.count());
         verify(mAuthenticationMailService, never()).sendPasswordResetMail(any(UserAccount.class), anyString());
+        verify(mAuthenticationMailService, never()).sendEmailVerificationMail(any(UserAccount.class), anyString());
+    }
+
+    @Test
+    void forgotPasswordShouldResendEmailVerificationForUnverifiedEmailAddress() throws Exception {
+        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
+        doAnswer(invocation -> {
+            sentVerificationUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
+
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("unverified-user", "unverified@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/forgot-password")
+                .with(csrf())
+                .param("emailAddress", "unverified@example.com"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/forgot-password"));
+
+        verify(mAuthenticationMailService, never()).sendPasswordResetMail(any(UserAccount.class), anyString());
+        assertNotNull(sentVerificationUrl.get());
     }
 
     @Test
     void resetPasswordShouldAllowLoginWithNewPassword() throws Exception {
+        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
         AtomicReference<String> sentResetPasswordUrl = new AtomicReference<>();
+        doAnswer(invocation -> {
+            sentVerificationUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
         doAnswer(invocation -> {
             sentResetPasswordUrl.set(invocation.getArgument(1));
             return null;
         }).when(mAuthenticationMailService).sendPasswordResetMail(any(UserAccount.class), anyString());
 
-        mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("reset-user", "reset-user@example.com", "pass1234")
-        );
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "reset-user")
+                .param("emailAddress", "reset-user@example.com")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        String rawVerificationToken = extractTokenFromUrl(sentVerificationUrl.get(), "token");
+        mMockMvc.perform(get("/verify-email").param("token", rawVerificationToken))
+            .andExpect(status().is3xxRedirection());
 
         mMockMvc.perform(post("/forgot-password")
                 .with(csrf())
@@ -167,7 +218,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/forgot-password"));
 
-        String rawToken = extractTokenFromResetPasswordUrl(sentResetPasswordUrl.get());
+        String rawToken = extractTokenFromUrl(sentResetPasswordUrl.get(), "token");
         mMockMvc.perform(post("/reset-password")
                 .with(csrf())
                 .param("token", rawToken)
@@ -297,17 +348,18 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("\"status\":\"UP\"")));
     }
 
-    private static String extractTokenFromResetPasswordUrl(String resetPasswordUrl) {
-        assertNotNull(resetPasswordUrl);
-        String query = URI.create(resetPasswordUrl).getQuery();
+    private static String extractTokenFromUrl(String targetUrl, String parameterName) {
+        assertNotNull(targetUrl);
+        String query = URI.create(targetUrl).getQuery();
         assertNotNull(query);
 
         for (String queryParameter : query.split("&")) {
-            if (queryParameter.startsWith("token=")) {
-                return queryParameter.substring("token=".length());
+            String prefix = parameterName + "=";
+            if (queryParameter.startsWith(prefix)) {
+                return queryParameter.substring(prefix.length());
             }
         }
 
-        throw new IllegalStateException("Reset password token was not found.");
+        throw new IllegalStateException("Expected query parameter was not found.");
     }
 }

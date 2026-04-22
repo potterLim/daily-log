@@ -11,6 +11,7 @@ public class DayLogApplicationProperties {
 
     private final AccountProperties mAccount = new AccountProperties();
     private final MailProperties mMail = new MailProperties();
+    private final OperationsProperties mOperations = new OperationsProperties();
     private final SecurityProperties mSecurity = new SecurityProperties();
 
     public AccountProperties getAccount() {
@@ -21,6 +22,10 @@ public class DayLogApplicationProperties {
         return mMail;
     }
 
+    public OperationsProperties getOperations() {
+        return mOperations;
+    }
+
     public SecurityProperties getSecurity() {
         return mSecurity;
     }
@@ -29,6 +34,8 @@ public class DayLogApplicationProperties {
 
         @Positive
         private int mPasswordResetTokenValidityMinutes = 30;
+        @Positive
+        private int mEmailVerificationTokenValidityMinutes = 1_440;
 
         public int getPasswordResetTokenValidityMinutes() {
             return mPasswordResetTokenValidityMinutes;
@@ -36,6 +43,14 @@ public class DayLogApplicationProperties {
 
         public void setPasswordResetTokenValidityMinutes(int passwordResetTokenValidityMinutes) {
             mPasswordResetTokenValidityMinutes = passwordResetTokenValidityMinutes;
+        }
+
+        public int getEmailVerificationTokenValidityMinutes() {
+            return mEmailVerificationTokenValidityMinutes;
+        }
+
+        public void setEmailVerificationTokenValidityMinutes(int emailVerificationTokenValidityMinutes) {
+            mEmailVerificationTokenValidityMinutes = emailVerificationTokenValidityMinutes;
         }
     }
 
@@ -50,6 +65,19 @@ public class DayLogApplicationProperties {
 
         public void setFromAddress(String fromAddress) {
             mFromAddress = fromAddress;
+        }
+    }
+
+    public static final class OperationsProperties {
+
+        private String mAlertWebhookUrl = "";
+
+        public String getAlertWebhookUrl() {
+            return mAlertWebhookUrl;
+        }
+
+        public void setAlertWebhookUrl(String alertWebhookUrl) {
+            mAlertWebhookUrl = alertWebhookUrl;
         }
     }
 

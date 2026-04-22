@@ -35,6 +35,9 @@ public class UserAccount implements UserDetails {
     @Column(name = "password_hash", nullable = false)
     private String mPasswordHash;
 
+    @Column(name = "email_verified_at")
+    private LocalDateTime mEmailVerifiedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 30)
     private EUserRole mUserRole;
@@ -77,6 +80,18 @@ public class UserAccount implements UserDetails {
 
     public void changePasswordHash(String passwordHash) {
         mPasswordHash = passwordHash;
+    }
+
+    public boolean hasVerifiedEmailAddress() {
+        return mEmailVerifiedAt != null;
+    }
+
+    public void markEmailAddressVerified(LocalDateTime verifiedAt) {
+        if (verifiedAt == null) {
+            throw new IllegalArgumentException("verifiedAt must not be null.");
+        }
+
+        mEmailVerifiedAt = verifiedAt;
     }
 
     @Override

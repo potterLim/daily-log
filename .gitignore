@@ -11,6 +11,7 @@ out/
 
 # Runtime files and local artifacts
 logs/
+ops/runtime/
 local-docs/
 
 # Environment files

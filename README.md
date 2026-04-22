@@ -16,10 +16,11 @@ It is built as a multi-user Spring Boot application with:
 - Weekly review with completion counts and progress percentages
 - Account creation with username, email address, and password
 - Sign-in with either username or email address
-- Email-based password reset and authenticated password change
+- Email ownership verification, email-based password reset, and authenticated password change
 - Read-only daily log preview rendered from reconstructed Markdown
 - Per-user isolation at the database level
 - Public health endpoints for runtime monitoring
+- Rolling application logs, Tomcat access logs, and provider-neutral alert webhook support
 
 ## Product Flow
 
@@ -61,7 +62,8 @@ It is built as a multi-user Spring Boot application with:
 ### Primary storage
 
 - `user_account` stores identity, password hashes, role, and account status
-- `user_account` also stores the unique email address used for password recovery
+- `user_account` also stores the unique recovery email address and email verification state
+- `user_email_verification_token` stores one-time email verification tokens
 - `user_password_reset_token` stores one-time password reset tokens
 - `daily_log_entry` stores one entry per user per date
 - the daily log sections are persisted as database text columns
@@ -72,6 +74,9 @@ It is built as a multi-user Spring Boot application with:
 - executable JAR behind Nginx, Caddy, or a managed load balancer
 - MySQL as the persistent system of record
 - Actuator health endpoints for liveness and readiness checks
+- rolling application logs and embedded Tomcat access logs
+- optional webhook-based operational alerts for delivery failures
+- backup scripts under `ops/backup`
 
 ## Repository Guide
 
@@ -104,6 +109,11 @@ src/main/resources
 └─ templates
 ```
 
+```text
+ops
+└─ backup
+```
+
 ### Local-only working documents
 
 If your local workspace includes `local-docs/`, those files are intentionally ignored by Git and can be used for deeper private onboarding or working notes.
@@ -125,13 +135,13 @@ The `local` profile:
 ### Run tests
 
 ```powershell
-.\gradlew.bat test --offline
+.\gradlew.bat test
 ```
 
 ### Build the executable JAR
 
 ```powershell
-.\gradlew.bat bootJar --offline
+.\gradlew.bat bootJar
 ```
 
 Generated artifact:
@@ -164,7 +174,11 @@ java -jar build/libs/dayLog.jar
 | `PORT` | `8080` |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
 | `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
+| `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
 | `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` |
+| `DAY_LOG_ALERT_WEBHOOK_URL` | unset |
+| `DAY_LOG_LOG_DIR` | `./logs` |
+| `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` |
 | `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
 | `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
 | `SPRING_MAIL_HOST` | unset |
@@ -176,7 +190,7 @@ java -jar build/libs/dayLog.jar
 
 The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
 
-When SMTP is not configured, the application does not create a real mail sender. In the `local` and `test` profiles, password reset links are emitted through diagnostic logs so the flow can still be verified without external mail infrastructure.
+When SMTP is not configured, the application does not create a real mail sender. In the `local` and `test` flows, verification and recovery links are emitted through diagnostic logs so the account lifecycle can still be validated without external mail infrastructure.
 
 ## Health and Operations
 
@@ -187,6 +201,13 @@ The application exposes:
 - `/actuator/health/readiness`
 
 These endpoints are public so that a reverse proxy, container platform, or load balancer can verify runtime state without authentication.
+
+Runtime operations also include:
+
+- rolling application logs written to `DAY_LOG_LOG_DIR`
+- embedded Tomcat access logs written under `DAY_LOG_TOMCAT_BASE_DIR/logs`
+- optional webhook alerts for critical mail delivery failures
+- MySQL backup and restore scripts under `ops/backup`
 
 ## Docker Compose
 
@@ -210,8 +231,16 @@ Main Compose values:
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
+- `DAY_LOG_MAIL_FROM_ADDRESS`
+- `DAY_LOG_ALERT_WEBHOOK_URL`
 
 Before exposing the service to real users, replace every example credential and secret in `.env`.
+
+For an on-demand backup from the Compose stack:
+
+```powershell
+docker compose --profile ops run --rm backup
+```
 
 ## Security Notes
 
@@ -222,7 +251,10 @@ Before exposing the service to real users, replace every example credential and 
 - login accepts username or email address
 - login failure uses a generic credential error message
 - forgot-password also returns a generic success message
+- newly registered accounts receive an email ownership verification link
+- unverified accounts receive verification mail instead of a password reset mail
 - password reset uses one-time hashed tokens with expiration
+- email verification uses one-time hashed tokens with expiration
 - remember-me uses `TokenBasedRememberMeServices`
 - CSRF protection remains enabled
 - session cookies are configured as HTTP only with `SameSite=Lax`
@@ -232,6 +264,7 @@ Before exposing the service to real users, replace every example credential and 
 Current integration coverage focuses on the main product flows:
 
 - registration
+- email verification
 - password validation
 - username or email login
 - password reset request and token-based password reset
@@ -246,6 +279,7 @@ Main test files:
 
 - `src/test/java/com/potterlim/daylog/DayLogApplicationTests.java`
 - `src/test/java/com/potterlim/daylog/WebFlowIntegrationTests.java`
+- `src/test/java/com/potterlim/daylog/MySqlIntegrationTests.java`
 
 ## Deployment Notes
 

@@ -22,7 +22,8 @@ RUN apt-get update \
 
 COPY --from=builder /workspace/build/libs/*.jar /app/daylog.jar
 
-RUN chown -R daylog:daylog /app
+RUN mkdir -p /app/ops/runtime/logs /app/ops/runtime/tomcat \
+    && chown -R daylog:daylog /app
 
 USER daylog
 

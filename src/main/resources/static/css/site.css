@@ -540,6 +540,40 @@ ol {
     box-shadow: inset 0 0 0 1px rgba(204, 73, 104, 0.16), var(--shadow-soft);
 }
 
+.message-banner-warning {
+    color: #865100;
+    background: linear-gradient(180deg, rgba(255, 244, 217, 0.96) 0%, rgba(255, 251, 237, 0.9) 100%);
+    box-shadow: inset 0 0 0 1px rgba(215, 156, 28, 0.18), var(--shadow-soft);
+}
+
+.page-flash-stack {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.verification-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.verification-banner-copy {
+    display: grid;
+    gap: 6px;
+}
+
+.verification-banner-copy p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.verification-banner-action {
+    flex-shrink: 0;
+}
+
 .btn {
     border-radius: 999px;
     font-weight: 800;
