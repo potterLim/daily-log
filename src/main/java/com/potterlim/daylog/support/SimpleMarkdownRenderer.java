@@ -29,13 +29,19 @@ public class SimpleMarkdownRenderer {
         for (String line : splitLines(markdownTextOrNull)) {
             if (line.isBlank()) {
                 flushParagraph(htmlBuilder, paragraphLines);
-                isListOpen = closeListIfNeeded(htmlBuilder, isListOpen);
+                if (isListOpen) {
+                    closeList(htmlBuilder);
+                    isListOpen = false;
+                }
                 continue;
             }
 
             if (line.startsWith("#")) {
                 flushParagraph(htmlBuilder, paragraphLines);
-                isListOpen = closeListIfNeeded(htmlBuilder, isListOpen);
+                if (isListOpen) {
+                    closeList(htmlBuilder);
+                    isListOpen = false;
+                }
                 appendHeader(htmlBuilder, line);
                 continue;
             }
@@ -66,12 +72,17 @@ public class SimpleMarkdownRenderer {
                 continue;
             }
 
-            isListOpen = closeListIfNeeded(htmlBuilder, isListOpen);
+            if (isListOpen) {
+                closeList(htmlBuilder);
+                isListOpen = false;
+            }
             paragraphLines.add(HtmlUtils.htmlEscape(line));
         }
 
         flushParagraph(htmlBuilder, paragraphLines);
-        closeListIfNeeded(htmlBuilder, isListOpen);
+        if (isListOpen) {
+            closeList(htmlBuilder);
+        }
         return htmlBuilder.toString();
     }
 
@@ -106,12 +117,8 @@ public class SimpleMarkdownRenderer {
             .append("</li>");
     }
 
-    private static boolean closeListIfNeeded(StringBuilder htmlBuilder, boolean isListOpen) {
-        if (isListOpen) {
-            htmlBuilder.append("</ul>");
-        }
-
-        return false;
+    private static void closeList(StringBuilder htmlBuilder) {
+        htmlBuilder.append("</ul>");
     }
 
     private static void flushParagraph(StringBuilder htmlBuilder, List<String> paragraphLines) {

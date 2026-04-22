@@ -1,6 +1,6 @@
 package com.potterlim.daylog.support;
 
-public enum DailyLogSectionType {
+public enum EDailyLogSectionType {
     GOALS("## 🚀 Today's Goals"),
     FOCUS("## 🎯 Focus Areas"),
     CHALLENGES("## ⚙️ Challenges & Strategies"),
@@ -12,7 +12,7 @@ public enum DailyLogSectionType {
 
     private final String mHeaderText;
 
-    DailyLogSectionType(String headerText) {
+    EDailyLogSectionType(String headerText) {
         mHeaderText = headerText;
     }
 

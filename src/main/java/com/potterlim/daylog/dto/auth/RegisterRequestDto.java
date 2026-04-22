@@ -39,7 +39,7 @@ public final class RegisterRequestDto {
         mConfirmPassword = confirmPassword;
     }
 
-    public boolean hasSamePassword() {
+    public boolean hasMatchingPassword() {
         return mPassword != null && mPassword.equals(mConfirmPassword);
     }
 }

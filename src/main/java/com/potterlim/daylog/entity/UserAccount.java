@@ -34,13 +34,13 @@ public class UserAccount implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 30)
-    private UserRole mUserRole;
+    private EUserRole mUserRole;
 
     @Column(name = "enabled", nullable = false)
-    private boolean mEnabled;
+    private boolean mIsEnabled;
 
     @Column(name = "locked", nullable = false)
-    private boolean mLocked;
+    private boolean mIsLocked;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime mCreatedAt;
@@ -51,44 +51,16 @@ public class UserAccount implements UserDetails {
     protected UserAccount() {
     }
 
-    public UserAccount(String userName, String passwordHash, UserRole userRole) {
+    public UserAccount(String userName, String passwordHash, EUserRole userRole) {
         mUserName = userName;
         mPasswordHash = passwordHash;
         mUserRole = userRole;
-        mEnabled = true;
-        mLocked = false;
+        mIsEnabled = true;
+        mIsLocked = false;
     }
 
     public Long getId() {
         return mId;
-    }
-
-    public String getUserNameValue() {
-        return mUserName;
-    }
-
-    public String getPasswordHash() {
-        return mPasswordHash;
-    }
-
-    public UserRole getUserRole() {
-        return mUserRole;
-    }
-
-    public boolean isLocked() {
-        return mLocked;
-    }
-
-    public boolean isEnabledValue() {
-        return mEnabled;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return mCreatedAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return mUpdatedAt;
     }
 
     @Override
@@ -113,7 +85,7 @@ public class UserAccount implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !mLocked;
+        return !mIsLocked;
     }
 
     @Override
@@ -123,7 +95,7 @@ public class UserAccount implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return mEnabled;
+        return mIsEnabled;
     }
 
     @PrePersist

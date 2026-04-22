@@ -10,7 +10,7 @@ public final class LoginRequestDto {
     @NotBlank(message = "비밀번호를 입력해주세요.")
     private String mPassword = "";
 
-    private boolean mRememberMe = false;
+    private boolean mIsRememberMe;
 
     public String getUserName() {
         return mUserName;
@@ -29,10 +29,10 @@ public final class LoginRequestDto {
     }
 
     public boolean isRememberMe() {
-        return mRememberMe;
+        return mIsRememberMe;
     }
 
-    public void setRememberMe(boolean rememberMe) {
-        mRememberMe = rememberMe;
+    public void setRememberMe(boolean isRememberMe) {
+        mIsRememberMe = isRememberMe;
     }
 }

@@ -119,6 +119,7 @@ class WebFlowIntegrationTests {
 
     @Test
     void morningListShouldRenderSavedDate() throws Exception {
+        LocalDate morningDate = LocalDate.now();
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("planner", "pass1234")
         );
@@ -126,7 +127,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(post("/daily-log/morning/save")
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
-                .param("date", "2026-04-01")
+                .param("date", morningDate.toString())
                 .param("goals", "운동하기")
                 .param("focus", "중요 업무")
                 .param("challenges", "집중 유지"))
@@ -135,6 +136,6 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daily-log/morning")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("2026-04-01")));
+            .andExpect(content().string(containsString(morningDate.toString())));
     }
 }

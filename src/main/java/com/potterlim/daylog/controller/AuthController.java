@@ -12,8 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -77,13 +77,21 @@ public class AuthController {
         }
 
         try {
-            authenticateUser(
-                loginRequestDto.getUserName(),
-                loginRequestDto.getPassword(),
-                loginRequestDto.isRememberMe(),
-                httpServletRequest,
-                httpServletResponse
-            );
+            if (loginRequestDto.isRememberMe()) {
+                authenticateUserWithRememberMe(
+                    loginRequestDto.getUserName(),
+                    loginRequestDto.getPassword(),
+                    httpServletRequest,
+                    httpServletResponse
+                );
+            } else {
+                authenticateUser(
+                    loginRequestDto.getUserName(),
+                    loginRequestDto.getPassword(),
+                    httpServletRequest,
+                    httpServletResponse
+                );
+            }
         } catch (BadCredentialsException badCredentialsException) {
             mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
             bindingResult.rejectValue("password", "login.password", "비밀번호가 올바르지 않습니다.");
@@ -121,7 +129,7 @@ public class AuthController {
         HttpServletRequest httpServletRequest,
         HttpServletResponse httpServletResponse
     ) {
-        if (!registerRequestDto.hasSamePassword()) {
+        if (!registerRequestDto.hasMatchingPassword()) {
             bindingResult.rejectValue("confirmPassword", "register.confirmPassword", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
 
@@ -142,7 +150,6 @@ public class AuthController {
         authenticateUser(
             registerRequestDto.getUserName(),
             registerRequestDto.getPassword(),
-            false,
             httpServletRequest,
             httpServletResponse
         );
@@ -156,19 +163,33 @@ public class AuthController {
             && !(authenticationOrNull instanceof AnonymousAuthenticationToken);
     }
 
+    private void authenticateUserWithRememberMe(
+        String userName,
+        String rawPassword,
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse
+    ) {
+        Authentication authentication = authenticateUser(
+            userName,
+            rawPassword,
+            httpServletRequest,
+            httpServletResponse
+        );
+
+        mRememberMeServices.loginSuccess(httpServletRequest, httpServletResponse, authentication);
+    }
+
     /**
      * Saves the authenticated principal into the Spring Security context and the HTTP session.
      *
      * <p>Preconditions: the given user name must already exist and the raw password must be the
-     * password entered by the user. The remember-me flag controls whether a persistent login cookie
-     * is issued together with the normal session login.</p>
+     * password entered by the user.</p>
      *
-     * @return Nothing. Successful execution leaves the current request authenticated.
+     * @return The authenticated principal saved into the current request context.
      */
-    private void authenticateUser(
+    private Authentication authenticateUser(
         String userName,
         String rawPassword,
-        boolean isRememberMe,
         HttpServletRequest httpServletRequest,
         HttpServletResponse httpServletResponse
     ) {
@@ -181,9 +202,6 @@ public class AuthController {
         securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
         mSecurityContextRepository.saveContext(securityContext, httpServletRequest, httpServletResponse);
-
-        if (isRememberMe) {
-            mRememberMeServices.loginSuccess(httpServletRequest, httpServletResponse, authentication);
-        }
+        return authentication;
     }
 }

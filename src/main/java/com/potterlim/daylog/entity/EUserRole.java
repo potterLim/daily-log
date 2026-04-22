@@ -1,6 +1,6 @@
 package com.potterlim.daylog.entity;
 
-public enum UserRole {
+public enum EUserRole {
     USER;
 
     public String getAuthorityName() {

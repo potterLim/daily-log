@@ -14,15 +14,15 @@ import com.potterlim.daylog.dto.dailylog.MorningFormDto;
 import com.potterlim.daylog.dto.dailylog.WeeklyProgressItemDto;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.service.IDailyLogService;
-import com.potterlim.daylog.support.DailyLogSectionType;
+import com.potterlim.daylog.support.EDailyLogSectionType;
 import com.potterlim.daylog.support.SimpleMarkdownRenderer;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.BindingResult;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,9 +64,9 @@ public class DailyLogController {
     ) {
         MorningFormDto morningFormDto = new MorningFormDto();
         morningFormDto.setDate(date);
-        morningFormDto.setGoals(mDailyLogService.readSection(date, userAccount.getId(), DailyLogSectionType.GOALS));
-        morningFormDto.setFocus(mDailyLogService.readSection(date, userAccount.getId(), DailyLogSectionType.FOCUS));
-        morningFormDto.setChallenges(mDailyLogService.readSection(date, userAccount.getId(), DailyLogSectionType.CHALLENGES));
+        morningFormDto.setGoals(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.GOALS));
+        morningFormDto.setFocus(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.FOCUS));
+        morningFormDto.setChallenges(mDailyLogService.readSection(date, userAccount.getId(), EDailyLogSectionType.CHALLENGES));
 
         model.addAttribute("morningFormDto", morningFormDto);
         return "dailylog/morning-edit";
@@ -83,10 +83,15 @@ public class DailyLogController {
             return "dailylog/morning-edit";
         }
 
-        String goalsBlock = buildGoalLines(morningFormDto.getGoals());
-        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), DailyLogSectionType.GOALS, goalsBlock);
-        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), DailyLogSectionType.FOCUS, morningFormDto.getFocus());
-        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), DailyLogSectionType.CHALLENGES, morningFormDto.getChallenges());
+        String goalsMarkdownList = buildGoalMarkdownList(morningFormDto.getGoals());
+        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), EDailyLogSectionType.GOALS, goalsMarkdownList);
+        mDailyLogService.writeSection(morningFormDto.getDate(), userAccount.getId(), EDailyLogSectionType.FOCUS, morningFormDto.getFocus());
+        mDailyLogService.writeSection(
+            morningFormDto.getDate(),
+            userAccount.getId(),
+            EDailyLogSectionType.CHALLENGES,
+            morningFormDto.getChallenges()
+        );
 
         redirectAttributes.addFlashAttribute("message", "✅ 아침 계획이 저장되었습니다.");
         return "redirect:/daily-log/morning";
@@ -143,31 +148,31 @@ public class DailyLogController {
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
             userAccount.getId(),
-            DailyLogSectionType.EVENING_GOALS,
-            buildCheckedGoalsBlock(eveningFormDto.getGoals())
+            EDailyLogSectionType.EVENING_GOALS,
+            buildCheckedGoalMarkdownList(eveningFormDto.getGoals())
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
             userAccount.getId(),
-            DailyLogSectionType.ACHIEVEMENTS,
+            EDailyLogSectionType.ACHIEVEMENTS,
             eveningFormDto.getAchievements()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
             userAccount.getId(),
-            DailyLogSectionType.IMPROVEMENTS,
+            EDailyLogSectionType.IMPROVEMENTS,
             eveningFormDto.getImprovements()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
             userAccount.getId(),
-            DailyLogSectionType.GRATITUDE,
+            EDailyLogSectionType.GRATITUDE,
             eveningFormDto.getGratitude()
         );
         mDailyLogService.writeSection(
             eveningFormDto.getDate(),
             userAccount.getId(),
-            DailyLogSectionType.NOTES,
+            EDailyLogSectionType.NOTES,
             eveningFormDto.getNotes()
         );
 
@@ -183,7 +188,7 @@ public class DailyLogController {
 
         for (DailyLogDayStatusDto dailyLogDayStatusDto : mDailyLogService.listWeek(LocalDate.now(), userAccount.getId())) {
             List<String> goals = splitNonBlankLines(
-                mDailyLogService.readSection(dailyLogDayStatusDto.getDate(), userAccount.getId(), DailyLogSectionType.GOALS)
+                mDailyLogService.readSection(dailyLogDayStatusDto.getDate(), userAccount.getId(), EDailyLogSectionType.GOALS)
             );
 
             int total = goals.size();
@@ -229,11 +234,11 @@ public class DailyLogController {
         }
 
         model.addAttribute("previewDate", date);
-        model.addAttribute("previewHtml", mSimpleMarkdownRenderer.render(preprocessMarkdown(markdownText)));
+        model.addAttribute("previewHtml", mSimpleMarkdownRenderer.render(normalizePreviewMarkdownForRendering(markdownText)));
         return "dailylog/log-preview";
     }
 
-    private static String buildGoalLines(String goalsOrNull) {
+    private static String buildGoalMarkdownList(String goalsOrNull) {
         if (goalsOrNull == null || goalsOrNull.isBlank()) {
             return "";
         }
@@ -259,29 +264,29 @@ public class DailyLogController {
             return "<p><em>아침 로그가 없습니다.</em></p>";
         }
 
-        String goals = mDailyLogService.readSection(dateOrNull, userAccountId, DailyLogSectionType.GOALS);
-        String focus = mDailyLogService.readSection(dateOrNull, userAccountId, DailyLogSectionType.FOCUS);
-        String challenges = mDailyLogService.readSection(dateOrNull, userAccountId, DailyLogSectionType.CHALLENGES);
+        String goals = mDailyLogService.readSection(dateOrNull, userAccountId, EDailyLogSectionType.GOALS);
+        String focus = mDailyLogService.readSection(dateOrNull, userAccountId, EDailyLogSectionType.FOCUS);
+        String challenges = mDailyLogService.readSection(dateOrNull, userAccountId, EDailyLogSectionType.CHALLENGES);
 
-        String markdownText = buildMorningPreviewMarkdown(goals, focus, challenges);
+        String markdownText = buildMorningPreviewMarkdownText(goals, focus, challenges);
         if (markdownText.isBlank()) {
             return "<p><em>아침 로그가 없습니다.</em></p>";
         }
 
-        return mSimpleMarkdownRenderer.render(preprocessMarkdown(markdownText));
+        return mSimpleMarkdownRenderer.render(normalizePreviewMarkdownForRendering(markdownText));
     }
 
     private EveningFormDto buildEveningFormDto(LocalDate date, Long userAccountId) {
-        String goals = mDailyLogService.readSection(date, userAccountId, DailyLogSectionType.GOALS);
+        String goals = mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.GOALS);
         Set<String> checkedGoalTexts = new HashSet<>(mDailyLogService.readCheckedGoalTexts(date, userAccountId));
 
         EveningFormDto eveningFormDto = new EveningFormDto();
         eveningFormDto.setDate(date);
         eveningFormDto.setGoals(buildEveningGoalItems(goals, checkedGoalTexts));
-        eveningFormDto.setAchievements(mDailyLogService.readSection(date, userAccountId, DailyLogSectionType.ACHIEVEMENTS));
-        eveningFormDto.setImprovements(mDailyLogService.readSection(date, userAccountId, DailyLogSectionType.IMPROVEMENTS));
-        eveningFormDto.setGratitude(mDailyLogService.readSection(date, userAccountId, DailyLogSectionType.GRATITUDE));
-        eveningFormDto.setNotes(mDailyLogService.readSection(date, userAccountId, DailyLogSectionType.NOTES));
+        eveningFormDto.setAchievements(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.ACHIEVEMENTS));
+        eveningFormDto.setImprovements(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.IMPROVEMENTS));
+        eveningFormDto.setGratitude(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.GRATITUDE));
+        eveningFormDto.setNotes(mDailyLogService.readSection(date, userAccountId, EDailyLogSectionType.NOTES));
         return eveningFormDto;
     }
 
@@ -298,7 +303,7 @@ public class DailyLogController {
         return goalItems;
     }
 
-    private static String buildCheckedGoalsBlock(List<EveningGoalItemDto> goalItemsOrNull) {
+    private static String buildCheckedGoalMarkdownList(List<EveningGoalItemDto> goalItemsOrNull) {
         if (goalItemsOrNull == null || goalItemsOrNull.isEmpty()) {
             return "";
         }
@@ -317,17 +322,17 @@ public class DailyLogController {
         return stringJoiner.toString();
     }
 
-    private static String buildMorningPreviewMarkdown(String goals, String focus, String challenges) {
+    private static String buildMorningPreviewMarkdownText(String goals, String focus, String challenges) {
         StringBuilder markdownBuilder = new StringBuilder();
-        appendPreviewSection(markdownBuilder, DailyLogSectionType.GOALS, goals);
-        appendPreviewSection(markdownBuilder, DailyLogSectionType.FOCUS, focus);
-        appendPreviewSection(markdownBuilder, DailyLogSectionType.CHALLENGES, challenges);
+        appendPreviewSection(markdownBuilder, EDailyLogSectionType.GOALS, goals);
+        appendPreviewSection(markdownBuilder, EDailyLogSectionType.FOCUS, focus);
+        appendPreviewSection(markdownBuilder, EDailyLogSectionType.CHALLENGES, challenges);
         return markdownBuilder.toString().stripTrailing();
     }
 
     private static void appendPreviewSection(
         StringBuilder markdownBuilder,
-        DailyLogSectionType dailyLogSectionType,
+        EDailyLogSectionType dailyLogSectionType,
         String sectionBody
     ) {
         List<String> lines = splitNonBlankLines(sectionBody);
@@ -345,7 +350,7 @@ public class DailyLogController {
         }
     }
 
-    private static String preprocessMarkdown(String markdownTextOrNull) {
+    private static String normalizePreviewMarkdownForRendering(String markdownTextOrNull) {
         if (markdownTextOrNull == null || markdownTextOrNull.isBlank()) {
             return "";
         }

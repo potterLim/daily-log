@@ -3,7 +3,7 @@ package com.potterlim.daylog.service;
 import java.time.LocalDate;
 import java.util.List;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
-import com.potterlim.daylog.support.DailyLogSectionType;
+import com.potterlim.daylog.support.EDailyLogSectionType;
 
 public interface IDailyLogService {
 
@@ -15,18 +15,18 @@ public interface IDailyLogService {
      *
      * @return The section body with list prefixes removed for form editing.
      */
-    String readSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType);
+    String readSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType);
 
     /**
      * Writes a markdown section for a specific user and date.
      *
      * <p>Preconditions: the date, user account id, and section type must already be validated by
-     * the caller. The body may be empty, and the method preserves the shared section ordering used
-     * by the log file format.</p>
+     * the caller. The body may be null or empty, and the method preserves the shared section
+     * ordering used by the log file format.</p>
      *
      * @return Nothing. Successful execution updates the markdown file on disk.
      */
-    void writeSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType, String body);
+    void writeSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType, String bodyOrNull);
 
     /**
      * Lists the available daily log files for the week that contains the reference date.

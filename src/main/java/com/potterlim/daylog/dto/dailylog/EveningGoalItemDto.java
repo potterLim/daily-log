@@ -3,7 +3,7 @@ package com.potterlim.daylog.dto.dailylog;
 public final class EveningGoalItemDto {
 
     private String mText = "";
-    private boolean mDone = false;
+    private boolean mIsDone;
 
     public String getText() {
         return mText;
@@ -14,10 +14,10 @@ public final class EveningGoalItemDto {
     }
 
     public boolean isDone() {
-        return mDone;
+        return mIsDone;
     }
 
-    public void setDone(boolean done) {
-        mDone = done;
+    public void setDone(boolean isDone) {
+        mIsDone = isDone;
     }
 }

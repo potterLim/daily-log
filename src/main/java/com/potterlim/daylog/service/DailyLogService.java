@@ -13,38 +13,38 @@ import java.util.List;
 import java.util.Map;
 import com.potterlim.daylog.config.DayLogApplicationProperties;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
-import com.potterlim.daylog.support.DailyLogSectionType;
+import com.potterlim.daylog.support.EDailyLogSectionType;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DailyLogService implements IDailyLogService {
 
-    private static final List<DailyLogSectionType> SECTION_ORDER = List.of(
-        DailyLogSectionType.GOALS,
-        DailyLogSectionType.FOCUS,
-        DailyLogSectionType.CHALLENGES,
-        DailyLogSectionType.EVENING_GOALS,
-        DailyLogSectionType.ACHIEVEMENTS,
-        DailyLogSectionType.IMPROVEMENTS,
-        DailyLogSectionType.GRATITUDE,
-        DailyLogSectionType.NOTES
+    private static final List<EDailyLogSectionType> SECTION_ORDER = List.of(
+        EDailyLogSectionType.GOALS,
+        EDailyLogSectionType.FOCUS,
+        EDailyLogSectionType.CHALLENGES,
+        EDailyLogSectionType.EVENING_GOALS,
+        EDailyLogSectionType.ACHIEVEMENTS,
+        EDailyLogSectionType.IMPROVEMENTS,
+        EDailyLogSectionType.GRATITUDE,
+        EDailyLogSectionType.NOTES
     );
 
-    private static final EnumSet<DailyLogSectionType> MORNING_SECTIONS = EnumSet.of(
-        DailyLogSectionType.GOALS,
-        DailyLogSectionType.FOCUS,
-        DailyLogSectionType.CHALLENGES
+    private static final EnumSet<EDailyLogSectionType> MORNING_SECTIONS = EnumSet.of(
+        EDailyLogSectionType.GOALS,
+        EDailyLogSectionType.FOCUS,
+        EDailyLogSectionType.CHALLENGES
     );
 
     private static final String MORNING_TEMPLATE = String.join(
         "\r\n",
-        DailyLogSectionType.GOALS.getHeaderText(),
+        EDailyLogSectionType.GOALS.getHeaderText(),
         "",
         "",
-        DailyLogSectionType.FOCUS.getHeaderText(),
+        EDailyLogSectionType.FOCUS.getHeaderText(),
         "",
         "",
-        DailyLogSectionType.CHALLENGES.getHeaderText(),
+        EDailyLogSectionType.CHALLENGES.getHeaderText(),
         "",
         ""
     );
@@ -58,14 +58,14 @@ public class DailyLogService implements IDailyLogService {
     }
 
     @Override
-    public String readSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType) {
+    public String readSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType) {
         Path filePath = resolveFilePath(date, userAccountId);
 
         if (!Files.exists(filePath)) {
             return "";
         }
 
-        Map<DailyLogSectionType, String> sectionBodyByType = parseSections(readFile(filePath));
+        Map<EDailyLogSectionType, String> sectionBodyByType = parseSections(readFile(filePath));
         String body = sectionBodyByType.getOrDefault(dailyLogSectionType, "");
 
         if (body.isBlank()) {
@@ -89,7 +89,7 @@ public class DailyLogService implements IDailyLogService {
     }
 
     @Override
-    public void writeSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType, String body) {
+    public void writeSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType, String bodyOrNull) {
         Path filePath = resolveFilePath(date, userAccountId);
         String fileText;
 
@@ -101,8 +101,8 @@ public class DailyLogService implements IDailyLogService {
             fileText = "";
         }
 
-        Map<DailyLogSectionType, String> sectionBodyByType = parseSections(fileText);
-        sectionBodyByType.put(dailyLogSectionType, normalizeBody(body));
+        Map<EDailyLogSectionType, String> sectionBodyByType = parseSections(fileText);
+        sectionBodyByType.put(dailyLogSectionType, normalizeBody(bodyOrNull));
 
         try {
             Files.createDirectories(filePath.getParent());
@@ -127,8 +127,8 @@ public class DailyLogService implements IDailyLogService {
 
             dayStatuses.add(new DailyLogDayStatusDto(
                 currentDate,
-                hasSection(currentDate, userAccountId, DailyLogSectionType.GOALS),
-                hasSection(currentDate, userAccountId, DailyLogSectionType.ACHIEVEMENTS)
+                hasSection(currentDate, userAccountId, EDailyLogSectionType.GOALS),
+                hasSection(currentDate, userAccountId, EDailyLogSectionType.ACHIEVEMENTS)
             ));
         }
 
@@ -159,7 +159,7 @@ public class DailyLogService implements IDailyLogService {
         return checkedGoalTexts;
     }
 
-    private boolean hasSection(LocalDate date, Long userAccountId, DailyLogSectionType dailyLogSectionType) {
+    private boolean hasSection(LocalDate date, Long userAccountId, EDailyLogSectionType dailyLogSectionType) {
         Path filePath = resolveFilePath(date, userAccountId);
 
         if (!Files.exists(filePath)) {
@@ -176,12 +176,12 @@ public class DailyLogService implements IDailyLogService {
         return false;
     }
 
-    private Map<DailyLogSectionType, String> parseSections(String fileText) {
-        Map<DailyLogSectionType, StringBuilder> sectionLinesByType = new LinkedHashMap<>();
-        DailyLogSectionType currentSectionType = null;
+    private Map<EDailyLogSectionType, String> parseSections(String fileText) {
+        Map<EDailyLogSectionType, StringBuilder> sectionLinesByType = new LinkedHashMap<>();
+        EDailyLogSectionType currentSectionType = null;
 
         for (String line : splitLines(fileText)) {
-            DailyLogSectionType matchedSectionType = findSectionType(line.stripTrailing());
+            EDailyLogSectionType matchedSectionType = findSectionTypeOrNull(line.stripTrailing());
 
             if (matchedSectionType != null) {
                 currentSectionType = matchedSectionType;
@@ -194,18 +194,18 @@ public class DailyLogService implements IDailyLogService {
             }
         }
 
-        Map<DailyLogSectionType, String> sectionBodyByType = new LinkedHashMap<>();
-        for (Map.Entry<DailyLogSectionType, StringBuilder> entry : sectionLinesByType.entrySet()) {
+        Map<EDailyLogSectionType, String> sectionBodyByType = new LinkedHashMap<>();
+        for (Map.Entry<EDailyLogSectionType, StringBuilder> entry : sectionLinesByType.entrySet()) {
             sectionBodyByType.put(entry.getKey(), entry.getValue().toString().stripTrailing());
         }
 
         return sectionBodyByType;
     }
 
-    private String buildFileText(Map<DailyLogSectionType, String> sectionBodyByType) {
+    private String buildFileText(Map<EDailyLogSectionType, String> sectionBodyByType) {
         List<String> blocks = new ArrayList<>();
 
-        for (DailyLogSectionType dailyLogSectionType : SECTION_ORDER) {
+        for (EDailyLogSectionType dailyLogSectionType : SECTION_ORDER) {
             if (!sectionBodyByType.containsKey(dailyLogSectionType)) {
                 continue;
             }
@@ -250,8 +250,8 @@ public class DailyLogService implements IDailyLogService {
         return String.join("\r\n", normalizedLines);
     }
 
-    private static DailyLogSectionType findSectionType(String headerLine) {
-        for (DailyLogSectionType dailyLogSectionType : DailyLogSectionType.values()) {
+    private static EDailyLogSectionType findSectionTypeOrNull(String headerLine) {
+        for (EDailyLogSectionType dailyLogSectionType : EDailyLogSectionType.values()) {
             if (dailyLogSectionType.getHeaderText().equals(headerLine)) {
                 return dailyLogSectionType;
             }
