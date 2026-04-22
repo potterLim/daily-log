@@ -2,18 +2,38 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '홈')}">
 <section class="home-shell">
-    <div class="hero-grid">
-        <div class="surface-panel hero-panel hero-panel-primary">
-            <span class="eyebrow">Personal operating system</span>
-            <h1 class="display-title">하루의 계획과 실행, 회고를 하나의 제품 경험으로 연결하세요.</h1>
-            <p class="lead-copy">
-                DailyLog는 아침 계획, 저녁 회고, 주간 성취 확인을 자연스럽게 이어서
-                매일의 방향성과 결과를 같은 맥락 안에서 관리할 수 있게 해줍니다.
-            </p>
+    <div class="hero-grid hero-grid-premium">
+        <div class="surface-panel hero-panel-primary hero-panel-premium">
+            <div class="hero-copy-stack">
+                <span class="eyebrow">Personal operating system</span>
+                <h1 class="display-title">하루의 계획과 실행, 회고를 하나의 제품 경험으로 연결하세요.</h1>
+                <p class="lead-copy">
+                    DailyLog는 아침 계획, 저녁 회고, 주간 성취 확인을 자연스럽게 이어서
+                    매일의 방향성과 결과를 같은 맥락 안에서 관리할 수 있게 해줍니다.
+                </p>
+            </div>
 
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg" th:href="@{/daily-log/morning}">아침 계획 시작</a>
                 <a class="btn btn-outline-secondary btn-lg" th:href="@{/daily-log/week}">주간 흐름 보기</a>
+            </div>
+
+            <div class="hero-story-grid">
+                <article class="hero-story-card hero-story-card-highlight">
+                    <span class="story-kicker">Morning brief</span>
+                    <strong>하루를 시작하기 전에 방향을 먼저 설계합니다.</strong>
+                    <p>오늘의 목표와 집중 포인트, 예상 난관까지 한 번에 정리해 실행력이 높은 하루를 준비합니다.</p>
+                </article>
+                <article class="hero-story-card">
+                    <span class="story-kicker">Reflection loop</span>
+                    <strong>아침 계획이 저녁 회고로 그대로 이어집니다.</strong>
+                    <p>입력 부담은 낮추고, 계획 대비 결과를 더 자연스럽게 연결합니다.</p>
+                </article>
+                <article class="hero-story-card">
+                    <span class="story-kicker">Weekly clarity</span>
+                    <strong>주간 화면에서는 흐름과 맥락이 함께 보입니다.</strong>
+                    <p>퍼센트와 숫자만이 아니라, 각 날짜의 상세 로그까지 빠르게 다시 열 수 있습니다.</p>
+                </article>
             </div>
 
             <div class="hero-metric-grid">
@@ -32,63 +52,101 @@
             </div>
         </div>
 
-        <div class="surface-panel hero-panel hero-panel-secondary">
-            <div class="product-window">
-                <div class="window-toolbar">
-                    <span class="window-dot"></span>
-                    <span class="window-dot"></span>
-                    <span class="window-dot"></span>
-                    <strong>Today flow</strong>
+        <div class="hero-side-stack">
+            <div class="surface-panel hero-side-panel hero-side-panel-dark">
+                <div class="panel-header compact panel-header-inverse">
+                    <div>
+                        <span class="eyebrow">Today flow</span>
+                        <h2>하루의 리듬을 한 화면에서</h2>
+                    </div>
                 </div>
-                <div class="window-content">
-                    <div class="window-row">
-                        <span>08:30</span>
-                        <strong>오늘의 목표 3개 정리</strong>
-                        <em>아침 계획</em>
+
+                <div class="product-window product-window-dark">
+                    <div class="window-toolbar">
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                        <strong>Daily sequence</strong>
                     </div>
-                    <div class="window-row">
-                        <span>14:00</span>
-                        <strong>집중 포인트 재확인</strong>
-                        <em>실행 중</em>
+                    <div class="window-content">
+                        <div class="window-row">
+                            <span>08:30</span>
+                            <strong>오늘의 목표 3개 정리</strong>
+                            <em>아침 계획</em>
+                        </div>
+                        <div class="window-row">
+                            <span>14:00</span>
+                            <strong>집중 포인트 재확인</strong>
+                            <em>실행 중</em>
+                        </div>
+                        <div class="window-row">
+                            <span>21:20</span>
+                            <strong>성과와 개선점 회고</strong>
+                            <em>저녁 회고</em>
+                        </div>
                     </div>
-                    <div class="window-row">
-                        <span>21:20</span>
-                        <strong>성과와 개선점 회고</strong>
-                        <em>저녁 회고</em>
+                </div>
+
+                <div class="hero-glance-row">
+                    <div class="glance-pill">
+                        <span>빠른 입력</span>
+                        <strong>Low friction</strong>
+                    </div>
+                    <div class="glance-pill">
+                        <span>높은 가독성</span>
+                        <strong>Readable</strong>
+                    </div>
+                    <div class="glance-pill">
+                        <span>연결된 흐름</span>
+                        <strong>Connected</strong>
                     </div>
                 </div>
             </div>
 
-            <div class="insight-card-stack">
-                <div class="insight-mini-card">
+            <div class="hero-side-split">
+                <div class="surface-panel hero-side-panel hero-side-panel-soft">
                     <span class="eyebrow">Consistency</span>
-                    <p>짧고 빠른 입력 흐름으로 매일 기록하기 쉬운 구조를 유지합니다.</p>
+                    <h2>계속 쓰고 싶게 만드는 밀도</h2>
+                    <p>짧고 빠른 입력 흐름, 부드러운 레이아웃, 읽기 쉬운 위계를 통해 반복 사용의 피로를 낮춥니다.</p>
                 </div>
-                <div class="insight-mini-card">
+                <div class="surface-panel hero-side-panel hero-side-panel-soft">
                     <span class="eyebrow">Clarity</span>
-                    <p>각 화면이 하나의 목적만 수행하도록 정리해 인지 부담을 낮췄습니다.</p>
+                    <h2>한 화면, 하나의 목적</h2>
+                    <p>각 화면이 하나의 목적만 분명하게 수행하도록 구성해 인지 부담을 줄였습니다.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="feature-grid">
+    <div class="feature-grid feature-grid-premium">
         <article class="surface-panel feature-card">
-            <span class="feature-icon">01</span>
+            <div class="feature-card-header">
+                <span class="feature-icon">01</span>
+                <span class="feature-badge">Focus</span>
+            </div>
             <h2>아침 계획</h2>
             <p>목표를 줄 단위로 빠르게 정리하고, 오늘 꼭 지켜야 할 집중 포인트를 남겨둘 수 있습니다.</p>
+            <span class="feature-footnote">목표 작성 → 저녁 체크리스트 자동 연결</span>
         </article>
 
         <article class="surface-panel feature-card">
-            <span class="feature-icon">02</span>
+            <div class="feature-card-header">
+                <span class="feature-icon">02</span>
+                <span class="feature-badge">Reflection</span>
+            </div>
             <h2>저녁 회고</h2>
             <p>아침에 세운 목표를 그대로 가져와 완료 여부를 체크하고 실행 결과를 회고합니다.</p>
+            <span class="feature-footnote">성과, 개선점, 감사 기록까지 한 흐름 안에서 정리</span>
         </article>
 
         <article class="surface-panel feature-card">
-            <span class="feature-icon">03</span>
+            <div class="feature-card-header">
+                <span class="feature-icon">03</span>
+                <span class="feature-badge">Review</span>
+            </div>
             <h2>주간 성취</h2>
             <p>일자별 달성률과 상세 로그를 함께 보며, 이번 주의 리듬을 빠르게 파악할 수 있습니다.</p>
+            <span class="feature-footnote">숫자와 맥락을 함께 읽는 주간 요약</span>
         </article>
 
         <article class="surface-panel philosophy-card">

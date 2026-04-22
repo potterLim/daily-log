@@ -2,15 +2,25 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '아침 계획')}">
 <section class="workspace-shell">
-    <div class="workspace-header">
-        <div>
-            <span class="eyebrow">Morning planning</span>
-            <h1 class="section-title">이번 주 아침 계획</h1>
-            <p class="section-subtitle">새 날짜를 열어 계획을 작성하거나, 이미 저장한 기록을 다시 열 수 있습니다.</p>
-        </div>
-        <div class="pill-row">
-            <span class="info-pill" th:text="'이번 주 기록 ' + ${#lists.size(morningDates)} + '건'">이번 주 기록 0건</span>
-            <span class="info-pill">빠른 시작</span>
+    <div class="surface-panel workspace-hero workspace-hero-morning">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">Morning planning</span>
+                <h1 class="section-title">이번 주 아침 계획</h1>
+                <p class="section-subtitle">새 날짜를 열어 계획을 작성하거나, 이미 저장한 기록을 다시 열 수 있습니다.</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">이번 주 기록</span>
+                    <strong th:text="${#lists.size(morningDates)} + '건'">0건</strong>
+                    <p>작성된 아침 계획 수를 바로 확인합니다.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">추천 흐름</span>
+                    <strong>오늘 날짜로 바로 시작</strong>
+                    <p>빠르게 열고, 저녁 회고까지 연결되는 하루의 첫 화면입니다.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -19,7 +29,7 @@
     </div>
 
     <div class="workspace-grid workspace-grid-two">
-        <div class="surface-panel">
+        <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
                     <span class="eyebrow">Quick launch</span>
@@ -40,7 +50,7 @@
                 <button type="submit" class="btn btn-primary btn-lg">아침 계획 열기</button>
             </form>
 
-            <div class="helper-stack">
+            <div class="helper-stack helper-stack-tight">
                 <div class="helper-card">
                     <strong>짧고 선명하게</strong>
                     <p>목표는 줄 단위로 나누면 저녁 회고에서 바로 체크할 수 있습니다.</p>
@@ -52,7 +62,7 @@
             </div>
         </div>
 
-        <div class="surface-panel">
+        <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
                     <span class="eyebrow">Saved entries</span>

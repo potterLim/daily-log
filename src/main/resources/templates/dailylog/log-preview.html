@@ -2,15 +2,27 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '로그 미리보기')}">
 <section class="workspace-shell reader-shell">
-    <div class="workspace-header">
-        <div>
-            <span class="eyebrow">Log preview</span>
-            <h1 class="section-title" th:text="'로그 미리보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">로그 미리보기</h1>
-            <p class="section-subtitle">선택한 날짜의 기록을 읽기 전용 레이아웃으로 다시 확인합니다.</p>
-        </div>
-        <div class="button-inline-row">
-            <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 성취</a>
-            <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
+    <div class="surface-panel workspace-hero workspace-hero-reader">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">Log preview</span>
+                <h1 class="section-title" th:text="'로그 미리보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">로그 미리보기</h1>
+                <p class="section-subtitle">선택한 날짜의 기록을 읽기 전용 레이아웃으로 다시 확인합니다.</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">보기 모드</span>
+                    <strong>Readable view</strong>
+                    <p>불필요한 조작 요소를 덜고 내용 자체에 더 집중할 수 있게 정리했습니다.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">빠른 이동</span>
+                    <div class="button-inline-row">
+                        <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 성취</a>
+                        <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -2,20 +2,30 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '저녁 회고')}">
 <section class="workspace-shell">
-    <div class="workspace-header">
-        <div>
-            <span class="eyebrow">Evening reflection</span>
-            <h1 class="section-title" th:text="'저녁 회고 · ' + ${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">저녁 회고</h1>
-            <p class="section-subtitle">아침 계획을 다시 확인하면서 실행 결과와 하루의 인사이트를 정리합니다.</p>
-        </div>
-        <div class="pill-row">
-            <span class="info-pill">Plan → Reflection</span>
-            <span class="info-pill">목표 체크 자동 연결</span>
+    <div class="surface-panel workspace-hero workspace-hero-evening">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">Evening reflection</span>
+                <h1 class="section-title" th:text="'저녁 회고 · ' + ${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">저녁 회고</h1>
+                <p class="section-subtitle">아침 계획을 다시 확인하면서 실행 결과와 하루의 인사이트를 정리합니다.</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">Reflection loop</span>
+                    <strong>계획 대비 결과를 바로 기록</strong>
+                    <p>아침 목표를 기준으로 하루의 실제 성과를 더 정확하게 회고합니다.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">Weekly impact</span>
+                    <strong>주간 성취에 즉시 반영</strong>
+                    <p>완료 체크와 메모가 이번 주의 흐름으로 누적됩니다.</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="reflection-layout">
-        <div class="surface-panel reference-panel">
+        <div class="surface-panel reference-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
                     <span class="eyebrow">Reference</span>
@@ -28,7 +38,7 @@
             </div>
         </div>
 
-        <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post" class="surface-panel reflection-form">
+        <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post" class="surface-panel reflection-form surface-panel-elevated">
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
             <input type="hidden" th:field="*{date}" />
 

@@ -2,17 +2,26 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '저녁 회고')}">
 <section class="workspace-shell">
-    <div class="workspace-header">
-        <div>
-            <span class="eyebrow">Evening reflection</span>
-            <h1 class="section-title">저녁 회고</h1>
-            <p class="section-subtitle" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</p>
-        </div>
-        <div class="week-switcher">
-            <span class="info-pill" th:text="'대상 날짜 ' + ${#lists.size(eveningDates)} + '건'">대상 날짜 0건</span>
-            <div class="button-inline-row">
-                <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
-                <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+    <div class="surface-panel workspace-hero workspace-hero-evening">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">Evening reflection</span>
+                <h1 class="section-title">저녁 회고</h1>
+                <p class="section-subtitle" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">대상 날짜</span>
+                    <strong th:text="${#lists.size(eveningDates)} + '건'">0건</strong>
+                    <p>회고 또는 아침 계획이 있는 날짜만 모아서 보여줍니다.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">주차 이동</span>
+                    <div class="button-inline-row">
+                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
+                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -22,7 +31,7 @@
     </div>
 
     <div class="workspace-grid workspace-grid-two">
-        <div class="surface-panel">
+        <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
                     <span class="eyebrow">Reflection list</span>
@@ -50,7 +59,7 @@
             </div>
         </div>
 
-        <div class="surface-panel">
+        <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
                     <span class="eyebrow">Why it matters</span>

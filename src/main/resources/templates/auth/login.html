@@ -2,26 +2,46 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '로그인')}">
 <section class="auth-layout">
-    <div class="surface-panel auth-showcase">
-        <span class="eyebrow">Welcome back</span>
-        <h1 class="display-title auth-display-title">기록의 흐름을 다시 이어갈 준비가 되어 있습니다.</h1>
-        <p class="lead-copy">
-            DailyLog는 하루의 시작과 마무리를 같은 맥락 안에서 정리할 수 있게 설계된
-            개인 루틴 워크스페이스입니다.
-        </p>
+    <div class="surface-panel auth-showcase auth-showcase-rich">
+        <div class="auth-showcase-copy">
+            <span class="eyebrow">Welcome back</span>
+            <h1 class="display-title auth-display-title">기록의 흐름을 다시 이어갈 준비가 되어 있습니다.</h1>
+            <p class="lead-copy">
+                DailyLog는 하루의 시작과 마무리를 같은 맥락 안에서 정리할 수 있게 설계된
+                개인 루틴 워크스페이스입니다.
+            </p>
+        </div>
 
-        <div class="auth-preview-board">
-            <div class="auth-preview-card">
-                <strong>아침 계획</strong>
-                <span>목표와 집중 포인트를 선명하게 정리</span>
+        <div class="auth-orbit">
+            <div class="auth-floating-card auth-floating-card-primary">
+                <span>Morning</span>
+                <strong>오늘의 초점을 먼저 설계</strong>
+                <p>짧은 입력만으로도 하루의 방향이 선명해집니다.</p>
             </div>
-            <div class="auth-preview-card">
-                <strong>저녁 회고</strong>
-                <span>달성 여부와 인사이트를 같은 흐름으로 기록</span>
+            <div class="auth-floating-card">
+                <span>Evening</span>
+                <strong>계획 대비 결과를 자연스럽게 연결</strong>
+                <p>성과와 개선점, 감사 기록까지 빠르게 남길 수 있습니다.</p>
             </div>
-            <div class="auth-preview-card">
-                <strong>주간 복기</strong>
-                <span>일자별 달성률과 상세 로그를 빠르게 검토</span>
+            <div class="auth-floating-card">
+                <span>Weekly</span>
+                <strong>일자별 흐름을 다시 읽는 주간 복기</strong>
+                <p>달성률과 상세 로그를 함께 보며 다음 주를 준비합니다.</p>
+            </div>
+        </div>
+
+        <div class="auth-stat-grid">
+            <div class="auth-stat-card">
+                <span>Fast</span>
+                <strong>입력 부담은 낮게</strong>
+            </div>
+            <div class="auth-stat-card">
+                <span>Clear</span>
+                <strong>위계와 가독성은 높게</strong>
+            </div>
+            <div class="auth-stat-card">
+                <span>Private</span>
+                <strong>사용자별 기록 분리</strong>
             </div>
         </div>
     </div>
