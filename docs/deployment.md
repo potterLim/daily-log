@@ -2,39 +2,217 @@
 
 ## Overview
 
-The application is ready to run as a multi-user web service backed by MySQL. User account data is stored in the database, and each user's markdown logs are stored under a dedicated log root path separated by user account id.
+`dayLog` is designed to run as a multi-user web application with:
 
-## Runtime Model
+- MySQL for account data
+- local disk storage for Markdown log files
+- executable JAR deployment as the primary runtime model
 
-- User accounts are stored in MySQL.
-- Markdown daily logs are stored on disk.
-- The log root path must be mapped to persistent storage in production.
-- The remember-me key must be provided through an environment variable in production.
+The repository also includes Docker Compose support for environments where running the app and MySQL together in containers is preferred.
 
-## Required Environment Variables
+## Deployment Options
+
+## Option 1. Executable JAR
+
+Recommended when:
+
+- you are deploying to a VM or server directly
+- you want to manage the process with `systemd`
+- you plan to put the app behind Nginx or Caddy
+
+## Option 2. Docker Compose
+
+Recommended when:
+
+- you want the app and MySQL packaged together
+- you prefer containerized local or server deployment
+- you want simpler environment replication across machines
+
+## Runtime Requirements
+
+## JAR deployment
+
+- Java 17 installed on the target machine
+- reachable MySQL database
+- persistent directory for Markdown logs
+
+## Docker Compose deployment
+
+- Docker Engine
+- Docker Compose plugin
+- writable persistent volume or bind mount for logs and MySQL data
+
+## Environment Variables
+
+### Required
 
 - `DATABASE_URL`
 - `DATABASE_USERNAME`
 - `DATABASE_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
 
-The application fails at startup when any of these required values are missing.
+The application fails fast on startup when any required value is missing in the default profile.
 
-## Optional Environment Variables
+### Optional
 
 - `PORT`
 - `DAY_LOG_LOGS_ROOT_PATH`
 - `DAY_LOG_REMEMBER_ME_COOKIE_NAME`
 - `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS`
 
-## Docker Compose Deployment
+## Example JDBC URL
 
-1. Copy `.env.example` to `.env`.
-2. Replace the default MySQL passwords and remember-me key with secure values.
-3. Run `docker compose up -d --build`.
-4. Expose the application through a reverse proxy or load balancer that terminates HTTPS.
+```text
+jdbc:mysql://localhost:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+```
 
-The Docker Compose `.env` file should provide:
+Adjust host, port, and database name for your environment.
+
+## Local Verification
+
+Use the local profile when you want to verify application behavior without preparing MySQL first.
+
+```powershell
+.\gradlew.bat bootRun --args="--spring.profiles.active=local"
+```
+
+Local profile behavior:
+
+- H2 in-memory database
+- MySQL compatibility mode
+- logs stored under `build/local-logs`
+
+## Build the Executable JAR
+
+```powershell
+.\gradlew.bat test bootJar --offline
+```
+
+Generated artifact:
+
+```text
+build/libs/dayLog.jar
+```
+
+## JAR Deployment Workflow
+
+### 1. Build the artifact
+
+```powershell
+.\gradlew.bat bootJar --offline
+```
+
+### 2. Copy the JAR to the server
+
+Example target:
+
+```text
+/opt/day-log/dayLog.jar
+```
+
+### 3. Prepare runtime directories
+
+Example:
+
+```bash
+sudo mkdir -p /opt/day-log
+sudo mkdir -p /var/lib/day-log/logs
+```
+
+### 4. Provide environment variables
+
+A common pattern is to place them in a dedicated environment file.
+
+Example:
+
+```bash
+DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DATABASE_USERNAME=daylog
+DATABASE_PASSWORD=replace-this
+DAY_LOG_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
+DAY_LOG_LOGS_ROOT_PATH=/var/lib/day-log/logs
+PORT=8080
+```
+
+### 5. Run the application
+
+```bash
+java -jar /opt/day-log/dayLog.jar
+```
+
+## Example systemd Service
+
+Example file:
+
+```text
+/etc/systemd/system/day-log.service
+```
+
+Example contents:
+
+```ini
+[Unit]
+Description=dayLog application
+After=network.target
+
+[Service]
+User=daylog
+WorkingDirectory=/opt/day-log
+EnvironmentFile=/etc/day-log/day-log.env
+ExecStart=/usr/bin/java -jar /opt/day-log/dayLog.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable day-log
+sudo systemctl start day-log
+sudo systemctl status day-log
+```
+
+## Reverse Proxy Recommendation
+
+For internet-facing deployment, place the application behind a reverse proxy such as:
+
+- Nginx
+- Caddy
+- a managed load balancer
+
+Recommended responsibilities of the proxy layer:
+
+- HTTPS termination
+- HTTP to HTTPS redirect
+- security headers
+- access logs
+- forwarding traffic to the application port
+
+## Persistent Data
+
+Production deployment should persist both:
+
+- MySQL data
+- the directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
+
+Without persistent storage for logs, user-written daily records will be lost when the server or container is recreated.
+
+## Docker Compose Workflow
+
+### 1. Copy the example environment file
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 2. Replace all example secrets
+
+Update:
 
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
@@ -42,42 +220,31 @@ The Docker Compose `.env` file should provide:
 - `MYSQL_ROOT_PASSWORD`
 - `DAY_LOG_REMEMBER_ME_KEY`
 
-## Executable JAR Deployment
-
-1. Build the JAR artifact with `.\gradlew.bat bootJar`.
-2. Use the generated `build/libs/dayLog.jar` file.
-3. Install Java 17 on the target server.
-4. Provide the required environment variables before startup.
-5. Start the application with `java -jar build/libs/dayLog.jar`.
-6. Map persistent storage for the path referenced by `DAY_LOG_LOGS_ROOT_PATH`.
-
-When you run the application as an executable JAR, embedded Tomcat starts automatically inside the Spring Boot process.
-
-## Reverse Proxy Recommendation
-
-For internet-facing deployment, place the application behind a reverse proxy such as Nginx, Caddy, or a managed load balancer.
-
-Recommended proxy responsibilities:
-
-- HTTPS termination
-- HTTP to HTTPS redirect
-- Request size limits
-- Access logging
-- Security headers
-
-## Persistence
-
-Production deployments should persist both of the following:
-
-- MySQL data directory
-- Application log storage directory referenced by `DAY_LOG_LOGS_ROOT_PATH`
-
-## Local Verification
-
-Use the local profile when MySQL is not available:
+### 3. Start the stack
 
 ```powershell
-.\gradlew.bat bootRun --args="--spring.profiles.active=local"
+docker compose up -d --build
 ```
 
-This profile is intended for development only.
+### 4. Verify the containers
+
+```powershell
+docker compose ps
+docker compose logs -f app
+```
+
+## Operational Notes
+
+- The app uses `ddl-auto=validate`, so the schema must exist and match the entity model.
+- `schema.sql` is executed on startup and is expected to initialize the `user_account` table.
+- The default server port is `8080` unless overridden by `PORT`.
+- The app uses graceful shutdown and a 30-minute session timeout.
+
+## Suggested First Production Checklist
+
+- generate a strong `DAY_LOG_REMEMBER_ME_KEY`
+- use a real MySQL password, not an example value
+- map persistent log storage
+- place the app behind HTTPS
+- confirm login, registration, morning save, and weekly review in the deployed environment
+
