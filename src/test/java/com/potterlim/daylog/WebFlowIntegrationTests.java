@@ -140,4 +140,26 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString(morningDate.toString())));
     }
 
+    @Test
+    void coreProductPagesShouldRender() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("reviewer", "pass1234")
+        );
+
+        mMockMvc.perform(get("/")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("하루의 계획과 실행, 회고를 하나의 제품 경험으로 연결하세요.")));
+
+        mMockMvc.perform(get("/daily-log/evening")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("저녁 회고")));
+
+        mMockMvc.perform(get("/daily-log/week")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("이번 주 성취 흐름")));
+    }
+
 }

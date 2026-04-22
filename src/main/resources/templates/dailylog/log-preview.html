@@ -1,24 +1,50 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '로그 상세 보기')}">
-<section class="page-section">
-    <div class="section-hero">
+      th:replace="~{fragments/layout :: layout(~{::section}, '로그 미리보기')}">
+<section class="workspace-shell reader-shell">
+    <div class="workspace-header">
         <div>
-            <span class="section-eyebrow">Log preview</span>
-            <h1 class="section-title" th:text="'로그 상세 보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">로그 상세 보기</h1>
-            <p class="section-subtitle">해당 날짜의 기록을 읽기 편한 형태로 다시 확인합니다.</p>
+            <span class="eyebrow">Log preview</span>
+            <h1 class="section-title" th:text="'로그 미리보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">로그 미리보기</h1>
+            <p class="section-subtitle">선택한 날짜의 기록을 읽기 전용 레이아웃으로 다시 확인합니다.</p>
+        </div>
+        <div class="button-inline-row">
+            <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 성취</a>
+            <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
         </div>
     </div>
 
-    <div class="content-card preview-card">
-        <div class="preview-markdown" th:utext="${previewHtml}">
-            미리보기 내용
+    <div class="reader-grid">
+        <div class="surface-panel reader-article">
+            <div class="panel-header compact">
+                <div>
+                    <span class="eyebrow">Readable view</span>
+                    <h2>상세 로그</h2>
+                </div>
+            </div>
+            <article class="preview-markdown log-article" th:utext="${previewHtml}">
+                미리보기 내용
+            </article>
         </div>
-    </div>
 
-    <div class="button-row mt-4">
-        <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary">주간 목록</a>
-        <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
+        <aside class="surface-panel reader-side">
+            <div class="panel-header compact">
+                <div>
+                    <span class="eyebrow">Meta</span>
+                    <h2>읽기 정보</h2>
+                </div>
+            </div>
+            <div class="helper-stack">
+                <div class="helper-card">
+                    <strong>기준 날짜</strong>
+                    <p th:text="${#temporals.format(previewDate, 'yyyy-MM-dd')}">2026-04-01</p>
+                </div>
+                <div class="helper-card">
+                    <strong>포함 내용</strong>
+                    <p>아침 계획, 저녁 회고, 체크된 목표와 상세 메모를 함께 확인합니다.</p>
+                </div>
+            </div>
+        </aside>
     </div>
 </section>
 </html>

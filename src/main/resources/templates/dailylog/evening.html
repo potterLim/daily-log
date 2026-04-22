@@ -1,45 +1,78 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '🌙 저녁 회고 날짜 선택')}">
-<section class="page-section">
-    <div class="section-hero section-hero-split">
+      th:replace="~{fragments/layout :: layout(~{::section}, '저녁 회고')}">
+<section class="workspace-shell">
+    <div class="workspace-header">
         <div>
-            <span class="section-eyebrow">Evening reflection</span>
+            <span class="eyebrow">Evening reflection</span>
             <h1 class="section-title">저녁 회고</h1>
             <p class="section-subtitle" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</p>
         </div>
-        <div class="week-nav-wrap">
-            <div class="section-status-chip" th:text="'대상 날짜 ' + ${#lists.size(eveningDates)} + '건'">대상 날짜 0건</div>
-            <div class="week-nav">
-            <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
-            <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+        <div class="week-switcher">
+            <span class="info-pill" th:text="'대상 날짜 ' + ${#lists.size(eveningDates)} + '건'">대상 날짜 0건</span>
+            <div class="button-inline-row">
+                <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
+                <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
             </div>
         </div>
     </div>
 
-    <div th:if="${message}" class="alert flash-alert flash-alert-success mb-4" role="alert" th:text="${message}">
+    <div th:if="${message}" class="message-banner message-banner-success" role="alert" th:text="${message}">
         저장되었습니다.
     </div>
 
-    <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state mb-4">
-        <strong>해당 구간에 작성된 회고가 없습니다.</strong>
-        <p>아침 계획을 작성한 날짜를 열어 저녁 회고를 남겨보세요.</p>
-    </div>
-
-    <div th:if="${!#lists.isEmpty(eveningDates)}" class="entry-list mb-4">
-        <a th:each="eveningDate : ${eveningDates}"
-           class="entry-link"
-           th:href="@{/daily-log/evening/edit(date=${eveningDate})}">
-            <div class="entry-copy">
-                <span class="entry-badge">🌙</span>
-                <strong th:text="${eveningDate}">2026-04-01</strong>
+    <div class="workspace-grid workspace-grid-two">
+        <div class="surface-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Reflection list</span>
+                    <h2>회고 대상 날짜</h2>
+                </div>
+                <p>아침 계획 또는 저녁 회고가 존재하는 날짜만 바로 열 수 있습니다.</p>
             </div>
-            <span class="entry-arrow">회고 열기</span>
-        </a>
-    </div>
 
-    <div class="button-row">
-        <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
+            <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state">
+                <strong>해당 구간에 작성된 회고가 없습니다.</strong>
+                <p>먼저 아침 계획을 작성한 날짜를 선택하면 저녁 회고 흐름이 시작됩니다.</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(eveningDates)}" class="entry-grid">
+                <a th:each="eveningDate : ${eveningDates}"
+                   class="entry-card"
+                   th:href="@{/daily-log/evening/edit(date=${eveningDate})}">
+                    <div class="entry-card-icon entry-card-icon-night">E</div>
+                    <div class="entry-card-body">
+                        <strong th:text="${eveningDate}">2026-04-01</strong>
+                        <span>아침 계획을 기준으로 회고 열기</span>
+                    </div>
+                    <span class="entry-card-action">Reflect</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="surface-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Why it matters</span>
+                    <h2>저녁 회고가 만드는 가치</h2>
+                </div>
+            </div>
+
+            <div class="helper-stack">
+                <div class="helper-card">
+                    <strong>목표와 결과를 같은 화면에서 연결</strong>
+                    <p>아침에 세운 계획을 기준으로 하루의 실제 결과를 바로 복기할 수 있습니다.</p>
+                </div>
+                <div class="helper-card">
+                    <strong>개선점을 축적</strong>
+                    <p>잘된 점뿐 아니라 다음번에 다르게 할 점을 함께 남겨 반복 품질을 높입니다.</p>
+                </div>
+                <div class="helper-card">
+                    <strong>주간 복기의 기반</strong>
+                    <p>회고 데이터는 주간 성취 화면에서 다시 모여 흐름을 더 잘 보이게 합니다.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 </html>

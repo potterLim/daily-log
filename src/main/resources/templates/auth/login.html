@@ -1,67 +1,86 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::section}, '로그인')}">
-<section class="auth-shell">
-    <div class="auth-pane auth-visual">
-        <span class="section-eyebrow">Welcome back</span>
-        <h1 class="hero-title auth-title">기록을 다시 이어갈 시간입니다.</h1>
-        <p class="hero-subtitle">
-            오늘의 계획부터 주간 리뷰까지, 하루의 흐름을 한 곳에서 정리할 수 있도록
-            차분하고 빠른 기록 경험을 유지했습니다.
+<section class="auth-layout">
+    <div class="surface-panel auth-showcase">
+        <span class="eyebrow">Welcome back</span>
+        <h1 class="display-title auth-display-title">기록의 흐름을 다시 이어갈 준비가 되어 있습니다.</h1>
+        <p class="lead-copy">
+            DailyLog는 하루의 시작과 마무리를 같은 맥락 안에서 정리할 수 있게 설계된
+            개인 루틴 워크스페이스입니다.
         </p>
-        <div class="auth-points">
-            <div class="auth-point">
-                <strong>집중 흐름 유지</strong>
-                <span>아침 계획과 저녁 회고가 자연스럽게 연결됩니다.</span>
+
+        <div class="auth-preview-board">
+            <div class="auth-preview-card">
+                <strong>아침 계획</strong>
+                <span>목표와 집중 포인트를 선명하게 정리</span>
             </div>
-            <div class="auth-point">
-                <strong>주간 성취 확인</strong>
-                <span>누적 달성률과 일자별 상세 로그를 바로 볼 수 있습니다.</span>
+            <div class="auth-preview-card">
+                <strong>저녁 회고</strong>
+                <span>달성 여부와 인사이트를 같은 흐름으로 기록</span>
+            </div>
+            <div class="auth-preview-card">
+                <strong>주간 복기</strong>
+                <span>일자별 달성률과 상세 로그를 빠르게 검토</span>
             </div>
         </div>
     </div>
 
-    <div class="auth-pane">
-        <div class="auth-card">
-            <div class="auth-card-header">
-                <span class="section-eyebrow">Sign in</span>
+    <div class="surface-panel auth-card">
+        <div class="panel-header">
+            <div>
+                <span class="eyebrow">Sign in</span>
                 <h2>로그인</h2>
-                <p>계정에 로그인하고 오늘의 기록을 이어가세요.</p>
             </div>
-            <form th:action="@{/login}" th:object="${loginRequestDto}" method="post">
-                <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                <div th:if="${param.logout}" class="alert flash-alert flash-alert-success mb-3" role="alert">
-                    로그아웃되었습니다.
-                </div>
-                <div th:if="${loginErrorMessage}" class="alert flash-alert flash-alert-danger mb-3" role="alert" th:text="${loginErrorMessage}">
-                    로그인에 실패했습니다.
-                </div>
-
-                <div class="mb-3">
-                    <label for="userName" class="form-label">아이디</label>
-                    <input id="userName" th:field="*{userName}" class="form-control form-control-lg" autocomplete="username" />
-                    <div class="text-danger mt-1" th:errors="*{userName}"></div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">비밀번호</label>
-                    <input id="password" th:field="*{password}" type="password" class="form-control form-control-lg" autocomplete="current-password" />
-                    <div class="text-danger mt-1" th:errors="*{password}"></div>
-                </div>
-
-                <div class="mb-4 form-check modern-check">
-                    <input id="rememberMe" th:field="*{rememberMe}" class="form-check-input" type="checkbox" />
-                    <label for="rememberMe" class="form-check-label">자동 로그인</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">로그인</button>
-
-                <div class="text-center auth-helper">
-                    계정이 없으신가요?
-                    <a th:href="@{/register}" class="text-decoration-none">회원가입</a>
-                </div>
-            </form>
+            <p>기존 계정으로 로그인하고 오늘의 기록을 이어가세요.</p>
         </div>
+
+        <form th:action="@{/login}" th:object="${loginRequestDto}" method="post" class="form-stack">
+            <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+
+            <div th:if="${param.logout}" class="message-banner message-banner-success" role="alert">
+                로그아웃되었습니다.
+            </div>
+            <div th:if="${loginErrorMessage}" class="message-banner message-banner-danger" role="alert" th:text="${loginErrorMessage}">
+                로그인에 실패했습니다.
+            </div>
+
+            <div class="form-section">
+                <label for="userName" class="form-label field-label">아이디</label>
+                <input id="userName"
+                       th:field="*{userName}"
+                       class="form-control form-control-lg"
+                       autocomplete="username"
+                       placeholder="아이디를 입력하세요" />
+                <div class="text-danger mt-2" th:errors="*{userName}"></div>
+            </div>
+
+            <div class="form-section">
+                <label for="password" class="form-label field-label">비밀번호</label>
+                <input id="password"
+                       th:field="*{password}"
+                       type="password"
+                       class="form-control form-control-lg"
+                       autocomplete="current-password"
+                       placeholder="비밀번호를 입력하세요" />
+                <div class="text-danger mt-2" th:errors="*{password}"></div>
+            </div>
+
+            <label class="toggle-row" for="rememberMe">
+                <span>
+                    <strong>자동 로그인</strong>
+                    <small>다음 방문 시 더 빠르게 시작합니다.</small>
+                </span>
+                <input id="rememberMe" th:field="*{rememberMe}" class="form-check-input" type="checkbox" />
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">로그인</button>
+
+            <div class="auth-helper">
+                <span>계정이 없으신가요?</span>
+                <a th:href="@{/register}">회원가입하기</a>
+            </div>
+        </form>
     </div>
 </section>
 </html>

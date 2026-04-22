@@ -1,45 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '☀️ 아침 계획')}">
-<section class="page-section">
-    <div class="section-hero">
+      th:replace="~{fragments/layout :: layout(~{::section}, '아침 계획')}">
+<section class="workspace-shell">
+    <div class="workspace-header">
         <div>
-            <span class="section-eyebrow">Morning planning</span>
+            <span class="eyebrow">Morning planning</span>
             <h1 class="section-title" th:text="'아침 계획 · ' + ${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">아침 계획</h1>
-            <p class="section-subtitle">오늘의 목표와 집중 포인트, 예상 난관을 한 번에 정리합니다.</p>
+            <p class="section-subtitle">오늘의 목표, 집중 포인트, 예상 난관을 하나의 흐름으로 정리합니다.</p>
+        </div>
+        <div class="pill-row">
+            <span class="info-pill">오늘의 설계</span>
+            <span class="info-pill">저녁 회고와 연결</span>
         </div>
     </div>
 
-    <form th:action="@{/daily-log/morning/save}" th:object="${morningFormDto}" method="post" class="form-stack">
+    <form th:action="@{/daily-log/morning/save}" th:object="${morningFormDto}" method="post" class="editor-grid">
         <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
         <input type="hidden" th:field="*{date}" />
 
-        <div class="content-card form-panel">
-            <div class="field-block">
+        <div class="surface-panel editor-main">
+            <div class="form-section">
                 <label for="goals" class="form-label field-label">Goals</label>
-                <p class="field-hint">줄마다 하나씩 작성하면 목록 형태로 저장됩니다.</p>
-                <textarea id="goals" th:field="*{goals}" class="form-control" rows="7"></textarea>
+                <p class="field-hint">줄마다 하나씩 작성하면 회고 화면에서 체크 가능한 목록으로 저장됩니다.</p>
+                <textarea id="goals" th:field="*{goals}" class="form-control text-area js-autosize" rows="7"></textarea>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="focus" class="form-label field-label">Focus Areas</label>
-                <p class="field-hint">오늘 반드시 집중하고 싶은 영역을 적어두세요.</p>
-                <textarea id="focus" th:field="*{focus}" class="form-control" rows="4"></textarea>
+                <p class="field-hint">오늘 가장 중요한 일과 지켜야 할 집중 영역을 짧게 정리하세요.</p>
+                <textarea id="focus" th:field="*{focus}" class="form-control text-area js-autosize" rows="4"></textarea>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="challenges" class="form-label field-label">Challenges &amp; Strategies</label>
-                <p class="field-hint">예상되는 방해 요소와 대응 방식을 함께 적어두면 회고에 도움이 됩니다.</p>
-                <textarea id="challenges" th:field="*{challenges}" class="form-control" rows="4"></textarea>
+                <p class="field-hint">예상되는 방해 요소와 대응 전략을 미리 적어두면 회고의 밀도가 높아집니다.</p>
+                <textarea id="challenges" th:field="*{challenges}" class="form-control text-area js-autosize" rows="4"></textarea>
             </div>
         </div>
 
-        <div class="button-row">
-            <button type="submit" class="btn btn-primary">저장</button>
-            <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">날짜 목록</a>
-            <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
-        </div>
+        <aside class="editor-side">
+            <div class="surface-panel side-note">
+                <div class="panel-header compact">
+                    <div>
+                        <span class="eyebrow">Planning guide</span>
+                        <h2>작성 원칙</h2>
+                    </div>
+                </div>
+                <ul class="helper-list">
+                    <li>목표는 실행 가능한 크기로 나눠서 적습니다.</li>
+                    <li>Focus에는 오늘 반드시 놓치지 않을 흐름을 남깁니다.</li>
+                    <li>Challenges에는 문제보다 대응 방식을 함께 적습니다.</li>
+                </ul>
+            </div>
+
+            <div class="surface-panel side-note accent-surface">
+                <div class="panel-header compact">
+                    <div>
+                        <span class="eyebrow">Connected flow</span>
+                        <h2>저녁 회고와 연결</h2>
+                    </div>
+                </div>
+                <p>지금 작성한 목표는 저녁 회고에서 그대로 체크리스트로 이어집니다.</p>
+            </div>
+
+            <div class="action-stack">
+                <button type="submit" class="btn btn-primary btn-lg">저장</button>
+                <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">목록으로</a>
+                <a th:href="@{/}" class="btn btn-light">홈으로</a>
+            </div>
+        </aside>
     </form>
 </section>
 </html>

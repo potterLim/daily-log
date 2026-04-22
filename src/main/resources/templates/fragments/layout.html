@@ -6,68 +6,96 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle} + ' - DailyLog'">DailyLog</title>
+    <meta name="theme-color" content="#eef3fb" />
+    <title th:text="${pageTitle} + ' · DailyLog'">DailyLog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+          rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" th:href="@{/css/site.css}" />
 </head>
 <body class="app-body">
-<header class="topbar-wrap">
-    <div class="container">
-        <nav class="navbar navbar-expand-sm topbar-nav">
-            <div class="container-fluid px-0">
-                <a class="navbar-brand brand-mark" th:href="@{/}">
-                    <span class="brand-icon">DL</span>
-                    <span class="brand-copy">
-                        <strong>DailyLog</strong>
-                        <small>오늘을 쌓는 기록 루틴</small>
-                    </span>
-                </a>
-                <div class="ms-auto d-flex justify-content-end">
-                    <div sec:authorize="isAuthenticated()" class="topbar-actions">
-                        <span class="welcome-chip">
-                            <span class="welcome-label">안녕하세요</span>
-                            <strong sec:authentication="name">user</strong>
-                        </span>
-                        <form th:action="@{/logout}" method="post" class="d-inline">
-                            <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                            <button type="submit" class="btn btn-outline btn-sm">로그아웃</button>
-                        </form>
-                    </div>
-                    <div sec:authorize="isAnonymous()" class="topbar-actions">
-                        <a class="btn btn-outline btn-sm me-1" th:href="@{/login}">로그인</a>
-                        <a class="btn btn-primary btn-sm" th:href="@{/register}">회원가입</a>
-                    </div>
-                </div>
-            </div>
+<div class="app-background" aria-hidden="true">
+    <div class="app-gradient app-gradient-blue"></div>
+    <div class="app-gradient app-gradient-silver"></div>
+    <div class="app-grid-texture"></div>
+</div>
+
+<header class="app-header" data-app-header>
+    <div class="app-frame topbar-shell">
+        <a class="brand-lockup" th:href="@{/}">
+            <span class="brand-symbol">DL</span>
+            <span class="brand-copy">
+                <strong>DailyLog</strong>
+                <small>계획, 실행, 회고를 잇는 개인 워크스페이스</small>
+            </span>
+        </a>
+
+        <nav sec:authorize="isAuthenticated()" class="primary-nav" aria-label="주요 메뉴">
+            <a class="nav-chip"
+               th:classappend="${pageTitle == '홈'} ? ' is-active' : ''"
+               th:href="@{/}">
+                홈
+            </a>
+            <a class="nav-chip"
+               th:classappend="${#strings.contains(pageTitle, '아침')} ? ' is-active' : ''"
+               th:href="@{/daily-log/morning}">
+                아침 계획
+            </a>
+            <a class="nav-chip"
+               th:classappend="${#strings.contains(pageTitle, '저녁')} ? ' is-active' : ''"
+               th:href="@{/daily-log/evening}">
+                저녁 회고
+            </a>
+            <a class="nav-chip"
+               th:classappend="${#strings.contains(pageTitle, '주간')} ? ' is-active' : ''"
+               th:href="@{/daily-log/week}">
+                주간 성취
+            </a>
         </nav>
+
+        <div class="topbar-actions">
+            <div sec:authorize="isAuthenticated()" class="session-cluster">
+                <div class="session-chip">
+                    <span class="session-label">현재 워크스페이스</span>
+                    <strong sec:authentication="name">user</strong>
+                </div>
+                <form th:action="@{/logout}" method="post">
+                    <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">로그아웃</button>
+                </form>
+            </div>
+
+            <div sec:authorize="isAnonymous()" class="guest-actions">
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/login}">로그인</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/register}">회원가입</a>
+            </div>
+        </div>
     </div>
 </header>
 
-<div class="container page-shell">
-    <main role="main" class="page-content" th:replace="${content}">
-        <section></section>
-    </main>
-</div>
+<main class="app-main">
+    <div class="app-frame">
+        <div class="page-stage" th:replace="${content}">
+            <section></section>
+        </div>
+    </div>
+</main>
 
-<footer class="footer-shell">
-    <div class="container footer-inner">
-        <div>
+<footer class="app-footer">
+    <div class="app-frame footer-shell">
+        <div class="footer-copy-block">
             <strong>DailyLog</strong>
-            <span class="footer-copy">일상 계획과 회고를 차분하게 이어가는 개인 기록 공간</span>
+            <p>계획을 더 명확하게, 회고를 더 자연스럽게, 한 주의 흐름을 더 또렷하게 정리하는 개인 기록 제품.</p>
         </div>
         <div class="footer-meta">
-            &copy; 2025 DailyLog
-            <a href="https://github.com/potterLim" target="_blank" rel="noopener noreferrer">
-                potterLim
-            </a>
+            <span th:text="${T(java.time.Year).now().getValue()}">2026</span>
+            <span>DailyLog</span>
         </div>
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/site.js}"></script>
 </body>

@@ -1,54 +1,84 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '☀️ 아침 계획 날짜 선택')}">
-<section class="page-section">
-    <div class="section-hero">
+      th:replace="~{fragments/layout :: layout(~{::section}, '아침 계획')}">
+<section class="workspace-shell">
+    <div class="workspace-header">
         <div>
-            <span class="section-eyebrow">Morning planning</span>
-            <h1 class="section-title">이번 주 아침 계획 목록</h1>
-            <p class="section-subtitle">새 날짜를 선택하거나 이미 작성한 아침 계획을 다시 열 수 있습니다.</p>
+            <span class="eyebrow">Morning planning</span>
+            <h1 class="section-title">이번 주 아침 계획</h1>
+            <p class="section-subtitle">새 날짜를 열어 계획을 작성하거나, 이미 저장한 기록을 다시 열 수 있습니다.</p>
         </div>
-        <div class="section-status-chip" th:text="'이번 주 기록 ' + ${#lists.size(morningDates)} + '건'">이번 주 기록 0건</div>
+        <div class="pill-row">
+            <span class="info-pill" th:text="'이번 주 기록 ' + ${#lists.size(morningDates)} + '건'">이번 주 기록 0건</span>
+            <span class="info-pill">빠른 시작</span>
+        </div>
     </div>
 
-    <div class="toolbar-card mb-4">
-        <form th:action="@{/daily-log/morning/edit}" method="get" class="row gy-2 gx-3 align-items-center date-toolbar">
-            <div class="col-md-auto col-12">
-                <label class="toolbar-label d-block mb-2">날짜 선택</label>
-                <input type="date"
-                       name="date"
-                       class="form-control form-control-lg"
-                       th:value="${#temporals.format(defaultDate, 'yyyy-MM-dd')}" />
-            </div>
-            <div class="col-md-auto col-12 align-self-end">
-                <button type="submit" class="btn btn-primary btn-lg w-100">새 날짜 열기</button>
-            </div>
-        </form>
-    </div>
-
-    <div th:if="${message}" class="alert flash-alert flash-alert-success mb-4" role="alert" th:text="${message}">
+    <div th:if="${message}" class="message-banner message-banner-success" role="alert" th:text="${message}">
         저장되었습니다.
     </div>
 
-    <div th:if="${#lists.isEmpty(morningDates)}" class="empty-state mb-4">
-        <strong>이번 주에 작성된 아침 계획이 없습니다.</strong>
-        <p>오늘 날짜를 열어서 첫 계획을 작성해보세요.</p>
-    </div>
-
-    <div th:if="${!#lists.isEmpty(morningDates)}" class="entry-list mb-4">
-        <a th:each="morningDate : ${morningDates}"
-           class="entry-link"
-           th:href="@{/daily-log/morning/edit(date=${morningDate})}">
-            <div class="entry-copy">
-                <span class="entry-badge">☀️</span>
-                <strong th:text="${morningDate}">2026-04-01</strong>
+    <div class="workspace-grid workspace-grid-two">
+        <div class="surface-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Quick launch</span>
+                    <h2>새 날짜 열기</h2>
+                </div>
+                <p>오늘이나 원하는 날짜를 선택한 뒤 바로 계획 작성 화면으로 이동합니다.</p>
             </div>
-            <span class="entry-arrow">열기</span>
-        </a>
-    </div>
 
-    <div class="button-row">
-        <a th:href="@{/}" class="btn btn-outline-secondary">홈으로</a>
+            <form th:action="@{/daily-log/morning/edit}" method="get" class="launcher-form">
+                <div class="form-section">
+                    <label class="form-label field-label" for="date">날짜</label>
+                    <input id="date"
+                           type="date"
+                           name="date"
+                           class="form-control form-control-lg"
+                           th:value="${#temporals.format(defaultDate, 'yyyy-MM-dd')}" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">아침 계획 열기</button>
+            </form>
+
+            <div class="helper-stack">
+                <div class="helper-card">
+                    <strong>짧고 선명하게</strong>
+                    <p>목표는 줄 단위로 나누면 저녁 회고에서 바로 체크할 수 있습니다.</p>
+                </div>
+                <div class="helper-card">
+                    <strong>집중 포인트 정리</strong>
+                    <p>오늘 놓치면 안 되는 흐름을 먼저 적어두면 하루 전체가 가벼워집니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="surface-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Saved entries</span>
+                    <h2>이번 주 기록</h2>
+                </div>
+                <p>이미 작성한 날짜를 열어 내용을 빠르게 수정할 수 있습니다.</p>
+            </div>
+
+            <div th:if="${#lists.isEmpty(morningDates)}" class="empty-state">
+                <strong>이번 주에 작성된 아침 계획이 없습니다.</strong>
+                <p>날짜를 하나 열어서 첫 계획을 작성하면 이 영역에 기록이 쌓입니다.</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(morningDates)}" class="entry-grid">
+                <a th:each="morningDate : ${morningDates}"
+                   class="entry-card"
+                   th:href="@{/daily-log/morning/edit(date=${morningDate})}">
+                    <div class="entry-card-icon">M</div>
+                    <div class="entry-card-body">
+                        <strong th:text="${morningDate}">2026-04-01</strong>
+                        <span>아침 계획 다시 열기</span>
+                    </div>
+                    <span class="entry-card-action">Open</span>
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 </html>

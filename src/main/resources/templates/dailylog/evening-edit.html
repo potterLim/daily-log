@@ -1,44 +1,59 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '🌙 저녁 회고')}">
-<section class="page-section">
-    <div class="section-hero">
+      th:replace="~{fragments/layout :: layout(~{::section}, '저녁 회고')}">
+<section class="workspace-shell">
+    <div class="workspace-header">
         <div>
-            <span class="section-eyebrow">Evening reflection</span>
+            <span class="eyebrow">Evening reflection</span>
             <h1 class="section-title" th:text="'저녁 회고 · ' + ${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">저녁 회고</h1>
-            <p class="section-subtitle">아침 계획을 다시 보면서 실제 실행 결과와 회고를 정리합니다.</p>
+            <p class="section-subtitle">아침 계획을 다시 확인하면서 실행 결과와 하루의 인사이트를 정리합니다.</p>
+        </div>
+        <div class="pill-row">
+            <span class="info-pill">Plan → Reflection</span>
+            <span class="info-pill">목표 체크 자동 연결</span>
         </div>
     </div>
 
-    <div class="content-card preview-card mb-4">
-        <div class="content-card-header">
-            <h2>오늘 아침 기록</h2>
-            <span class="content-card-badge">Reference</span>
+    <div class="reflection-layout">
+        <div class="surface-panel reference-panel">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Reference</span>
+                    <h2>오늘 아침 기록</h2>
+                </div>
+                <span class="content-badge">Read only</span>
+            </div>
+            <div class="preview-markdown" th:utext="${morningLogHtml}">
+                <p><em>아침 로그가 없습니다.</em></p>
+            </div>
         </div>
-        <div class="preview-markdown" th:utext="${morningLogHtml}">
-            <p><em>아침 로그가 없습니다.</em></p>
-        </div>
-    </div>
 
-    <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post" class="form-stack">
-        <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-        <input type="hidden" th:field="*{date}" />
+        <form th:action="@{/daily-log/evening/save}" th:object="${eveningFormDto}" method="post" class="surface-panel reflection-form">
+            <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+            <input type="hidden" th:field="*{date}" />
 
-        <div class="content-card form-panel">
-            <div class="field-block">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Write reflection</span>
+                    <h2>오늘의 결과 정리</h2>
+                </div>
+                <p>완료한 목표를 체크하고, 오늘의 성과와 다음 개선 포인트를 남겨보세요.</p>
+            </div>
+
+            <div class="form-section">
                 <label class="form-label field-label">Goals</label>
-                <p class="field-hint">완료한 항목은 체크해서 실제 달성률 계산에 반영합니다.</p>
+                <p class="field-hint">완료한 항목을 체크하면 주간 성취 계산에 반영됩니다.</p>
                 <div th:if="${#lists.isEmpty(eveningFormDto.goals)}" class="empty-inline">
                     아침 목표가 없습니다.
                 </div>
-                <div th:each="goalItem, goalStatus : *{goals}" class="goal-check-item">
+                <div th:each="goalItem, goalStatus : *{goals}" class="goal-toggle-card">
                     <input th:id="'goal-' + ${goalStatus.index}"
                            th:field="*{goals[__${goalStatus.index}__].done}"
                            class="form-check-input"
                            type="checkbox" />
                     <input type="hidden" th:field="*{goals[__${goalStatus.index}__].text}" />
                     <label th:for="'goal-' + ${goalStatus.index}"
-                           class="form-check-label"
+                           class="form-check-label goal-toggle-label"
                            th:text="${goalItem.text}">
                         목표
                     </label>
@@ -46,35 +61,35 @@
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="achievements" class="form-label field-label">Achievements</label>
-                <p class="field-hint">오늘 실제로 잘된 점과 결과를 남겨보세요.</p>
-                <textarea id="achievements" th:field="*{achievements}" class="form-control" rows="3"></textarea>
+                <p class="field-hint">오늘 실제로 잘된 점과 분명한 결과를 남겨보세요.</p>
+                <textarea id="achievements" th:field="*{achievements}" class="form-control text-area js-autosize" rows="3"></textarea>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="improvements" class="form-label field-label">Improvements</label>
-                <p class="field-hint">다음번에 다르게 해보고 싶은 점을 기록합니다.</p>
-                <textarea id="improvements" th:field="*{improvements}" class="form-control" rows="3"></textarea>
+                <p class="field-hint">다음 시도에서 더 좋아질 수 있는 포인트를 적어둡니다.</p>
+                <textarea id="improvements" th:field="*{improvements}" class="form-control text-area js-autosize" rows="3"></textarea>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="gratitude" class="form-label field-label">Gratitude</label>
-                <p class="field-hint">작지만 감사했던 일도 함께 남겨보세요.</p>
-                <textarea id="gratitude" th:field="*{gratitude}" class="form-control" rows="3"></textarea>
+                <p class="field-hint">작지만 인상적이었던 고마운 순간도 함께 기록해보세요.</p>
+                <textarea id="gratitude" th:field="*{gratitude}" class="form-control text-area js-autosize" rows="3"></textarea>
             </div>
 
-            <div class="field-block">
+            <div class="form-section">
                 <label for="notes" class="form-label field-label">Notes for Tomorrow</label>
-                <p class="field-hint">내일의 시작이 쉬워지도록 메모를 남깁니다.</p>
-                <textarea id="notes" th:field="*{notes}" class="form-control" rows="3"></textarea>
+                <p class="field-hint">내일의 시작이 더 부드러워지도록 짧은 메모를 남깁니다.</p>
+                <textarea id="notes" th:field="*{notes}" class="form-control text-area js-autosize" rows="3"></textarea>
             </div>
-        </div>
 
-        <div class="button-row">
-            <button type="submit" class="btn btn-primary">저장</button>
-            <a th:href="@{/daily-log/evening}" class="btn btn-outline-secondary">날짜 선택</a>
-        </div>
-    </form>
+            <div class="action-stack action-stack-inline">
+                <button type="submit" class="btn btn-primary btn-lg">저장</button>
+                <a th:href="@{/daily-log/evening}" class="btn btn-outline-secondary">목록으로</a>
+            </div>
+        </form>
+    </div>
 </section>
 </html>
