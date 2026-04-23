@@ -138,6 +138,8 @@ class MySqlIntegrationTests {
 
     @Test
     void mysqlBackedMorningLogSaveShouldPersistEntry() throws Exception {
+        LocalDate morningDate = LocalDate.now();
+
         UserAccount userAccount = mUserAccountRepository.save(
             UserAccount.createRegularUser(
                 "mysql-planner",
@@ -151,7 +153,7 @@ class MySqlIntegrationTests {
         mMockMvc.perform(post("/daily-log/morning/save")
                 .with(csrf())
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
-                .param("date", "2026-04-08")
+                .param("date", morningDate.toString())
                 .param("goals", "실행 로그 저장")
                 .param("focus", "실제 MySQL 검증")
                 .param("challenges", "환경 차이 점검"))
@@ -161,7 +163,7 @@ class MySqlIntegrationTests {
         mMockMvc.perform(get("/daily-log/morning")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString(LocalDate.of(2026, 4, 8).toString())));
+            .andExpect(content().string(containsString(morningDate.toString())));
 
         assertEquals(1, mDailyLogEntryRepository.count());
     }
