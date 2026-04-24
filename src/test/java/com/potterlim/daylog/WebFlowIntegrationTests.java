@@ -485,6 +485,8 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("타임라인")))
             .andExpect(content().string(containsString("변화 흐름")))
             .andExpect(content().string(containsString("PDF 리포트 미리보기")))
+            .andExpect(content().string(containsString("오늘의 목표")))
+            .andExpect(content().string(containsString("검색 가능한 제품 흐름 점검")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")))
             .andExpect(content().string(not(containsString("온보딩 메모 정리"))));
 

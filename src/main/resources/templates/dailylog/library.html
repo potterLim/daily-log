@@ -102,7 +102,53 @@
                                 0%
                             </div>
                         </div>
-                        <p th:text="${libraryItem.excerpt}">기록 요약입니다.</p>
+                        <p class="library-card-excerpt" th:text="${libraryItem.excerpt}">기록 요약입니다.</p>
+                        <div th:if="${libraryItem.hasStructuredPreview()}" class="library-snapshot-grid">
+                            <section th:if="${libraryItem.hasGoalPreviewItems()}"
+                                     class="library-snapshot-card library-snapshot-card-goals"
+                                     aria-label="목표 미리보기">
+                                <div class="library-snapshot-heading">
+                                    <span>Plan</span>
+                                    <strong>오늘의 목표</strong>
+                                </div>
+                                <ul class="library-goal-preview-list">
+                                    <li th:each="goalPreviewItem : ${libraryItem.goalPreviewItems}"
+                                        th:classappend="${goalPreviewItem.done ? ' is-done' : ''}">
+                                        <span class="library-goal-status"
+                                              th:text="${goalPreviewItem.done ? '완료' : '진행'}">
+                                            진행
+                                        </span>
+                                        <span class="library-goal-text" th:text="${goalPreviewItem.text}">
+                                            제품 흐름 점검
+                                        </span>
+                                    </li>
+                                </ul>
+                                <span th:if="${libraryItem.hasHiddenGoals()}"
+                                      class="library-more-chip"
+                                      th:text="|+${libraryItem.hiddenGoalCount}개 목표 더|">
+                                    +1개 목표 더
+                                </span>
+                            </section>
+
+                            <section th:each="contentBlock : ${libraryItem.contentBlocks}"
+                                     class="library-snapshot-card"
+                                     th:classappend="${' ' + contentBlock.toneCssClass}">
+                                <div class="library-snapshot-heading">
+                                    <span th:text="${contentBlock.eyebrow}">Focus</span>
+                                    <strong th:text="${contentBlock.title}">집중 영역</strong>
+                                </div>
+                                <ul class="library-content-line-list">
+                                    <li th:each="contentLine : ${contentBlock.lines}" th:text="${contentLine}">
+                                        중요한 기록 내용
+                                    </li>
+                                </ul>
+                                <span th:if="${contentBlock.hasHiddenLines()}"
+                                      class="library-more-chip"
+                                      th:text="|+${contentBlock.hiddenLineCount}줄 더|">
+                                    +1줄 더
+                                </span>
+                            </section>
+                        </div>
                         <div class="library-card-meta">
                             <span class="progress-pill"
                                   th:text="${libraryItem.achievedGoalCount} + ' / ' + ${libraryItem.totalGoalCount} + ' 완료'">

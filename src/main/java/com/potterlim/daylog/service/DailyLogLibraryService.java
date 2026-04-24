@@ -7,14 +7,19 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
+import com.potterlim.daylog.dto.dailylog.DailyLogLibraryContentBlockDto;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibraryCalendarDayDto;
+import com.potterlim.daylog.dto.dailylog.DailyLogLibraryGoalPreviewDto;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibraryItemDto;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibrarySearchCriteria;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibraryViewDto;
+import com.potterlim.daylog.dto.dailylog.EDailyLogLibraryContentTone;
 import com.potterlim.daylog.entity.DailyLogEntry;
 import com.potterlim.daylog.entity.UserAccountId;
 import com.potterlim.daylog.repository.IDailyLogEntryRepository;
@@ -26,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DailyLogLibraryService implements IDailyLogLibraryService {
 
     private static final int MAX_EXCERPT_LENGTH = 96;
+    private static final int MAX_GOAL_PREVIEW_COUNT = 3;
+    private static final int MAX_CONTENT_BLOCK_LINE_COUNT = 2;
     private static final int TREND_ITEM_LIMIT = 14;
 
     private final IDailyLogEntryRepository mDailyLogEntryRepository;
@@ -154,8 +161,9 @@ public class DailyLogLibraryService implements IDailyLogLibraryService {
 
     private static DailyLogLibraryItemDto buildLibraryItem(DailyLogEntry dailyLogEntry) {
         List<String> goalLines = splitContentLines(dailyLogEntry.readSection(EDailyLogSectionType.GOALS));
+        Set<String> completedGoalTexts = buildCompletedGoalTextSet(dailyLogEntry);
         int totalGoalCount = goalLines.size();
-        int achievedGoalCount = dailyLogEntry.readCheckedGoalTexts().size();
+        int achievedGoalCount = countAchievedGoals(goalLines, completedGoalTexts);
         int completionPercent = totalGoalCount == 0 ? 0 : (int) ((achievedGoalCount / (double) totalGoalCount) * 100);
         String markdownText = dailyLogEntry.buildMarkdownText();
 
@@ -167,7 +175,10 @@ public class DailyLogLibraryService implements IDailyLogLibraryService {
             totalGoalCount,
             completionPercent,
             buildExcerpt(dailyLogEntry),
-            markdownText
+            markdownText,
+            buildGoalPreviewItems(goalLines, completedGoalTexts),
+            Math.max(0, goalLines.size() - MAX_GOAL_PREVIEW_COUNT),
+            buildContentBlocks(dailyLogEntry)
         );
     }
 
@@ -252,12 +263,131 @@ public class DailyLogLibraryService implements IDailyLogLibraryService {
         return "기록 내용이 저장되었습니다.";
     }
 
+    private static Set<String> buildCompletedGoalTextSet(DailyLogEntry dailyLogEntry) {
+        Set<String> completedGoalTexts = new HashSet<>();
+        for (String checkedGoalText : dailyLogEntry.readCheckedGoalTexts()) {
+            completedGoalTexts.add(normalizeComparableGoalText(checkedGoalText));
+        }
+
+        return completedGoalTexts;
+    }
+
+    private static List<DailyLogLibraryGoalPreviewDto> buildGoalPreviewItems(
+        List<String> goalLines,
+        Set<String> completedGoalTexts
+    ) {
+        List<DailyLogLibraryGoalPreviewDto> goalPreviewItems = new ArrayList<>();
+        int visibleGoalCount = Math.min(goalLines.size(), MAX_GOAL_PREVIEW_COUNT);
+        for (int goalIndex = 0; goalIndex < visibleGoalCount; goalIndex++) {
+            String goalLine = goalLines.get(goalIndex);
+            goalPreviewItems.add(new DailyLogLibraryGoalPreviewDto(
+                abbreviate(goalLine),
+                completedGoalTexts.contains(normalizeComparableGoalText(goalLine))
+            ));
+        }
+
+        return goalPreviewItems;
+    }
+
+    private static int countAchievedGoals(List<String> goalLines, Set<String> completedGoalTexts) {
+        int achievedGoalCount = 0;
+        for (String goalLine : goalLines) {
+            if (completedGoalTexts.contains(normalizeComparableGoalText(goalLine))) {
+                achievedGoalCount++;
+            }
+        }
+
+        return achievedGoalCount;
+    }
+
+    private static List<DailyLogLibraryContentBlockDto> buildContentBlocks(DailyLogEntry dailyLogEntry) {
+        List<DailyLogLibraryContentBlockDto> contentBlocks = new ArrayList<>();
+        addContentBlockIfPresent(
+            contentBlocks,
+            dailyLogEntry,
+            EDailyLogSectionType.FOCUS,
+            "Focus",
+            "집중 영역",
+            EDailyLogLibraryContentTone.FOCUS
+        );
+        addContentBlockIfPresent(
+            contentBlocks,
+            dailyLogEntry,
+            EDailyLogSectionType.CHALLENGES,
+            "Risk",
+            "예상 변수",
+            EDailyLogLibraryContentTone.RISK
+        );
+        addContentBlockIfPresent(
+            contentBlocks,
+            dailyLogEntry,
+            EDailyLogSectionType.ACHIEVEMENTS,
+            "Outcome",
+            "성과",
+            EDailyLogLibraryContentTone.OUTCOME
+        );
+        addContentBlockIfPresent(
+            contentBlocks,
+            dailyLogEntry,
+            EDailyLogSectionType.IMPROVEMENTS,
+            "Learn",
+            "개선점",
+            EDailyLogLibraryContentTone.IMPROVEMENT
+        );
+        addContentBlockIfPresent(
+            contentBlocks,
+            dailyLogEntry,
+            EDailyLogSectionType.NOTES,
+            "Next",
+            "내일 메모",
+            EDailyLogLibraryContentTone.NEXT
+        );
+
+        return contentBlocks;
+    }
+
+    private static void addContentBlockIfPresent(
+        List<DailyLogLibraryContentBlockDto> contentBlocks,
+        DailyLogEntry dailyLogEntry,
+        EDailyLogSectionType dailyLogSectionType,
+        String eyebrow,
+        String title,
+        EDailyLogLibraryContentTone contentTone
+    ) {
+        List<String> contentLines = splitContentLines(dailyLogEntry.readSection(dailyLogSectionType));
+        if (contentLines.isEmpty()) {
+            return;
+        }
+
+        List<String> visibleContentLines = new ArrayList<>();
+        int visibleLineCount = Math.min(contentLines.size(), MAX_CONTENT_BLOCK_LINE_COUNT);
+        for (int lineIndex = 0; lineIndex < visibleLineCount; lineIndex++) {
+            visibleContentLines.add(abbreviate(contentLines.get(lineIndex)));
+        }
+
+        contentBlocks.add(new DailyLogLibraryContentBlockDto(
+            eyebrow,
+            title,
+            visibleContentLines,
+            Math.max(0, contentLines.size() - MAX_CONTENT_BLOCK_LINE_COUNT),
+            contentTone
+        ));
+    }
+
     private static String abbreviate(String text) {
         if (text.length() <= MAX_EXCERPT_LENGTH) {
             return text;
         }
 
         return text.substring(0, MAX_EXCERPT_LENGTH - 1).stripTrailing() + "…";
+    }
+
+    private static String normalizeComparableGoalText(String textOrNull) {
+        if (textOrNull == null) {
+            return "";
+        }
+
+        return textOrNull.trim().toLowerCase(Locale.ROOT);
     }
 
     private static List<String> splitContentLines(String textOrNull) {
