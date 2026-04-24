@@ -5,20 +5,20 @@
     <div class="surface-panel workspace-hero workspace-hero-reader">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Log preview</span>
-                <h1 class="section-title" th:text="'로그 미리보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">로그 미리보기</h1>
-                <p class="section-subtitle">선택한 날짜의 기록을 읽기 전용 레이아웃으로 다시 확인합니다.</p>
+                <span class="eyebrow">Read</span>
+                <h1 class="section-title" th:text="'기록 보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">기록 보기</h1>
+                <p class="section-subtitle">선택한 날짜의 계획과 회고를 읽기 모드로 확인합니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">보기 모드</span>
-                    <strong>Readable view</strong>
-                    <p>불필요한 조작 요소를 덜고 내용 자체에 더 집중할 수 있게 정리했습니다.</p>
+                    <span class="workspace-meta-label">Mode</span>
+                    <strong>읽기 전용</strong>
+                    <p>기록 내용에 집중하는 화면입니다.</p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">빠른 이동</span>
+                    <span class="workspace-meta-label">Go to</span>
                     <div class="button-inline-row">
-                        <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 성취</a>
+                        <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 리뷰</a>
                         <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
                     </div>
                 </div>
@@ -26,34 +26,65 @@
         </div>
     </div>
 
-    <div class="reader-grid">
-        <div class="surface-panel reader-article">
-            <div class="panel-header compact">
+    <div class="reader-grid reader-grid-premium">
+        <div class="surface-panel reader-article reader-article-premium">
+            <div class="reader-document-header">
                 <div>
-                    <span class="eyebrow">Readable view</span>
-                    <h2>상세 로그</h2>
+                    <span class="eyebrow">Daily entry</span>
+                    <h2 th:text="${#temporals.format(previewDate, 'yyyy년 M월 d일')}">2026년 4월 1일</h2>
+                    <p>하루의 계획, 실행, 회고가 한 장의 기록으로 정리되었습니다.</p>
                 </div>
+                <span class="content-badge reader-badge">읽기 모드</span>
             </div>
-            <article class="preview-markdown log-article" th:utext="${previewHtml}">
+
+            <article class="preview-markdown log-article log-article-premium" th:utext="${previewHtml}">
                 미리보기 내용
             </article>
         </div>
 
-        <aside class="surface-panel reader-side">
-            <div class="panel-header compact">
+        <aside class="surface-panel reader-side reader-side-premium">
+            <div class="panel-header compact reader-side-header">
                 <div>
-                    <span class="eyebrow">Meta</span>
-                    <h2>읽기 정보</h2>
+                    <span class="eyebrow">Reading panel</span>
+                    <h2>기록 정보</h2>
                 </div>
             </div>
-            <div class="helper-stack">
-                <div class="helper-card">
-                    <strong>기준 날짜</strong>
+
+            <div class="reader-date-card">
+                <span>기준 날짜</span>
+                <strong th:text="${#temporals.format(previewDate, 'yyyy.MM.dd')}">2026.04.01</strong>
+                <p>선택한 날짜의 저장된 로그입니다.</p>
+            </div>
+
+            <div class="reader-info-stack">
+                <div class="reader-info-card">
+                    <strong>포함된 흐름</strong>
+                    <p>아침 계획, 완료 체크, 저녁 회고를 한 화면에서 읽습니다.</p>
+                </div>
+                <div class="reader-info-card">
+                    <strong>읽는 방식</strong>
+                    <p>섹션별로 목표와 메모를 나누어 빠르게 훑어볼 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div class="reader-outline-card">
+                <span class="eyebrow">Outline</span>
+                <h3>하루의 구조</h3>
+                <div class="reader-outline-list">
+                    <span>계획</span>
+                    <span>실행 확인</span>
+                    <span>회고 메모</span>
+                </div>
+            </div>
+
+            <div class="helper-stack reader-action-stack">
+                <div class="helper-card reader-helper-card">
+                    <strong>날짜</strong>
                     <p th:text="${#temporals.format(previewDate, 'yyyy-MM-dd')}">2026-04-01</p>
                 </div>
-                <div class="helper-card">
-                    <strong>포함 내용</strong>
-                    <p>아침 계획, 저녁 회고, 체크된 목표와 상세 메모를 함께 확인합니다.</p>
+                <div class="reader-action-row">
+                    <a th:href="@{/daily-log/week}" class="btn btn-primary btn-sm">주간 리뷰로</a>
+                    <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
                 </div>
             </div>
         </aside>

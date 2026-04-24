@@ -5,21 +5,21 @@
     <div class="surface-panel workspace-hero workspace-hero-evening">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Evening reflection</span>
+                <span class="eyebrow">Evening</span>
                 <h1 class="section-title">저녁 회고</h1>
                 <p class="section-subtitle" th:text="${rangeLabel}">2026-04-01 ~ 2026-04-07</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">대상 날짜</span>
+                    <span class="workspace-meta-label">Entries</span>
                     <strong th:text="${#lists.size(eveningDates)} + '건'">0건</strong>
-                    <p>회고 또는 아침 계획이 있는 날짜만 모아서 보여줍니다.</p>
+                    <p>계획이나 회고가 있는 날짜입니다.</p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">주차 이동</span>
+                    <span class="workspace-meta-label">Week</span>
                     <div class="button-inline-row">
-                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
-                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전</a>
+                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음</a>
                     </div>
                 </div>
             </div>
@@ -34,15 +34,15 @@
         <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Reflection list</span>
-                    <h2>회고 대상 날짜</h2>
+                    <span class="eyebrow">Dates</span>
+                    <h2>회고할 날짜</h2>
                 </div>
-                <p>아침 계획 또는 저녁 회고가 존재하는 날짜만 바로 열 수 있습니다.</p>
+                <p>저장된 날짜를 선택해 결과를 정리합니다.</p>
             </div>
 
             <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state">
-                <strong>해당 구간에 작성된 회고가 없습니다.</strong>
-                <p>먼저 아침 계획을 작성한 날짜를 선택하면 저녁 회고 흐름이 시작됩니다.</p>
+                <strong>회고할 날짜가 없습니다.</strong>
+                <p>아침 계획을 작성하면 이곳에 표시됩니다.</p>
             </div>
 
             <div th:if="${!#lists.isEmpty(eveningDates)}" class="entry-grid">
@@ -52,9 +52,9 @@
                     <div class="entry-card-icon entry-card-icon-night">E</div>
                     <div class="entry-card-body">
                         <strong th:text="${eveningDate}">2026-04-01</strong>
-                        <span>아침 계획을 기준으로 회고 열기</span>
+                        <span>회고 작성</span>
                     </div>
-                    <span class="entry-card-action">Reflect</span>
+                    <span class="entry-card-action">열기</span>
                 </a>
             </div>
         </div>
@@ -62,23 +62,23 @@
         <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Why it matters</span>
-                    <h2>저녁 회고가 만드는 가치</h2>
+                    <span class="eyebrow">Summary</span>
+                    <h2>회고 기준</h2>
                 </div>
             </div>
 
             <div class="helper-stack">
                 <div class="helper-card">
-                    <strong>목표와 결과를 같은 화면에서 연결</strong>
-                    <p>아침에 세운 계획을 기준으로 하루의 실제 결과를 바로 복기할 수 있습니다.</p>
+                    <strong>계획 기준으로 확인</strong>
+                    <p>아침 목표를 보며 완료 여부를 기록합니다.</p>
                 </div>
                 <div class="helper-card">
-                    <strong>개선점을 축적</strong>
-                    <p>잘된 점뿐 아니라 다음번에 다르게 할 점을 함께 남겨 반복 품질을 높입니다.</p>
+                    <strong>다음 행동을 남기기</strong>
+                    <p>성과와 개선점을 짧게 정리합니다.</p>
                 </div>
                 <div class="helper-card">
-                    <strong>주간 복기의 기반</strong>
-                    <p>회고 데이터는 주간 성취 화면에서 다시 모여 흐름을 더 잘 보이게 합니다.</p>
+                    <strong>주간 리뷰로 연결</strong>
+                    <p>완료 체크는 주간 달성률에 반영됩니다.</p>
                 </div>
             </div>
         </div>

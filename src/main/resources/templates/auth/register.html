@@ -5,28 +5,27 @@
     <div class="surface-panel auth-showcase auth-showcase-rich auth-showcase-emerald">
         <div class="auth-showcase-copy">
             <span class="eyebrow">Create account</span>
-            <h1 class="display-title auth-display-title">개인 기록 공간을 바로 시작하고, 하루의 리듬을 쌓아가세요.</h1>
+            <h1 class="display-title auth-display-title">개인 워크스페이스 만들기</h1>
             <p class="lead-copy">
-                회원가입 후에는 계획, 회고, 주간 성취 기록이 모두 사용자별로 분리되어
-                안정적으로 관리됩니다. 가입 직후에는 이메일 소유 확인 링크도 함께 보내 복구 경로를 확실하게 준비합니다.
+                계획, 회고, 주간 리뷰를 한 계정 안에서 안전하게 관리합니다.
             </p>
         </div>
 
         <div class="auth-orbit">
             <div class="auth-floating-card auth-floating-card-primary">
-                <span>Personal space</span>
-                <strong>각 사용자 영역이 독립적으로 관리됩니다.</strong>
-                <p>가입 직후부터 나만의 기록 흐름이 안정적으로 쌓이기 시작합니다.</p>
+                <span>Private</span>
+                <strong>기록은 계정별로 분리됩니다.</strong>
+                <p>나만의 일일 기록 공간을 바로 사용할 수 있습니다.</p>
             </div>
             <div class="auth-floating-card">
-                <span>Instant start</span>
-                <strong>가입 후 곧바로 아침 계획으로 이어집니다.</strong>
-                <p>초기 설정 없이 바로 오늘의 기록을 시작하고, 이메일 인증은 흐름을 해치지 않게 뒤에서 마무리합니다.</p>
+                <span>Start</span>
+                <strong>가입 후 바로 시작합니다.</strong>
+                <p>복잡한 설정 없이 오늘의 계획으로 이동합니다.</p>
             </div>
             <div class="auth-floating-card">
-                <span>Compounding</span>
-                <strong>하루의 기록이 주간 인사이트로 이어집니다.</strong>
-                <p>매일의 작은 입력이 장기적으로 더 높은 명확성을 만들어냅니다.</p>
+                <span>Review</span>
+                <strong>기록은 주간 리뷰로 쌓입니다.</strong>
+                <p>매일의 입력이 한 주의 흐름으로 정리됩니다.</p>
             </div>
         </div>
 
@@ -52,7 +51,7 @@
                 <span class="eyebrow">Join DailyLog</span>
                 <h2>회원가입</h2>
             </div>
-            <p>간단한 정보만 입력하면 바로 나만의 기록 루틴을 시작할 수 있고, 이메일 인증으로 복구 경로까지 함께 준비됩니다.</p>
+            <p>계정 생성 후 바로 오늘의 기록을 시작할 수 있습니다.</p>
         </div>
 
         <form th:action="@{/register}" th:object="${registerRequestDto}" method="post" class="form-stack">
@@ -75,9 +74,9 @@
                        type="email"
                        class="form-control form-control-lg"
                        autocomplete="email"
-                       placeholder="비밀번호 복구에 사용할 이메일을 입력하세요" />
+                       placeholder="사용할 이메일을 입력하세요" />
                 <div class="text-danger mt-2" th:errors="*{emailAddress}"></div>
-                <small class="field-hint">가입 후 이 주소로 소유 확인 메일을 보냅니다.</small>
+                <small class="field-hint">계정 복구와 이메일 인증에 사용됩니다.</small>
             </div>
 
             <div class="form-section">
@@ -102,7 +101,7 @@
                 <div class="text-danger mt-2" th:errors="*{confirmPassword}"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg w-100">회원가입</button>
+            <button type="submit" class="btn btn-primary btn-lg w-100">워크스페이스 만들기</button>
 
             <div class="auth-helper">
                 <span>이미 계정이 있으신가요?</span>

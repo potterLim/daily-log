@@ -5,20 +5,20 @@
     <div class="surface-panel workspace-hero workspace-hero-analytic">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Weekly progress</span>
-                <h1 class="section-title">이번 주 성취 흐름</h1>
-                <p class="section-subtitle">목표 대비 실행 결과를 일자별 카드로 확인하고, 상세 로그를 다시 열 수 있습니다.</p>
+                <span class="eyebrow">Weekly</span>
+                <h1 class="section-title">주간 리뷰</h1>
+                <p class="section-subtitle">목표 대비 완료율과 날짜별 기록을 함께 확인합니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">총 달성</span>
+                    <span class="workspace-meta-label">Completed</span>
                     <strong th:text="${weekAchieved} + '건'">0건</strong>
-                    <p>체크된 목표만 실제 달성으로 반영됩니다.</p>
+                    <p>저녁 회고에서 체크한 목표입니다.</p>
                 </div>
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">전체 목표</span>
+                    <span class="workspace-meta-label">Planned</span>
                     <strong th:text="${weekTotal} + '건'">0건</strong>
-                    <p>아침 계획에서 설정된 전체 목표 수입니다.</p>
+                    <p>아침 계획에 적은 전체 목표입니다.</p>
                 </div>
             </div>
         </div>
@@ -26,9 +26,9 @@
 
     <div class="summary-grid summary-grid-premium">
         <div class="surface-panel summary-card summary-card-featured">
-            <span class="summary-label">이번 주 성취율</span>
+            <span class="summary-label">Completion</span>
             <strong class="summary-value" th:text="${weekPercent} + '%'">0%</strong>
-            <p>아침 계획 대비 실제 완료한 목표 비율을 한눈에 읽고, 아래 카드에서 날짜별 흐름까지 이어서 볼 수 있습니다.</p>
+            <p>계획한 목표 중 완료로 체크한 비율입니다.</p>
             <div class="summary-kpi-row">
                 <span class="info-pill" th:text="'완료 ' + ${weekAchieved} + '건'">완료 0건</span>
                 <span class="info-pill" th:text="'목표 ' + ${weekTotal} + '건'">목표 0건</span>
@@ -37,34 +37,34 @@
         <div class="surface-panel summary-card summary-card-stat">
             <span class="summary-label">완료된 목표</span>
             <strong class="summary-value" th:text="${weekAchieved}">0</strong>
-            <p>체크된 목표만 누적 반영됩니다.</p>
+            <p>완료 체크된 목표입니다.</p>
         </div>
         <div class="surface-panel summary-card summary-card-stat">
             <span class="summary-label">전체 목표</span>
             <strong class="summary-value" th:text="${weekTotal}">0</strong>
-            <p>이번 주에 계획으로 설정된 전체 목표 수입니다.</p>
+            <p>이번 주에 계획한 목표입니다.</p>
         </div>
         <div class="surface-panel summary-card summary-card-accent">
-            <span class="eyebrow">Weekly insight</span>
-            <h2>하루별 카드로 흐름을 읽고, 필요한 날짜만 깊게 들어갑니다.</h2>
+            <span class="eyebrow">Review</span>
+            <h2>날짜별 기록으로 바로 이동합니다.</h2>
             <div class="summary-insight-list">
-                <span>달성률을 빠르게 확인</span>
-                <span>상세 로그로 바로 이동</span>
-                <span>다음 주 계획의 힌트 확보</span>
+                <span>완료율 확인</span>
+                <span>상세 기록 열기</span>
+                <span>다음 계획 준비</span>
             </div>
         </div>
     </div>
 
     <div th:if="${#lists.isEmpty(weeklyProgressItems)}" class="surface-panel empty-state">
-        <strong>이번 주에 표시할 기록이 없습니다.</strong>
-        <p>아침 계획과 저녁 회고를 작성하면 이 화면에서 주간 흐름이 카드 형태로 보입니다.</p>
+        <strong>이번 주 기록이 없습니다.</strong>
+        <p>아침 계획을 저장하면 이곳에 주간 리뷰가 표시됩니다.</p>
     </div>
 
     <div th:if="${!#lists.isEmpty(weeklyProgressItems)}" class="progress-card-grid">
         <article th:each="progressItem : ${weeklyProgressItems}" class="surface-panel progress-card">
             <div class="progress-card-top">
                 <div>
-                    <span class="eyebrow">Daily snapshot</span>
+                    <span class="eyebrow">Day</span>
                     <h2 th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</h2>
                 </div>
                 <div class="progress-percent-badge" th:text="${progressItem.percent} + '%'">0%</div>
@@ -82,7 +82,7 @@
                 <span class="progress-pill" th:text="${progressItem.achieved} + ' / ' + ${progressItem.total} + ' 완료'">0 / 0 완료</span>
                 <a th:href="@{/daily-log/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
                    class="btn btn-outline-secondary btn-sm">
-                    상세 로그
+                    기록 보기
                 </a>
             </div>
         </article>

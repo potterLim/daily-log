@@ -5,20 +5,20 @@
     <div class="surface-panel workspace-hero workspace-hero-morning">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Morning planning</span>
+                <span class="eyebrow">Morning</span>
                 <h1 class="section-title" th:text="'아침 계획 · ' + ${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">아침 계획</h1>
-                <p class="section-subtitle">오늘의 목표, 집중 포인트, 예상 난관을 하나의 흐름으로 정리합니다.</p>
+                <p class="section-subtitle">목표, 집중 영역, 예상 변수를 정리합니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">작성 리듬</span>
-                    <strong>짧고 선명하게</strong>
-                    <p>목표를 줄 단위로 나누면 저녁 회고에서 체크하기 더 쉬워집니다.</p>
+                    <span class="workspace-meta-label">Goal format</span>
+                    <strong>줄마다 하나의 목표</strong>
+                    <p>저녁 회고에서 그대로 체크리스트가 됩니다.</p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">연결 흐름</span>
-                    <strong>저녁 회고와 자동 연결</strong>
-                    <p>지금 작성한 목표가 오늘의 회고 화면에서 그대로 이어집니다.</p>
+                    <span class="workspace-meta-label">Review</span>
+                    <strong>저녁에 바로 확인</strong>
+                    <p>계획과 결과가 같은 날짜에 저장됩니다.</p>
                 </div>
             </div>
         </div>
@@ -30,21 +30,21 @@
 
         <div class="surface-panel editor-main">
             <div class="form-section">
-                <label for="goals" class="form-label field-label">Goals</label>
-                <p class="field-hint">줄마다 하나씩 작성하면 회고 화면에서 체크 가능한 목록으로 저장됩니다.</p>
+                <label for="goals" class="form-label field-label">목표</label>
+                <p class="field-hint">오늘 끝내고 싶은 일을 줄마다 하나씩 적습니다.</p>
                 <textarea id="goals" th:field="*{goals}" class="form-control text-area js-autosize" rows="7"></textarea>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
             <div class="form-section">
-                <label for="focus" class="form-label field-label">Focus Areas</label>
-                <p class="field-hint">오늘 가장 중요한 일과 지켜야 할 집중 영역을 짧게 정리하세요.</p>
+                <label for="focus" class="form-label field-label">집중 영역</label>
+                <p class="field-hint">시간과 주의를 가장 많이 써야 할 영역입니다.</p>
                 <textarea id="focus" th:field="*{focus}" class="form-control text-area js-autosize" rows="4"></textarea>
             </div>
 
             <div class="form-section">
-                <label for="challenges" class="form-label field-label">Challenges &amp; Strategies</label>
-                <p class="field-hint">예상되는 방해 요소와 대응 전략을 미리 적어두면 회고의 밀도가 높아집니다.</p>
+                <label for="challenges" class="form-label field-label">예상 변수</label>
+                <p class="field-hint">방해 요소와 대응 방법을 함께 남깁니다.</p>
                 <textarea id="challenges" th:field="*{challenges}" class="form-control text-area js-autosize" rows="4"></textarea>
             </div>
         </div>
@@ -53,31 +53,31 @@
             <div class="surface-panel side-note surface-panel-elevated">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Planning guide</span>
-                        <h2>작성 원칙</h2>
+                        <span class="eyebrow">Guide</span>
+                        <h2>작성 기준</h2>
                     </div>
                 </div>
                 <ul class="helper-list">
-                    <li>목표는 실행 가능한 크기로 나눠서 적습니다.</li>
-                    <li>Focus에는 오늘 반드시 놓치지 않을 흐름을 남깁니다.</li>
-                    <li>Challenges에는 문제보다 대응 방식을 함께 적습니다.</li>
+                    <li>목표는 오늘 끝낼 수 있는 크기로 적습니다.</li>
+                    <li>집중 영역에는 가장 중요한 한두 가지를 남깁니다.</li>
+                    <li>예상 변수에는 대응 방법까지 함께 적습니다.</li>
                 </ul>
             </div>
 
             <div class="surface-panel side-note accent-surface">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Connected flow</span>
-                        <h2>저녁 회고와 연결</h2>
+                        <span class="eyebrow">Linked</span>
+                        <h2>저녁 회고</h2>
                     </div>
                 </div>
-                <p>지금 작성한 목표는 저녁 회고에서 그대로 체크리스트로 이어집니다.</p>
+                <p>목표는 저녁 회고에서 완료 체크로 이어집니다.</p>
             </div>
 
             <div class="action-stack">
-                <button type="submit" class="btn btn-primary btn-lg">저장</button>
-                <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">목록으로</a>
-                <a th:href="@{/}" class="btn btn-light">홈으로</a>
+                <button type="submit" class="btn btn-primary btn-lg">계획 저장</button>
+                <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">아침 목록</a>
+                <a th:href="@{/}" class="btn btn-light">홈</a>
             </div>
         </aside>
     </form>

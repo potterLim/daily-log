@@ -305,10 +305,10 @@ class WebFlowIntegrationTests {
 
         String markdownText = mDailyLogService.readLogFileContent(LocalDate.of(2026, 4, 1), userAccount.getUserAccountId());
 
-        assertTrue(markdownText.contains("## 🚀 Today's Goals"));
+        assertTrue(markdownText.contains("## 오늘의 목표"));
         assertTrue(markdownText.contains("- 운동하기"));
         assertTrue(markdownText.contains("- 책 읽기"));
-        assertTrue(markdownText.contains("## 🎯 Focus Areas"));
+        assertTrue(markdownText.contains("## 집중 영역"));
         assertEquals(1, mDailyLogEntryRepository.count());
     }
 
@@ -398,10 +398,10 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Today&#39;s Goals")))
+            .andExpect(content().string(containsString("오늘의 목표")))
             .andExpect(content().string(containsString("운동하기")))
-            .andExpect(content().string(not(containsString("Focus Areas"))))
-            .andExpect(content().string(not(containsString("Challenges &amp; Strategies"))));
+            .andExpect(content().string(not(containsString("집중 영역"))))
+            .andExpect(content().string(not(containsString("예상 변수"))));
     }
 
     @Test
@@ -448,7 +448,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("하루의 계획과 실행, 회고를 하나의 제품 경험으로 연결하세요.")));
+            .andExpect(content().string(containsString("오늘의 계획을 세우고, 저녁에 실행을 확인하고")));
 
         mMockMvc.perform(get("/daily-log/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
@@ -458,7 +458,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daily-log/week")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("이번 주 성취 흐름")));
+            .andExpect(content().string(containsString("주간 리뷰")));
     }
 
     @Test
