@@ -18,6 +18,7 @@
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Go to</span>
                     <div class="button-inline-row">
+                        <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-sm">기록 라이브러리</a>
                         <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 리뷰</a>
                         <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
                     </div>
@@ -83,6 +84,7 @@
                     <p th:text="${#temporals.format(previewDate, 'yyyy-MM-dd')}">2026-04-01</p>
                 </div>
                 <div class="reader-action-row">
+                    <a th:href="@{/daily-log/library}" class="btn btn-primary btn-sm">기록 라이브러리</a>
                     <a th:href="@{/daily-log/week}" class="btn btn-primary btn-sm">주간 리뷰로</a>
                     <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
                 </div>

@@ -37,6 +37,19 @@ public interface IDailyLogEntryRepository extends JpaRepository<DailyLogEntry, L
     @Query("""
         select dailyLogEntry
         from DailyLogEntry dailyLogEntry
+        where dailyLogEntry.mUserAccount.mId = :userAccountId
+        and dailyLogEntry.mLogDate between :startDate and :endDate
+        order by dailyLogEntry.mLogDate asc
+        """)
+    List<DailyLogEntry> findEntriesByUserAccountIdWithinDateRange(
+        @Param("userAccountId") Long userAccountId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+        select dailyLogEntry
+        from DailyLogEntry dailyLogEntry
         join fetch dailyLogEntry.mUserAccount
         where dailyLogEntry.mLogDate between :startDate and :endDate
         order by dailyLogEntry.mLogDate asc

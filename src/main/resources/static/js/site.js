@@ -21,4 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
         textAreaElement.addEventListener("input", resizeTextArea);
         resizeTextArea();
     });
+
+    document.querySelectorAll("[data-print-page]").forEach(printButtonElement => {
+        printButtonElement.addEventListener("click", () => {
+            window.print();
+        });
+    });
 });

@@ -1,5 +1,6 @@
 package com.potterlim.daylog.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -10,18 +11,25 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
+import com.potterlim.daylog.dto.dailylog.DailyLogLibrarySearchCriteria;
+import com.potterlim.daylog.dto.dailylog.DailyLogLibraryViewDto;
 import com.potterlim.daylog.dto.dailylog.EveningFormDto;
 import com.potterlim.daylog.dto.dailylog.EveningGoalItemDto;
 import com.potterlim.daylog.dto.dailylog.MorningFormDto;
 import com.potterlim.daylog.dto.dailylog.WeeklyProgressItemDto;
 import com.potterlim.daylog.entity.UserAccount;
 import com.potterlim.daylog.entity.UserAccountId;
+import com.potterlim.daylog.service.IDailyLogLibraryService;
 import com.potterlim.daylog.service.IDailyLogService;
 import com.potterlim.daylog.support.EDailyLogSectionType;
 import com.potterlim.daylog.support.SimpleMarkdownRenderer;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,11 +49,18 @@ public class DailyLogController {
     private static final String EMPTY_MORNING_LOG_HTML = "<p><em>아침 로그가 없습니다.</em></p>";
 
     private final IDailyLogService mDailyLogService;
+    private final IDailyLogLibraryService mDailyLogLibraryService;
     private final SimpleMarkdownRenderer mSimpleMarkdownRenderer;
     private final Clock mClock;
 
-    public DailyLogController(IDailyLogService dailyLogService, SimpleMarkdownRenderer simpleMarkdownRenderer, Clock clock) {
+    public DailyLogController(
+        IDailyLogService dailyLogService,
+        IDailyLogLibraryService dailyLogLibraryService,
+        SimpleMarkdownRenderer simpleMarkdownRenderer,
+        Clock clock
+    ) {
         mDailyLogService = dailyLogService;
+        mDailyLogLibraryService = dailyLogLibraryService;
         mSimpleMarkdownRenderer = simpleMarkdownRenderer;
         mClock = clock;
     }
@@ -240,6 +255,90 @@ public class DailyLogController {
         return "dailylog/week";
     }
 
+    @GetMapping("/library")
+    public String showLibraryPage(
+        @RequestParam(name = "from", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate startDateOrNull,
+        @RequestParam(name = "to", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate endDateOrNull,
+        @RequestParam(name = "keyword", required = false) String keywordOrNull,
+        @AuthenticationPrincipal UserAccount userAccount,
+        Model model
+    ) {
+        DailyLogLibrarySearchCriteria searchCriteria = buildLibrarySearchCriteria(
+            startDateOrNull,
+            endDateOrNull,
+            keywordOrNull
+        );
+        DailyLogLibraryViewDto libraryViewDto =
+            mDailyLogLibraryService.searchLibrary(searchCriteria, userAccount.getUserAccountId());
+
+        model.addAttribute("libraryViewDto", libraryViewDto);
+        return "dailylog/library";
+    }
+
+    @GetMapping(value = "/library/export/markdown", produces = "text/markdown; charset=UTF-8")
+    public ResponseEntity<String> downloadLibraryMarkdown(
+        @RequestParam(name = "from", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate startDateOrNull,
+        @RequestParam(name = "to", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate endDateOrNull,
+        @RequestParam(name = "keyword", required = false) String keywordOrNull,
+        @AuthenticationPrincipal UserAccount userAccount
+    ) {
+        DailyLogLibrarySearchCriteria searchCriteria = buildLibrarySearchCriteria(
+            startDateOrNull,
+            endDateOrNull,
+            keywordOrNull
+        );
+        String markdownText = mDailyLogLibraryService.buildLibraryMarkdownExport(
+            searchCriteria,
+            userAccount.getUserAccountId()
+        );
+        ContentDisposition contentDisposition = ContentDisposition.attachment()
+            .filename(buildLibraryExportFileName(searchCriteria, "md"), StandardCharsets.UTF_8)
+            .build();
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/markdown; charset=UTF-8"))
+            .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+            .body(markdownText);
+    }
+
+    @GetMapping("/library/export/pdf")
+    public String showLibraryPdfExportPage(
+        @RequestParam(name = "from", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate startDateOrNull,
+        @RequestParam(name = "to", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate endDateOrNull,
+        @RequestParam(name = "keyword", required = false) String keywordOrNull,
+        @AuthenticationPrincipal UserAccount userAccount,
+        Model model
+    ) {
+        DailyLogLibrarySearchCriteria searchCriteria = buildLibrarySearchCriteria(
+            startDateOrNull,
+            endDateOrNull,
+            keywordOrNull
+        );
+        DailyLogLibraryViewDto libraryViewDto =
+            mDailyLogLibraryService.searchLibrary(searchCriteria, userAccount.getUserAccountId());
+        String markdownText = mDailyLogLibraryService.buildLibraryMarkdownExport(
+            searchCriteria,
+            userAccount.getUserAccountId()
+        );
+
+        model.addAttribute("libraryViewDto", libraryViewDto);
+        model.addAttribute("exportHtml", mSimpleMarkdownRenderer.renderMarkdown(markdownText));
+        model.addAttribute("exportFileName", buildLibraryExportFileName(searchCriteria, "pdf"));
+        return "dailylog/library-export-print";
+    }
+
     @GetMapping("/preview")
     public String showLogPreview(
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -259,6 +358,23 @@ public class DailyLogController {
             mSimpleMarkdownRenderer.renderMarkdown(normalizePreviewMarkdownForRendering(markdownText))
         );
         return "dailylog/log-preview";
+    }
+
+    private DailyLogLibrarySearchCriteria buildLibrarySearchCriteria(
+        LocalDate startDateOrNull,
+        LocalDate endDateOrNull,
+        String keywordOrNull
+    ) {
+        return DailyLogLibrarySearchCriteria.create(startDateOrNull, endDateOrNull, keywordOrNull, LocalDate.now(mClock));
+    }
+
+    private static String buildLibraryExportFileName(DailyLogLibrarySearchCriteria searchCriteria, String extension) {
+        return "daily-log-"
+            + searchCriteria.getStartDate()
+            + "-"
+            + searchCriteria.getEndDate()
+            + "."
+            + extension;
     }
 
     private static String buildGoalMarkdownList(String goalsOrNull) {

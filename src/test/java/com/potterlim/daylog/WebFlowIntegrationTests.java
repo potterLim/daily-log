@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
+import com.potterlim.daylog.entity.UserAccountId;
 import com.potterlim.daylog.repository.IDailyLogEntryRepository;
 import com.potterlim.daylog.repository.IUserAccountRepository;
 import com.potterlim.daylog.repository.IUserEmailVerificationTokenRepository;
@@ -15,6 +16,7 @@ import com.potterlim.daylog.repository.IUserPasswordResetTokenRepository;
 import com.potterlim.daylog.service.IAuthenticationMailService;
 import com.potterlim.daylog.service.IDailyLogService;
 import com.potterlim.daylog.service.IUserAccountService;
+import com.potterlim.daylog.support.EDailyLogSectionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -439,6 +442,75 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void libraryShouldSearchTimelineAndExportSelectedRecords() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("library-reviewer", "library-reviewer@example.com", "pass1234")
+        );
+        UserAccountId userAccountId = userAccount.getUserAccountId();
+        LocalDate matchingDate = LocalDate.of(2026, 4, 22);
+        LocalDate otherDate = LocalDate.of(2026, 4, 24);
+
+        mDailyLogService.writeSection(
+            matchingDate,
+            userAccountId,
+            EDailyLogSectionType.GOALS,
+            "- 검색 가능한 제품 흐름 점검"
+        );
+        mDailyLogService.writeSection(
+            matchingDate,
+            userAccountId,
+            EDailyLogSectionType.EVENING_GOALS,
+            "- [x] 검색 가능한 제품 흐름 점검"
+        );
+        mDailyLogService.writeSection(
+            matchingDate,
+            userAccountId,
+            EDailyLogSectionType.ACHIEVEMENTS,
+            "검색 가능한 성과를 남겼다."
+        );
+        mDailyLogService.writeSection(
+            otherDate,
+            userAccountId,
+            EDailyLogSectionType.GOALS,
+            "- 온보딩 메모 정리"
+        );
+
+        mMockMvc.perform(get("/daily-log/library")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("from", "2026-04-20")
+                .param("to", "2026-04-24")
+                .param("keyword", "제품 흐름"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("기록 라이브러리")))
+            .andExpect(content().string(containsString("타임라인")))
+            .andExpect(content().string(containsString("변화 흐름")))
+            .andExpect(content().string(containsString("PDF 저장 화면")))
+            .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")))
+            .andExpect(content().string(not(containsString("온보딩 메모 정리"))));
+
+        mMockMvc.perform(get("/daily-log/library/export/markdown")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("from", "2026-04-20")
+                .param("to", "2026-04-24")
+                .param("keyword", "제품 흐름"))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Content-Disposition", containsString("attachment")))
+            .andExpect(content().string(containsString("# DailyLog 기록 라이브러리")))
+            .andExpect(content().string(containsString("검색 가능한 제품 흐름 점검")))
+            .andExpect(content().string(not(containsString("온보딩 메모 정리"))));
+
+        mMockMvc.perform(get("/daily-log/library/export/pdf")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("from", "2026-04-20")
+                .param("to", "2026-04-24")
+                .param("keyword", "제품 흐름"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("PDF 저장 화면")))
+            .andExpect(content().string(containsString("인쇄 또는 PDF로 저장")))
+            .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")));
+    }
+
+    @Test
     void coreProductPagesShouldRender() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("reviewer", "reviewer@example.com", "pass1234")
@@ -478,6 +550,13 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("주간 리뷰")))
             .andExpect(content().string(containsString("기록에서 다음 계획으로 이어갑니다.")))
             .andExpect(content().string(containsString("오늘 계획 작성")));
+
+        mMockMvc.perform(get("/daily-log/library")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("기록 라이브러리")))
+            .andExpect(content().string(containsString("Markdown 다운로드")))
+            .andExpect(content().string(containsString("PDF 저장 화면")));
     }
 
     @Test

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '기록 라이브러리')}">
+<section class="workspace-shell library-shell">
+    <div class="surface-panel workspace-hero workspace-hero-library">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">Library</span>
+                <h1 class="section-title">기록 라이브러리</h1>
+                <p class="section-subtitle">지난 기록을 검색하고, 변화 흐름을 보고, 필요한 기간을 문서로 내보냅니다.</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">Entries</span>
+                    <strong th:text="${libraryViewDto.entryCount} + '일'">0일</strong>
+                    <p>선택한 조건에 맞는 기록입니다.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">Flow</span>
+                    <strong th:text="${libraryViewDto.averageCompletionPercent} + '%'">0%</strong>
+                    <p>기간 내 목표 완료 흐름입니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form th:action="@{/daily-log/library}" method="get" class="surface-panel library-filter-panel">
+        <div class="library-filter-copy">
+            <span class="eyebrow">Search</span>
+            <h2>필요한 기록만 조용히 좁혀봅니다.</h2>
+            <p>키워드와 기간을 함께 사용하면 장기 기록 속에서 맥락을 빠르게 찾을 수 있습니다.</p>
+        </div>
+        <div class="library-filter-grid">
+            <div class="form-section library-filter-field">
+                <label class="form-label field-label" for="from">시작일</label>
+                <input id="from"
+                       type="date"
+                       name="from"
+                       class="form-control"
+                       th:value="${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')}" />
+            </div>
+            <div class="form-section library-filter-field">
+                <label class="form-label field-label" for="to">종료일</label>
+                <input id="to"
+                       type="date"
+                       name="to"
+                       class="form-control"
+                       th:value="${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')}" />
+            </div>
+            <div class="form-section library-filter-field library-filter-field-keyword">
+                <label class="form-label field-label" for="keyword">검색어</label>
+                <input id="keyword"
+                       type="search"
+                       name="keyword"
+                       class="form-control"
+                       placeholder="목표, 성과, 메모 검색"
+                       th:value="${libraryViewDto.searchCriteria.keywordOrNull}" />
+            </div>
+        </div>
+        <div class="library-filter-actions">
+            <button type="submit" class="btn btn-primary btn-lg">기록 찾기</button>
+            <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-lg">최근 90일</a>
+        </div>
+    </form>
+
+    <div class="library-layout">
+        <div class="surface-panel library-timeline-panel surface-panel-elevated">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Timeline</span>
+                    <h2>타임라인</h2>
+                </div>
+                <p>가장 최근 기록부터 날짜별 흐름을 확인합니다.</p>
+            </div>
+
+            <div th:if="${!libraryViewDto.hasEntries()}" class="empty-state">
+                <strong>조건에 맞는 기록이 없습니다.</strong>
+                <p>검색어를 줄이거나 기간을 넓혀보세요.</p>
+                <div class="empty-state-actions">
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/daily-log/morning/edit(date=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')})}">
+                        오늘 계획 작성
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/daily-log/library}">최근 90일 보기</a>
+                </div>
+            </div>
+
+            <div th:if="${libraryViewDto.hasEntries()}" class="library-timeline-list">
+                <article th:each="libraryItem : ${libraryViewDto.items}" class="library-timeline-card">
+                    <div class="library-date-mark">
+                        <span th:text="${libraryItem.dayLabel}">금</span>
+                        <strong th:text="${#temporals.format(libraryItem.date, 'MM.dd')}">04.24</strong>
+                    </div>
+                    <div class="library-timeline-body">
+                        <div class="library-timeline-top">
+                            <div>
+                                <span class="content-badge" th:text="${libraryItem.flowLabel}">계획과 회고</span>
+                                <h3 th:text="${#temporals.format(libraryItem.date, 'yyyy년 M월 d일')}">2026년 4월 24일</h3>
+                            </div>
+                            <div class="progress-percent-badge progress-percent-badge-sm"
+                                 th:text="${libraryItem.completionPercent} + '%'">
+                                0%
+                            </div>
+                        </div>
+                        <p th:text="${libraryItem.excerpt}">기록 요약입니다.</p>
+                        <div class="library-card-meta">
+                            <span class="progress-pill"
+                                  th:text="${libraryItem.achievedGoalCount} + ' / ' + ${libraryItem.totalGoalCount} + ' 완료'">
+                                0 / 0 완료
+                            </span>
+                            <span th:if="${libraryItem.hasMorningLog()}" class="info-pill">아침</span>
+                            <span th:if="${libraryItem.hasEveningLog()}" class="info-pill">저녁</span>
+                            <a th:href="@{/daily-log/preview(date=${#temporals.format(libraryItem.date, 'yyyy-MM-dd')})}"
+                               class="btn btn-outline-secondary btn-sm">
+                                기록 보기
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <aside class="library-side-stack">
+            <div class="surface-panel library-trend-panel">
+                <div class="panel-header compact">
+                    <div>
+                        <span class="eyebrow">Flow</span>
+                        <h2>변화 흐름</h2>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(libraryViewDto.trendItems)}" class="empty-inline">
+                    표시할 흐름이 없습니다.
+                </div>
+                <div th:if="${!#lists.isEmpty(libraryViewDto.trendItems)}" class="library-trend-chart" aria-label="목표 완료율 흐름">
+                    <div th:each="trendItem : ${libraryViewDto.trendItems}" class="library-trend-bar">
+                        <span class="library-trend-fill"
+                              th:style="|height: ${trendItem.trendHeightPercent}%;|">
+                        </span>
+                        <small th:text="${#temporals.format(trendItem.date, 'M.d')}">4.24</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="surface-panel library-calendar-panel">
+                <div class="panel-header compact">
+                    <div>
+                        <span class="eyebrow">Calendar</span>
+                        <h2 th:text="${#temporals.format(libraryViewDto.calendarMonthDate, 'yyyy년 M월')}">2026년 4월</h2>
+                    </div>
+                </div>
+                <div class="library-calendar-weekdays" aria-hidden="true">
+                    <span>월</span>
+                    <span>화</span>
+                    <span>수</span>
+                    <span>목</span>
+                    <span>금</span>
+                    <span>토</span>
+                    <span>일</span>
+                </div>
+                <div class="library-calendar-grid">
+                    <span th:each="calendarDay : ${libraryViewDto.calendarDays}"
+                          class="library-calendar-day"
+                          th:classappend="|${!calendarDay.isCurrentMonth() ? ' is-muted' : ''}${calendarDay.hasEntry() ? ' has-entry intensity-' + calendarDay.getIntensityLevel() : ''}${calendarDay.isToday() ? ' is-today' : ''}|"
+                          th:text="${calendarDay.dayOfMonth}">
+                        1
+                    </span>
+                </div>
+            </div>
+
+            <div class="surface-panel library-export-panel">
+                <span class="eyebrow">Export</span>
+                <h2>내보내기</h2>
+                <p>Markdown은 원본 보관에, PDF 저장 화면은 공유용 문서 정리에 적합합니다.</p>
+                <div class="action-stack">
+                    <a class="btn btn-primary"
+                       th:href="@{/daily-log/library/export/markdown(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
+                        Markdown 다운로드
+                    </a>
+                    <a class="btn btn-outline-secondary"
+                       th:href="@{/daily-log/library/export/pdf(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
+                        PDF 저장 화면
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, 'PDF 저장')}">
+<section class="workspace-shell export-print-shell">
+    <div class="surface-panel workspace-hero workspace-hero-library print-toolbar">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <span class="eyebrow">PDF</span>
+                <h1 class="section-title">PDF 저장 화면</h1>
+                <p class="section-subtitle">브라우저의 인쇄 기능에서 PDF로 저장하면 선택한 기간의 기록을 문서로 보관할 수 있습니다.</p>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">File</span>
+                    <strong th:text="${exportFileName}">daily-log.pdf</strong>
+                    <p>인쇄 대화상자에서 PDF로 저장하세요.</p>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">Action</span>
+                    <div class="button-inline-row">
+                        <button type="button" class="btn btn-primary btn-sm" data-print-page>인쇄 또는 PDF로 저장</button>
+                        <a th:href="@{/daily-log/library(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}"
+                           class="btn btn-outline-secondary btn-sm">
+                            라이브러리로
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="surface-panel reader-article reader-article-premium export-document">
+        <div class="reader-document-header export-document-header">
+            <div>
+                <span class="eyebrow">DailyLog export</span>
+                <h2>기록 라이브러리</h2>
+                <p th:text="|${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy.MM.dd')}|">
+                    2026.01.01 ~ 2026.04.24
+                </p>
+            </div>
+            <span class="content-badge reader-badge" th:text="${libraryViewDto.entryCount} + '일'">0일</span>
+        </div>
+
+        <article class="preview-markdown log-article log-article-premium export-markdown" th:utext="${exportHtml}">
+            내보내기 내용
+        </article>
+    </div>
+</section>
+</html>
