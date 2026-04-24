@@ -2084,6 +2084,7 @@ ol {
 .library-trend-chart {
     display: flex;
     align-items: end;
+    justify-content: center;
     gap: 10px;
     min-height: 190px;
     padding: 18px 12px 4px;
@@ -2104,7 +2105,7 @@ ol {
 
 .library-trend-fill {
     align-self: end;
-    width: 100%;
+    width: min(100%, 56px);
     min-height: 10px;
     border-radius: 999px 999px 8px 8px;
     background: linear-gradient(180deg, #4d93ff 0%, #2069ff 100%);

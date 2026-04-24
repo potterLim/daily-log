@@ -512,7 +512,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("PDF 리포트 미리보기")))
             .andExpect(content().string(containsString("완료율")))
-            .andExpect(content().string(containsString("선택한 기록 흐름")))
+            .andExpect(content().string(containsString("선택한 기간")))
             .andExpect(content().string(containsString("PDF로 저장")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")));
     }
@@ -555,7 +555,7 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("주간 리뷰")))
-            .andExpect(content().string(containsString("기록에서 다음 계획으로 이어갑니다.")))
+            .andExpect(content().string(containsString("다음 계획으로 연결")))
             .andExpect(content().string(containsString("오늘 계획 작성")));
 
         mMockMvc.perform(get("/daily-log/library")

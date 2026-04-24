@@ -7,18 +7,18 @@
             <div class="workspace-header-copy">
                 <span class="eyebrow">Weekly</span>
                 <h1 class="section-title">주간 리뷰</h1>
-                <p class="section-subtitle">목표 대비 완료율과 날짜별 기록을 함께 확인합니다.</p>
+                <p class="section-subtitle">완료율과 날짜별 기록을 확인합니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">Completed</span>
                     <strong th:text="${weekAchieved} + '건'">0건</strong>
-                    <p>저녁 회고에서 체크한 목표입니다.</p>
+                    <p>체크한 목표</p>
                 </div>
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">Planned</span>
                     <strong th:text="${weekTotal} + '건'">0건</strong>
-                    <p>아침 계획에 적은 전체 목표입니다.</p>
+                    <p>계획한 목표</p>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
         <div class="surface-panel summary-card summary-card-featured">
             <span class="summary-label">Completion</span>
             <strong class="summary-value" th:text="${weekPercent} + '%'">0%</strong>
-            <p>계획한 목표 중 완료로 체크한 비율입니다.</p>
+            <p>완료로 체크한 비율입니다.</p>
             <div class="summary-kpi-row">
                 <span class="info-pill" th:text="'완료 ' + ${weekAchieved} + '건'">완료 0건</span>
                 <span class="info-pill" th:text="'목표 ' + ${weekTotal} + '건'">목표 0건</span>
@@ -37,16 +37,16 @@
         <div class="surface-panel summary-card summary-card-stat">
             <span class="summary-label">완료된 목표</span>
             <strong class="summary-value" th:text="${weekAchieved}">0</strong>
-            <p>완료 체크된 목표입니다.</p>
+            <p>완료 체크</p>
         </div>
         <div class="surface-panel summary-card summary-card-stat">
             <span class="summary-label">전체 목표</span>
             <strong class="summary-value" th:text="${weekTotal}">0</strong>
-            <p>이번 주에 계획한 목표입니다.</p>
+            <p>이번 주 계획</p>
         </div>
         <div class="surface-panel summary-card summary-card-accent">
             <span class="eyebrow">Review</span>
-            <h2>기록에서 다음 계획으로 이어갑니다.</h2>
+            <h2>다음 계획으로 연결</h2>
             <div class="summary-insight-list">
                 <span>완료율 확인</span>
                 <span>상세 기록 열기</span>

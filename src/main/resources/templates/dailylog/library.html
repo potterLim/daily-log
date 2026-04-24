@@ -174,7 +174,7 @@
                     </div>
                 </div>
                 <div th:if="${#lists.isEmpty(libraryViewDto.trendItems)}" class="empty-inline">
-                    표시할 흐름이 없습니다.
+                    표시할 완료율이 없습니다.
                 </div>
                 <div th:if="${!#lists.isEmpty(libraryViewDto.trendItems)}" class="library-trend-chart" aria-label="목표 완료율 흐름">
                     <div th:each="trendItem : ${libraryViewDto.trendItems}" class="library-trend-bar">

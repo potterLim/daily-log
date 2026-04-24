@@ -56,21 +56,21 @@
                 <div class="export-summary-card">
                     <span>기록 수</span>
                     <strong th:text="${libraryViewDto.entryCount} + '일'">0일</strong>
-                    <p>이번 리포트에 포함된 일별 기록입니다.</p>
+                    <p>포함된 일별 기록입니다.</p>
                 </div>
                 <div class="export-summary-card">
                     <span>목표 현황</span>
                     <strong th:text="${libraryViewDto.achievedGoalCount} + ' / ' + ${libraryViewDto.totalGoalCount}">
                         0 / 0
                     </strong>
-                    <p>완료한 목표와 전체 목표를 함께 보여줍니다.</p>
+                    <p>완료와 전체 목표입니다.</p>
                 </div>
             </section>
 
             <section class="export-report-insight" aria-label="내보내기 조건">
                 <div>
                     <span class="eyebrow">Export snapshot</span>
-                    <h3>선택한 기록 흐름</h3>
+                    <h3>선택한 기간</h3>
                 </div>
                 <div class="export-condition-list">
                     <span th:text="|기간 ${libraryViewDto.searchCriteria.startDate} ~ ${libraryViewDto.searchCriteria.endDate}|">
