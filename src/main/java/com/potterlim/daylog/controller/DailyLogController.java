@@ -6,11 +6,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import com.potterlim.daylog.dto.dailylog.DailyLogDayStatusDto;
+import com.potterlim.daylog.dto.dailylog.DailyLogLibraryItemDto;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibrarySearchCriteria;
 import com.potterlim.daylog.dto.dailylog.DailyLogLibraryViewDto;
 import com.potterlim.daylog.dto.dailylog.EveningFormDto;
@@ -328,13 +331,9 @@ public class DailyLogController {
         );
         DailyLogLibraryViewDto libraryViewDto =
             mDailyLogLibraryService.searchLibrary(searchCriteria, userAccount.getUserAccountId());
-        String markdownText = mDailyLogLibraryService.buildLibraryMarkdownExport(
-            searchCriteria,
-            userAccount.getUserAccountId()
-        );
 
         model.addAttribute("libraryViewDto", libraryViewDto);
-        model.addAttribute("exportHtml", mSimpleMarkdownRenderer.renderMarkdown(markdownText));
+        model.addAttribute("exportItemHtmlByDate", buildExportItemHtmlByDate(libraryViewDto.getItems()));
         model.addAttribute("exportFileName", buildLibraryExportFileName(searchCriteria, "pdf"));
         return "dailylog/library-export-print";
     }
@@ -375,6 +374,20 @@ public class DailyLogController {
             + searchCriteria.getEndDate()
             + "."
             + extension;
+    }
+
+    private Map<LocalDate, String> buildExportItemHtmlByDate(List<DailyLogLibraryItemDto> libraryItems) {
+        Map<LocalDate, String> exportItemHtmlByDate = new LinkedHashMap<>();
+        for (DailyLogLibraryItemDto libraryItem : libraryItems) {
+            exportItemHtmlByDate.put(
+                libraryItem.getDate(),
+                mSimpleMarkdownRenderer.renderMarkdown(
+                    normalizePreviewMarkdownForRendering(libraryItem.getMarkdownText())
+                )
+            );
+        }
+
+        return exportItemHtmlByDate;
     }
 
     private static String buildGoalMarkdownList(String goalsOrNull) {

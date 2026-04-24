@@ -170,7 +170,7 @@
             <div class="surface-panel library-export-panel">
                 <span class="eyebrow">Export</span>
                 <h2>내보내기</h2>
-                <p>Markdown은 원본 보관에, PDF 저장 화면은 공유용 문서 정리에 적합합니다.</p>
+                <p>Markdown은 원본 보관에, PDF 리포트는 공유용 문서 정리에 적합합니다.</p>
                 <div class="action-stack">
                     <a class="btn btn-primary"
                        th:href="@{/daily-log/library/export/markdown(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
@@ -178,7 +178,7 @@
                     </a>
                     <a class="btn btn-outline-secondary"
                        th:href="@{/daily-log/library/export/pdf(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
-                        PDF 저장 화면
+                        PDF 리포트 미리보기
                     </a>
                 </div>
             </div>

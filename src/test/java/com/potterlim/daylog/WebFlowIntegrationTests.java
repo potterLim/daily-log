@@ -484,7 +484,7 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("기록 라이브러리")))
             .andExpect(content().string(containsString("타임라인")))
             .andExpect(content().string(containsString("변화 흐름")))
-            .andExpect(content().string(containsString("PDF 저장 화면")))
+            .andExpect(content().string(containsString("PDF 리포트 미리보기")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")))
             .andExpect(content().string(not(containsString("온보딩 메모 정리"))));
 
@@ -505,7 +505,9 @@ class WebFlowIntegrationTests {
                 .param("to", "2026-04-24")
                 .param("keyword", "제품 흐름"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("PDF 저장 화면")))
+            .andExpect(content().string(containsString("PDF 리포트 미리보기")))
+            .andExpect(content().string(containsString("완료율")))
+            .andExpect(content().string(containsString("선택한 기록 흐름")))
             .andExpect(content().string(containsString("인쇄 또는 PDF로 저장")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")));
     }
@@ -556,7 +558,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("기록 라이브러리")))
             .andExpect(content().string(containsString("Markdown 다운로드")))
-            .andExpect(content().string(containsString("PDF 저장 화면")));
+            .andExpect(content().string(containsString("PDF 리포트 미리보기")));
     }
 
     @Test

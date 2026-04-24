@@ -6,8 +6,8 @@
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
                 <span class="eyebrow">PDF</span>
-                <h1 class="section-title">PDF 저장 화면</h1>
-                <p class="section-subtitle">브라우저의 인쇄 기능에서 PDF로 저장하면 선택한 기간의 기록을 문서로 보관할 수 있습니다.</p>
+                <h1 class="section-title">PDF 리포트 미리보기</h1>
+                <p class="section-subtitle">선택한 기간의 흐름을 요약하고, 날짜별 기록을 읽기 좋은 문서 형태로 정리했습니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -29,8 +29,8 @@
         </div>
     </div>
 
-    <div class="surface-panel reader-article reader-article-premium export-document">
-        <div class="reader-document-header export-document-header">
+    <div class="surface-panel reader-article reader-article-premium export-document export-report">
+        <div class="reader-document-header export-document-header export-report-cover">
             <div>
                 <span class="eyebrow">DailyLog export</span>
                 <h2>기록 라이브러리</h2>
@@ -41,9 +41,82 @@
             <span class="content-badge reader-badge" th:text="${libraryViewDto.entryCount} + '일'">0일</span>
         </div>
 
-        <article class="preview-markdown log-article log-article-premium export-markdown" th:utext="${exportHtml}">
-            내보내기 내용
-        </article>
+        <div class="export-report-body">
+            <section class="export-report-summary" aria-label="기록 요약">
+                <div class="export-summary-card export-summary-card-primary">
+                    <span>완료율</span>
+                    <strong th:text="${libraryViewDto.averageCompletionPercent} + '%'">0%</strong>
+                    <p>선택한 기간에서 목표가 실제로 완료된 비율입니다.</p>
+                </div>
+                <div class="export-summary-card">
+                    <span>기록 수</span>
+                    <strong th:text="${libraryViewDto.entryCount} + '일'">0일</strong>
+                    <p>이번 리포트에 포함된 일별 기록입니다.</p>
+                </div>
+                <div class="export-summary-card">
+                    <span>목표 현황</span>
+                    <strong th:text="${libraryViewDto.achievedGoalCount} + ' / ' + ${libraryViewDto.totalGoalCount}">
+                        0 / 0
+                    </strong>
+                    <p>완료한 목표와 전체 목표를 함께 보여줍니다.</p>
+                </div>
+            </section>
+
+            <section class="export-report-insight" aria-label="내보내기 조건">
+                <div>
+                    <span class="eyebrow">Export snapshot</span>
+                    <h3>선택한 기록 흐름</h3>
+                </div>
+                <div class="export-condition-list">
+                    <span th:text="|기간 ${libraryViewDto.searchCriteria.startDate} ~ ${libraryViewDto.searchCriteria.endDate}|">
+                        기간 2026-01-01 ~ 2026-04-24
+                    </span>
+                    <span th:if="${libraryViewDto.searchCriteria.hasKeyword()}"
+                          th:text="|검색어 ${libraryViewDto.searchCriteria.keywordOrNull}|">
+                        검색어 제품 흐름
+                    </span>
+                    <span th:text="|아침 ${libraryViewDto.morningLogCount}일 · 저녁 ${libraryViewDto.eveningLogCount}일|">
+                        아침 0일 · 저녁 0일
+                    </span>
+                </div>
+            </section>
+
+            <section th:if="${!libraryViewDto.hasEntries()}" class="export-empty-state">
+                <span class="eyebrow">No records</span>
+                <h3>조건에 맞는 기록이 없습니다.</h3>
+                <p>검색어를 줄이거나 기간을 넓혀 다시 내보내기를 시도해보세요.</p>
+            </section>
+
+            <article th:each="libraryItem : ${libraryViewDto.items}" class="export-entry-card">
+                <div class="export-entry-date">
+                    <span th:text="${libraryItem.dayLabel}">금</span>
+                    <strong th:text="${#temporals.format(libraryItem.date, 'MM.dd')}">04.24</strong>
+                </div>
+                <div class="export-entry-main">
+                    <div class="export-entry-header">
+                        <div>
+                            <span class="content-badge" th:text="${libraryItem.flowLabel}">계획과 회고</span>
+                            <h3 th:text="${#temporals.format(libraryItem.date, 'yyyy년 M월 d일')}">
+                                2026년 4월 24일
+                            </h3>
+                            <p th:text="${libraryItem.excerpt}">기록 요약입니다.</p>
+                        </div>
+                        <div class="export-entry-score" th:text="${libraryItem.completionPercent} + '%'">0%</div>
+                    </div>
+                    <div class="export-entry-meta">
+                        <span th:text="${libraryItem.achievedGoalCount} + ' / ' + ${libraryItem.totalGoalCount} + ' 완료'">
+                            0 / 0 완료
+                        </span>
+                        <span th:if="${libraryItem.hasMorningLog()}">아침 계획</span>
+                        <span th:if="${libraryItem.hasEveningLog()}">저녁 회고</span>
+                    </div>
+                    <div class="preview-markdown log-article export-entry-markdown"
+                         th:utext="${exportItemHtmlByDate.get(libraryItem.date)}">
+                        내보내기 내용
+                    </div>
+                </div>
+            </article>
+        </div>
     </div>
 </section>
 </html>
