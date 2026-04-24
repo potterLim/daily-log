@@ -1,7 +1,10 @@
 package com.potterlim.daylog;
 
 import java.net.URI;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daylog.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daylog.entity.UserAccount;
@@ -24,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,6 +36,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,6 +48,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class WebFlowIntegrationTests {
+
+    private static final ZoneId TEST_ZONE_ID = ZoneId.of("Asia/Seoul");
+    private static final LocalDate TEST_CURRENT_DATE = LocalDate.of(2026, 4, 24);
 
     @Autowired
     private MockMvc mMockMvc;
@@ -68,8 +76,15 @@ class WebFlowIntegrationTests {
     @MockitoBean
     private IAuthenticationMailService mAuthenticationMailService;
 
+    @MockitoBean
+    private Clock mClock;
+
     @BeforeEach
     void setUpTestEnvironment() {
+        Instant testInstant = TEST_CURRENT_DATE.atStartOfDay(TEST_ZONE_ID).toInstant();
+        when(mClock.instant()).thenReturn(testInstant);
+        when(mClock.getZone()).thenReturn(TEST_ZONE_ID);
+
         mDailyLogEntryRepository.deleteAll();
         mUserPasswordResetTokenRepository.deleteAll();
         mUserEmailVerificationTokenRepository.deleteAll();
@@ -298,8 +313,100 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void blankMorningSaveShouldNotCreateVisibleDailyLogEntry() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("blank-writer", "blank-writer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daily-log/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("goals", "   ")
+                .param("focus", "")
+                .param("challenges", "\n"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/daily-log/morning"));
+
+        assertEquals(0, mDailyLogEntryRepository.count());
+
+        mMockMvc.perform(get("/daily-log/morning")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(not(containsString(
+                "href=\"/daily-log/morning/edit?date=" + TEST_CURRENT_DATE + "\""
+            ))));
+
+        mMockMvc.perform(get("/daily-log/week")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(not(containsString(TEST_CURRENT_DATE.toString()))))
+            .andExpect(content().string(not(containsString("0 / 0 완료"))));
+
+        mMockMvc.perform(get("/daily-log/preview")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void clearingMorningSectionsShouldRemoveDailyLogEntry() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("clear-writer", "clear-writer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daily-log/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("goals", "운동하기")
+                .param("focus", "집중 업무")
+                .param("challenges", "피곤함 관리"))
+            .andExpect(status().is3xxRedirection());
+
+        assertEquals(1, mDailyLogEntryRepository.count());
+
+        mMockMvc.perform(post("/daily-log/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("goals", "")
+                .param("focus", "")
+                .param("challenges", ""))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/daily-log/morning"));
+
+        assertEquals(0, mDailyLogEntryRepository.count());
+    }
+
+    @Test
+    void previewShouldOmitEmptySectionHeaders() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("preview-writer", "preview-writer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daily-log/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("goals", "운동하기")
+                .param("focus", "")
+                .param("challenges", ""))
+            .andExpect(status().is3xxRedirection());
+
+        mMockMvc.perform(get("/daily-log/preview")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString()))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Today&#39;s Goals")))
+            .andExpect(content().string(containsString("운동하기")))
+            .andExpect(content().string(not(containsString("Focus Areas"))))
+            .andExpect(content().string(not(containsString("Challenges &amp; Strategies"))));
+    }
+
+    @Test
     void morningListShouldRenderSavedDate() throws Exception {
-        LocalDate morningDate = LocalDate.now();
+        LocalDate morningDate = LocalDate.now(mClock);
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("planner", "planner@example.com", "pass1234")
         );
@@ -317,6 +424,19 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString(morningDate.toString())));
+    }
+
+    @Test
+    void eveningPageShouldRenderTheSameMondayToSundayRangeItQueries() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("range-reviewer", "range-reviewer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(get("/daily-log/evening")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("2026-04-20 ~ 2026-04-26")))
+            .andExpect(content().string(not(containsString("2026-04-21 ~ 2026-04-27"))));
     }
 
     @Test

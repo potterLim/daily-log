@@ -129,11 +129,15 @@ public class DailyLogEntry {
     }
 
     public boolean hasMorningLog() {
-        return mHasMorningLog;
+        return hasMorningContent();
     }
 
     public boolean hasEveningLog() {
-        return mHasEveningLog;
+        return hasEveningContent();
+    }
+
+    public boolean hasAnyLog() {
+        return hasMorningLog() || hasEveningLog();
     }
 
     public String readSection(EDailyLogSectionType dailyLogSectionType) {
@@ -155,47 +159,41 @@ public class DailyLogEntry {
         switch (dailyLogSectionType) {
             case GOALS -> {
                 mGoalsText = safeBody;
-                mHasMorningLog = true;
             }
             case FOCUS -> {
                 mFocusText = safeBody;
-                mHasMorningLog = true;
             }
             case CHALLENGES -> {
                 mChallengesText = safeBody;
-                mHasMorningLog = true;
             }
             case EVENING_GOALS -> {
                 mEveningGoalsText = safeBody;
-                mHasEveningLog = true;
             }
             case ACHIEVEMENTS -> {
                 mAchievementsText = safeBody;
-                mHasEveningLog = true;
             }
             case IMPROVEMENTS -> {
                 mImprovementsText = safeBody;
-                mHasEveningLog = true;
             }
             case GRATITUDE -> {
                 mGratitudeText = safeBody;
-                mHasEveningLog = true;
             }
             case NOTES -> {
                 mNotesText = safeBody;
-                mHasEveningLog = true;
             }
         }
+
+        refreshLogPresenceFlags();
     }
 
     public String buildMarkdownText() {
         List<String> blocks = new ArrayList<>();
 
-        if (mHasMorningLog) {
+        if (hasMorningLog()) {
             appendSectionBlocks(blocks, MORNING_SECTION_ORDER);
         }
 
-        if (mHasEveningLog) {
+        if (hasEveningLog()) {
             appendSectionBlocks(blocks, EVENING_SECTION_ORDER);
         }
 
@@ -228,27 +226,53 @@ public class DailyLogEntry {
 
     private void appendSectionBlocks(List<String> blocks, List<EDailyLogSectionType> sectionOrder) {
         for (EDailyLogSectionType dailyLogSectionType : sectionOrder) {
-            blocks.add(buildSectionBlock(dailyLogSectionType));
+            String sectionBlock = buildSectionBlock(dailyLogSectionType);
+            if (!sectionBlock.isBlank()) {
+                blocks.add(sectionBlock);
+            }
         }
     }
 
     private String buildSectionBlock(EDailyLogSectionType dailyLogSectionType) {
+        String body = readSection(dailyLogSectionType).strip();
+        if (body.isEmpty()) {
+            return "";
+        }
+
         List<String> blockLines = new ArrayList<>();
         blockLines.add(dailyLogSectionType.getHeaderText());
 
-        String body = readSection(dailyLogSectionType).strip();
-        if (!body.isEmpty()) {
-            for (String line : splitLines(body)) {
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                String normalizedLine = line.stripLeading().replaceFirst("^-\\s*", "").trim();
-                blockLines.add("- " + normalizedLine);
+        for (String line : splitLines(body)) {
+            if (line.isBlank()) {
+                continue;
             }
+
+            String normalizedLine = line.stripLeading().replaceFirst("^-\\s*", "").trim();
+            blockLines.add("- " + normalizedLine);
         }
 
         return String.join("\r\n", blockLines);
+    }
+
+    private void refreshLogPresenceFlags() {
+        mHasMorningLog = hasMorningContent();
+        mHasEveningLog = hasEveningContent();
+    }
+
+    private boolean hasMorningContent() {
+        return hasText(mGoalsText) || hasText(mFocusText) || hasText(mChallengesText);
+    }
+
+    private boolean hasEveningContent() {
+        return hasText(mEveningGoalsText)
+            || hasText(mAchievementsText)
+            || hasText(mImprovementsText)
+            || hasText(mGratitudeText)
+            || hasText(mNotesText);
+    }
+
+    private static boolean hasText(String textOrNull) {
+        return textOrNull != null && !textOrNull.isBlank();
     }
 
     private static String[] splitLines(String textOrNull) {

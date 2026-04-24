@@ -39,6 +39,10 @@ public class WeeklyOperationsSummaryService {
         int completedTrackedGoals = 0;
 
         for (DailyLogEntry dailyLogEntry : weeklyEntries) {
+            if (!dailyLogEntry.hasAnyLog()) {
+                continue;
+            }
+
             weeklyActiveUserIds.add(dailyLogEntry.getUserAccountId().getValue());
 
             if (dailyLogEntry.hasMorningLog()) {

@@ -1,5 +1,7 @@
 package com.potterlim.daylog.controller;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,15 +42,17 @@ public class DailyLogController {
 
     private final IDailyLogService mDailyLogService;
     private final SimpleMarkdownRenderer mSimpleMarkdownRenderer;
+    private final Clock mClock;
 
-    public DailyLogController(IDailyLogService dailyLogService, SimpleMarkdownRenderer simpleMarkdownRenderer) {
+    public DailyLogController(IDailyLogService dailyLogService, SimpleMarkdownRenderer simpleMarkdownRenderer, Clock clock) {
         mDailyLogService = dailyLogService;
         mSimpleMarkdownRenderer = simpleMarkdownRenderer;
+        mClock = clock;
     }
 
     @GetMapping("/morning")
     public String showMorningDateList(@AuthenticationPrincipal UserAccount userAccount, Model model) {
-        LocalDate currentDate = LocalDate.now();
+        LocalDate currentDate = LocalDate.now(mClock);
         UserAccountId userAccountId = userAccount.getUserAccountId();
         List<String> morningDates = mDailyLogService.listWeek(currentDate, userAccountId)
             .stream()
@@ -110,8 +114,8 @@ public class DailyLogController {
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
-        LocalDate referenceDate = LocalDate.now().plusDays((long) weekOffset * 7L);
-        LocalDate startDate = referenceDate.minusDays(3L);
+        LocalDate referenceDate = LocalDate.now(mClock).plusDays((long) weekOffset * 7L);
+        LocalDate startDate = resolveWeekStartDate(referenceDate);
         LocalDate endDate = startDate.plusDays(6L);
         UserAccountId userAccountId = userAccount.getUserAccountId();
 
@@ -200,7 +204,7 @@ public class DailyLogController {
         int weekAchieved = 0;
         int weekTotal = 0;
 
-        for (DailyLogDayStatusDto dailyLogDayStatusDto : mDailyLogService.listWeek(LocalDate.now(), userAccountId)) {
+        for (DailyLogDayStatusDto dailyLogDayStatusDto : mDailyLogService.listWeek(LocalDate.now(mClock), userAccountId)) {
             List<String> goals = splitNonBlankLines(
                 mDailyLogService.readSection(dailyLogDayStatusDto.getDate(), userAccountId, EDailyLogSectionType.GOALS)
             );
@@ -396,6 +400,10 @@ public class DailyLogController {
         }
 
         return processedMarkdownBuilder.toString().stripTrailing();
+    }
+
+    private static LocalDate resolveWeekStartDate(LocalDate referenceDate) {
+        return referenceDate.minusDays(referenceDate.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
     }
 
     private static List<String> splitNonBlankLines(String textOrNull) {

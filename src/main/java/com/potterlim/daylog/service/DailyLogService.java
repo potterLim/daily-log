@@ -61,10 +61,21 @@ public class DailyLogService implements IDailyLogService {
         EDailyLogSectionType dailyLogSectionType,
         String bodyOrNull
     ) {
-        DailyLogEntry dailyLogEntry = findDailyLogEntry(date, userAccountId)
+        String normalizedBody = normalizeSectionBody(bodyOrNull);
+        Optional<DailyLogEntry> dailyLogEntryOptional = findDailyLogEntry(date, userAccountId);
+        if (dailyLogEntryOptional.isEmpty() && normalizedBody.isEmpty()) {
+            return;
+        }
+
+        DailyLogEntry dailyLogEntry = dailyLogEntryOptional
             .orElseGet(() -> createDailyLogEntry(date, userAccountId));
 
-        dailyLogEntry.writeSection(dailyLogSectionType, normalizeSectionBody(bodyOrNull));
+        dailyLogEntry.writeSection(dailyLogSectionType, normalizedBody);
+        if (!dailyLogEntry.hasAnyLog()) {
+            mDailyLogEntryRepository.delete(dailyLogEntry);
+            return;
+        }
+
         mDailyLogEntryRepository.save(dailyLogEntry);
     }
 
@@ -76,6 +87,10 @@ public class DailyLogService implements IDailyLogService {
         List<DailyLogDayStatusDto> dayStatuses = new ArrayList<>();
 
         for (DailyLogEntry dailyLogEntry : mDailyLogEntryRepository.findWeekEntries(userAccountId.getValue(), monday, sunday)) {
+            if (!dailyLogEntry.hasAnyLog()) {
+                continue;
+            }
+
             dayStatuses.add(new DailyLogDayStatusDto(
                 dailyLogEntry.getLogDate(),
                 dailyLogEntry.hasMorningLog(),
