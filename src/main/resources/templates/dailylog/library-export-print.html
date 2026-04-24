@@ -7,7 +7,7 @@
             <div class="workspace-header-copy">
                 <span class="eyebrow">PDF</span>
                 <h1 class="section-title">PDF 리포트 미리보기</h1>
-                <p class="section-subtitle">선택한 기간의 흐름을 요약하고, 날짜별 기록을 읽기 좋은 문서 형태로 정리했습니다.</p>
+                <p class="section-subtitle">선택한 기간을 읽기 좋은 문서로 정리했습니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -115,7 +115,7 @@
                         <span th:if="${libraryItem.hasMorningLog()}">아침 계획</span>
                         <span th:if="${libraryItem.hasEveningLog()}">저녁 회고</span>
                     </div>
-                    <div class="preview-markdown log-article export-entry-markdown"
+                    <div class="preview-markdown log-article log-article-premium export-entry-markdown"
                          th:utext="${exportItemHtmlByDate.get(libraryItem.date)}">
                         내보내기 내용
                     </div>

@@ -15,6 +15,7 @@ The application uses a single relational storage model:
 - MySQL stores accounts, authentication state, and day-by-day writing.
 - Markdown is reconstructed on demand for preview, library, and export pages instead of being stored as files on disk.
 - Library views derive timeline, trend, calendar, search, and export models from the same persisted day sections.
+- The Thymeleaf presentation layer renders reconstructed content through product-grade reading surfaces instead of raw debug-style Markdown blocks.
 
 This keeps the product easier to back up, scale, and operate in a multi-user deployment.
 
@@ -101,7 +102,7 @@ HTTP entry points and page model composition.
   - renders the product 404 page for missing static or resource-backed routes
 - `DailyLogController`
   - handles morning, evening, weekly, preview, library, Markdown export, and PDF export-preview routes
-  - assembles page-ready data from service output
+  - assembles page-ready data from service output, including week navigation ranges and export report models
 
 ### `dto`
 
@@ -293,6 +294,17 @@ src/main/resources
 | Error | missing product/resource routes through Spring error handling | product not-found experience |
 | Health | `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` | runtime monitoring without authentication |
 
+## Presentation Baseline
+
+The UI layer is intentionally copy-light and product-oriented:
+
+- shared headers keep brand, navigation, and account actions in separate visual zones
+- public authentication pages use concise security and workflow labels instead of explanatory paragraphs
+- writing pages avoid duplicate helper text when the adjacent guide already explains the section
+- preview, evening reference, library card, and PDF report content use the same polished reading language
+- library trend labels explicitly describe goal-completion rate over time
+- export preview output is optimized for Chrome print/save-to-PDF rather than plain browser text output
+
 ## Relational Account Storage
 
 MySQL stores the `user_account`, `user_email_verification_token`, and `user_password_reset_token` tables used for:
@@ -403,7 +415,7 @@ Section ordering and header text are controlled by:
 
 ### Evening Reflection Flow
 
-1. Load the reconstructed morning plan preview.
+1. Load the reconstructed morning plan preview as a structured read-only card surface.
 2. Convert morning goals into checklist items.
 3. Submit checked goals and reflection content.
 4. Persist evening sections back into the same day entry.
@@ -425,7 +437,7 @@ Section ordering and header text are controlled by:
 4. Ignore entries that have no meaningful saved content.
 5. Filter by keyword across date, flow label, excerpt, and reconstructed Markdown.
 6. Render newest-first timeline items with structured previews.
-7. Render trend and calendar side panels as supporting context.
+7. Render goal-completion trend and calendar side panels as supporting context.
 
 ### Markdown Export Flow
 
@@ -437,7 +449,7 @@ Section ordering and header text are controlled by:
 ### PDF Preview Flow
 
 1. Reuse the same library search criteria.
-2. Render a print-optimized Thymeleaf report with cover, summary metrics, selected filters, and daily record cards.
+2. Render a print-optimized Thymeleaf report with cover, summary metrics, selected filters, and polished daily record cards.
 3. Let the browser save the print view as PDF.
 
 ### Product Error Flow
@@ -517,6 +529,7 @@ Current integration coverage includes:
 - read-only preview rendering and empty-section omission
 - empty preview state for dates without saved content
 - record library search, timeline, Markdown export, and PDF preview routing
+- product copy and polished page-rendering expectations for home, library, and export surfaces
 - custom product 404 rendering
 - core page rendering for home, evening, weekly, and library views
 - public health endpoint availability

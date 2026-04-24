@@ -10,11 +10,14 @@ As of the 2026-04-24 release polish pass, the product includes:
 
 - account registration, login, logout, email verification, password recovery, and authenticated password change
 - authenticated home, morning planning, evening reflection, weekly review, record library, daily preview, and account pages
+- copy-light product surfaces with short button labels and reduced instructional text
+- unauthenticated header layout with brand content on the left and account actions on the right
 - record library search by date range and keyword
 - timeline-first record library cards with structured previews
-- completion trend bars and a compact calendar side panel
+- explicit goal-completion trend bars and a compact calendar side panel
 - Markdown export for selected library records
-- print-ready PDF report preview for browser PDF saving
+- print-ready PDF report preview with readable daily cards for browser PDF saving
+- polished reading surfaces for daily preview, evening reference, library previews, and PDF report content
 - product empty states for no records, no search results, and blank previews
 - product 404 page for unknown routes
 
@@ -72,6 +75,7 @@ Capture and inspect at least these desktop states:
 - registration validation error
 - forgot-password form
 - forgot-password success
+- forgot-password success with one-line generic delivery copy
 - reset-password valid token
 - reset-password validation error
 - reset-password invalid token
@@ -84,6 +88,7 @@ Capture and inspect at least these desktop states:
 - morning edit with data
 - morning empty state
 - evening list with data
+- evening list week navigation with previous and next date ranges
 - evening edit with data
 - evening empty state
 - weekly review with data
@@ -122,10 +127,14 @@ For every captured state, verify:
 - no navigation item collapses into vertical letters
 - long usernames truncate gracefully instead of breaking layout
 - mobile helper links stack deliberately rather than wrapping unpredictably
+- page copy is purposeful and short enough that screens do not feel like documentation
+- auth showcase panels do not stretch just because the form column contains validation or success copy
+- guest header actions are visually separated from the DailyLog brand block
 - empty states explain what happened and offer a useful next action
 - library cards show digestible previews instead of raw Markdown walls
+- library trend labels clearly describe goal-completion rate, not a vague "flow"
 - preview pages feel like a reading surface, not debug output
-- PDF export preview has report structure, summary metrics, and readable daily cards
+- PDF export preview has report structure, summary metrics, and readable daily cards instead of raw Markdown output
 - custom 404 page gives a clear recovery path
 
 ## Export Checks

@@ -6,7 +6,7 @@ It is built as a multi-user Spring Boot application with:
 
 - MySQL-backed account and daily log storage
 - Flyway-managed schema changes
-- server-rendered Thymeleaf pages with a polished responsive product interface
+- server-rendered Thymeleaf pages with a concise, responsive product interface
 - executable JAR deployment as the primary runtime model
 - Docker Compose support for app, MySQL, and backup workflows
 
@@ -16,10 +16,11 @@ It is built as a multi-user Spring Boot application with:
 - Evening reflection that reuses morning goals as a completion checklist
 - Weekly review with completion counts and progress percentages
 - Record library for long-term exploration across date ranges and keywords
-- Timeline-first library view with structured record previews, trend bars, and a compact calendar
+- Timeline-first library view with structured record previews, goal-completion trend bars, and a compact calendar
 - Markdown export for selected library ranges
-- Print-ready PDF report preview designed for browser "Save as PDF" workflows
-- Read-only daily log preview rendered from reconstructed Markdown
+- Print-ready PDF report preview with readable daily report cards
+- Read-only daily log preview rendered as a polished reading surface
+- Copy-light UI that favors clear labels, stable button text, and short product guidance
 - Product-grade empty states and a custom 404 page instead of default error output
 - Account creation with username, email address, and password
 - Sign-in with either username or email address
@@ -34,14 +35,15 @@ It is built as a multi-user Spring Boot application with:
 ### Morning planning
 
 - Open a date.
-- Write goals, focus areas, and likely challenges.
+- Write goals, focus areas, and likely challenges with compact field labels and side guidance.
 - Save only meaningful content so blank submissions do not create phantom logs.
 
 ### Evening reflection
 
 - Reopen the same date.
-- Review the morning plan in read-only form.
+- Review the morning plan in a structured read-only card surface.
 - Mark completed goals and capture achievements, improvements, gratitude, and notes.
+- Navigate weeks with previous and next week cards that include the exact date ranges.
 
 ### Weekly review
 
@@ -53,9 +55,20 @@ It is built as a multi-user Spring Boot application with:
 
 - Explore recent or custom date ranges in a timeline.
 - Narrow results with keyword search.
-- Use trend bars and the calendar as secondary navigation cues.
+- Use explicit goal-completion trend bars and the calendar as secondary navigation cues.
 - Export the selected range as Markdown.
-- Open a print-optimized report and save it as PDF from the browser.
+- Open a print-optimized report with daily cards and save it as PDF from Chrome.
+
+## UX Baseline
+
+The current product UI is tuned for a final-product feel rather than an instructional prototype:
+
+- unauthenticated header actions stay visually separated from the brand area
+- auth pages avoid stretched showcase panels when form validation or success banners appear
+- primary buttons use short action labels
+- editor pages remove duplicate helper copy when the right-side guide already explains the flow
+- preview, library, evening reference, and PDF report views avoid raw Markdown-style walls
+- library trend language is explicit: goal completion rate over time
 
 ## Technology Stack
 
@@ -375,6 +388,7 @@ Current integration coverage focuses on the main product flows:
 - read-only preview rendering and empty-section omission
 - empty preview state for dates without saved content
 - record library search, timeline, Markdown export, and PDF preview routing
+- product copy and page rendering expectations for the polished home and library surfaces
 - custom product 404 rendering
 - core page rendering for home, evening, weekly, and library views
 - public health endpoint availability

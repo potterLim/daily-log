@@ -146,6 +146,8 @@ public class DailyLogController {
         model.addAttribute("previousWeekOffset", weekOffset - 1);
         model.addAttribute("nextWeekOffset", weekOffset + 1);
         model.addAttribute("rangeLabel", startDate + " ~ " + endDate);
+        model.addAttribute("previousWeekRangeLabel", buildWeekRangeLabel(startDate.minusDays(7L)));
+        model.addAttribute("nextWeekRangeLabel", buildWeekRangeLabel(startDate.plusDays(7L)));
         model.addAttribute("defaultDate", LocalDate.now(mClock));
         return "dailylog/evening";
     }
@@ -533,6 +535,10 @@ public class DailyLogController {
 
     private static LocalDate resolveWeekStartDate(LocalDate referenceDate) {
         return referenceDate.minusDays(referenceDate.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
+    }
+
+    private static String buildWeekRangeLabel(LocalDate startDate) {
+        return startDate + " ~ " + startDate.plusDays(6L);
     }
 
     private static List<String> splitNonBlankLines(String textOrNull) {

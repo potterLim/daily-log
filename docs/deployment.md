@@ -11,6 +11,7 @@
 - provider-neutral webhook alerts for operational failures
 - weekly operator summary logs in the production profile
 - Markdown export and print-ready PDF report pages generated from database content
+- Chrome-verified product UI surfaces for account, writing, library, preview, and export flows
 
 The repository also includes Docker Compose support for environments where packaging the app, MySQL, and backup job together is preferred.
 
@@ -446,10 +447,13 @@ After deployment, confirm all of the following:
 - weekly review renders the intended Monday-Sunday range
 - daily preview renders saved content and a clear empty state for blank dates
 - record library searches by date range and keyword
+- record library trend labels clearly show goal-completion rate over time
 - Markdown export downloads selected records
-- PDF export preview opens and can be saved from Chrome
+- PDF export preview opens, uses readable daily cards, and can be saved from Chrome
 - unknown routes render the product 404 page
 - desktop and mobile layouts have no unintended horizontal overflow or awkward control wrapping
+- public auth pages keep header actions aligned away from the brand block
+- password recovery success copy remains generic, concise, and visually stable
 
 ## Recommended First Production Hardening Steps
 

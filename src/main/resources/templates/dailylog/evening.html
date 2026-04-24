@@ -17,9 +17,15 @@
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Week</span>
-                    <div class="button-inline-row">
-                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
-                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
+                    <div class="week-nav-pair">
+                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="week-nav-card">
+                            <strong>이전 주</strong>
+                            <span th:text="${previousWeekRangeLabel}">2026-04-13 ~ 2026-04-19</span>
+                        </a>
+                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="week-nav-card">
+                            <strong>다음 주</strong>
+                            <span th:text="${nextWeekRangeLabel}">2026-04-27 ~ 2026-05-03</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -75,16 +81,13 @@
 
             <div class="helper-stack">
                 <div class="helper-card">
-                    <strong>계획 기준으로 확인</strong>
-                    <p>아침 목표를 보며 완료 여부를 기록합니다.</p>
+                    <strong>계획 기준</strong>
                 </div>
                 <div class="helper-card">
-                    <strong>다음 행동을 남기기</strong>
-                    <p>성과와 개선점을 짧게 정리합니다.</p>
+                    <strong>다음 행동</strong>
                 </div>
                 <div class="helper-card">
-                    <strong>주간 리뷰로 연결</strong>
-                    <p>완료 체크는 주간 달성률에 반영됩니다.</p>
+                    <strong>주간 연결</strong>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@
             <div class="workspace-header-copy">
                 <span class="eyebrow">Library</span>
                 <h1 class="section-title">기록 라이브러리</h1>
-                <p class="section-subtitle">지난 기록을 검색하고, 변화 흐름을 보고, 필요한 기간을 문서로 내보냅니다.</p>
+                <p class="section-subtitle">지난 기록을 검색하고 필요한 기간을 내보냅니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -16,9 +16,9 @@
                     <p>선택한 조건에 맞는 기록입니다.</p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Flow</span>
+                    <span class="workspace-meta-label">Completion</span>
                     <strong th:text="${libraryViewDto.averageCompletionPercent} + '%'">0%</strong>
-                    <p>기간 내 목표 완료 흐름입니다.</p>
+                    <p>선택 기간의 목표 완료율입니다.</p>
                 </div>
             </div>
         </div>
@@ -27,8 +27,7 @@
     <form th:action="@{/daily-log/library}" method="get" class="surface-panel library-filter-panel">
         <div class="library-filter-copy">
             <span class="eyebrow">Search</span>
-            <h2>필요한 기록만 조용히 좁혀봅니다.</h2>
-            <p>키워드와 기간을 함께 사용하면 장기 기록 속에서 맥락을 빠르게 찾을 수 있습니다.</p>
+            <h2>필요한 기록만 찾기</h2>
         </div>
         <div class="library-filter-grid">
             <div class="form-section library-filter-field">
@@ -170,8 +169,8 @@
             <div class="surface-panel library-trend-panel">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Flow</span>
-                        <h2>변화 흐름</h2>
+                        <span class="eyebrow">Completion</span>
+                        <h2>목표 완료율 추이</h2>
                     </div>
                 </div>
                 <div th:if="${#lists.isEmpty(libraryViewDto.trendItems)}" class="empty-inline">
@@ -216,7 +215,7 @@
             <div class="surface-panel library-export-panel">
                 <span class="eyebrow">Export</span>
                 <h2>내보내기</h2>
-                <p>Markdown은 원본 보관에, PDF 리포트는 공유용 문서 정리에 적합합니다.</p>
+                <p>원본 보관과 공유용 문서를 선택합니다.</p>
                 <div class="action-stack">
                     <a class="btn btn-primary"
                        th:href="@{/daily-log/library/export/markdown(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">

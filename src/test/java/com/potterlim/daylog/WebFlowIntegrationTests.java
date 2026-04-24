@@ -486,7 +486,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("기록 라이브러리")))
             .andExpect(content().string(containsString("타임라인")))
-            .andExpect(content().string(containsString("변화 흐름")))
+            .andExpect(content().string(containsString("목표 완료율 추이")))
             .andExpect(content().string(containsString("PDF 미리보기")))
             .andExpect(content().string(containsString("오늘의 목표")))
             .andExpect(content().string(containsString("검색 가능한 제품 흐름 점검")))
@@ -526,8 +526,8 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("오늘의 계획을 세우고, 저녁에 실행을 확인하고")))
-            .andExpect(content().string(containsString("오늘 계획 바로 쓰기")))
+            .andExpect(content().string(containsString("계획, 실행, 회고를 한 흐름으로 정리합니다.")))
+            .andExpect(content().string(containsString("오늘 계획")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)))
             .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)));
 

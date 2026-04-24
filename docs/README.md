@@ -39,6 +39,7 @@ Use this document when you need to:
 - perform final product QA before a release
 - confirm the screen matrix that should be checked in Chrome
 - verify export outputs and not-found states
+- verify copy density, header alignment, library trend language, and premium reading surfaces
 - keep screenshot evidence outside Git
 - understand the release acceptance checklist
 

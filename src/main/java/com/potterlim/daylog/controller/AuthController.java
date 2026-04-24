@@ -176,7 +176,7 @@ public class AuthController {
         if (wasVerificationMailSent) {
             redirectAttributes.addFlashAttribute(
                 "emailVerificationSuccessMessage",
-                "가입이 완료되었습니다. 입력하신 이메일로 인증 링크를 보냈습니다."
+                "가입이 완료되었습니다. 인증 메일을 확인해 주세요."
             );
         } else {
             redirectAttributes.addFlashAttribute(
@@ -213,7 +213,7 @@ public class AuthController {
 
         redirectAttributes.addFlashAttribute(
             "forgotPasswordSuccessMessage",
-            "입력하신 이메일로 계정 복구 또는 인증 안내를 보낼 수 있으면 바로 전송했습니다."
+            "안내 메일을 전송했습니다. 메일함을 확인해 주세요."
         );
         return "redirect:/forgot-password";
     }

@@ -33,7 +33,8 @@
                 </div>
                 <span class="content-badge">읽기 전용</span>
             </div>
-            <div class="preview-markdown" th:utext="${morningLogHtml}">
+            <div class="preview-markdown log-article log-article-premium log-article-reference"
+                 th:utext="${morningLogHtml}">
                 <p><em>아침 로그가 없습니다.</em></p>
             </div>
         </div>
@@ -47,12 +48,11 @@
                     <span class="eyebrow">Reflection</span>
                     <h2>오늘의 결과</h2>
                 </div>
-                <p>완료한 목표와 핵심 메모를 남깁니다.</p>
+                <p>완료와 메모를 남깁니다.</p>
             </div>
 
             <div class="form-section">
                 <label class="form-label field-label">목표 체크</label>
-                <p class="field-hint">완료한 목표를 선택합니다.</p>
                 <div th:if="${#lists.isEmpty(eveningFormDto.goals)}" class="empty-inline">
                     아침 목표가 없습니다.
                 </div>
@@ -73,7 +73,6 @@
 
             <div class="form-section">
                 <label for="achievements" class="form-label field-label">성과</label>
-                <p class="field-hint">오늘 분명히 진행된 일을 적습니다.</p>
                 <textarea id="achievements"
                           th:field="*{achievements}"
                           class="form-control text-area js-autosize"
@@ -83,7 +82,6 @@
 
             <div class="form-section">
                 <label for="improvements" class="form-label field-label">개선점</label>
-                <p class="field-hint">다음에 다르게 할 한 가지를 남깁니다.</p>
                 <textarea id="improvements"
                           th:field="*{improvements}"
                           class="form-control text-area js-autosize"
@@ -93,7 +91,6 @@
 
             <div class="form-section">
                 <label for="gratitude" class="form-label field-label">감사</label>
-                <p class="field-hint">기억하고 싶은 좋은 순간을 적습니다.</p>
                 <textarea id="gratitude"
                           th:field="*{gratitude}"
                           class="form-control text-area js-autosize"
@@ -103,7 +100,6 @@
 
             <div class="form-section">
                 <label for="notes" class="form-label field-label">내일 메모</label>
-                <p class="field-hint">내일 바로 이어갈 내용을 남깁니다.</p>
                 <textarea id="notes"
                           th:field="*{notes}"
                           class="form-control text-area js-autosize"
