@@ -1,23 +1,29 @@
 # dayLog
 
-`dayLog` is a daily planning and reflection web application that brings morning intention setting, evening review, and weekly progress tracking into one focused product flow.
+`dayLog` is a daily planning and reflection web application that turns morning intention setting, evening review, long-term record exploration, and exportable personal archives into one focused product flow.
 
 It is built as a multi-user Spring Boot application with:
 
 - MySQL-backed account and daily log storage
 - Flyway-managed schema changes
-- server-rendered pages designed for a polished product experience
+- server-rendered Thymeleaf pages with a polished responsive product interface
 - executable JAR deployment as the primary runtime model
+- Docker Compose support for app, MySQL, and backup workflows
 
 ## Highlights
 
 - Morning planning with goals, focus areas, and anticipated challenges
 - Evening reflection that reuses morning goals as a completion checklist
 - Weekly review with completion counts and progress percentages
+- Record library for long-term exploration across date ranges and keywords
+- Timeline-first library view with structured record previews, trend bars, and a compact calendar
+- Markdown export for selected library ranges
+- Print-ready PDF report preview designed for browser "Save as PDF" workflows
+- Read-only daily log preview rendered from reconstructed Markdown
+- Product-grade empty states and a custom 404 page instead of default error output
 - Account creation with username, email address, and password
 - Sign-in with either username or email address
 - Email ownership verification, email-based password reset, and authenticated password change
-- Read-only daily log preview rendered from reconstructed Markdown
 - Per-user isolation at the database level
 - Public health endpoints for runtime monitoring
 - Rolling application logs, Tomcat access logs, and provider-neutral alert webhook support
@@ -27,21 +33,29 @@ It is built as a multi-user Spring Boot application with:
 
 ### Morning planning
 
-- open a date
-- write goals, focus areas, and likely challenges
-- save the day's morning plan into the daily log entry
+- Open a date.
+- Write goals, focus areas, and likely challenges.
+- Save only meaningful content so blank submissions do not create phantom logs.
 
 ### Evening reflection
 
-- reopen the same date
-- review the morning plan in read-only form
-- mark completed goals and capture achievements, improvements, gratitude, and notes
+- Reopen the same date.
+- Review the morning plan in read-only form.
+- Mark completed goals and capture achievements, improvements, gratitude, and notes.
 
 ### Weekly review
 
-- scan the current week's saved entries
-- compare total goals against completed goals
-- open any saved day in a detailed preview
+- Scan the current Monday-Sunday week.
+- Compare total goals against completed goals.
+- Open any saved day in a detailed preview.
+
+### Record library and export
+
+- Explore recent or custom date ranges in a timeline.
+- Narrow results with keyword search.
+- Use trend bars and the calendar as secondary navigation cues.
+- Export the selected range as Markdown.
+- Open a print-optimized report and save it as PDF from the browser.
 
 ## Technology Stack
 
@@ -62,23 +76,23 @@ It is built as a multi-user Spring Boot application with:
 
 ### Primary storage
 
-- `user_account` stores identity, password hashes, role, and account status
-- `user_account` also stores the unique recovery email address and email verification state
-- `user_email_verification_token` stores one-time email verification tokens
-- `user_password_reset_token` stores one-time password reset tokens
-- `daily_log_entry` stores one entry per user per date
-- the daily log sections are persisted as database text columns
-- preview pages reconstruct Markdown from the stored sections instead of reading files from disk
+- `user_account` stores identity, password hashes, role, and account status.
+- `user_account` also stores the unique recovery email address and email verification state.
+- `user_email_verification_token` stores one-time email verification tokens.
+- `user_password_reset_token` stores one-time password reset tokens.
+- `daily_log_entry` stores one entry per user per date.
+- Daily log sections are persisted as database text columns.
+- Preview, library, Markdown export, and PDF report pages reconstruct output from stored sections instead of reading files from disk.
 
 ### Operational shape
 
-- executable JAR behind Nginx, Caddy, or a managed load balancer
-- MySQL as the persistent system of record
-- Actuator health endpoints for liveness and readiness checks
-- rolling application logs and embedded Tomcat access logs
-- optional webhook-based operational alerts for delivery failures
-- weekly operator summary logs in the production profile
-- backup scripts under `ops/backup`
+- Executable JAR behind Nginx, Caddy, or a managed load balancer.
+- MySQL as the persistent system of record.
+- Actuator health endpoints for liveness and readiness checks.
+- Rolling application logs and embedded Tomcat access logs.
+- Optional webhook-based operational alerts for delivery failures.
+- Weekly operator summary logs in the production profile.
+- Backup scripts under `ops/backup`.
 
 ## Repository Guide
 
@@ -87,6 +101,7 @@ It is built as a multi-user Spring Boot application with:
 - [docs/README.md](docs/README.md)
 - [docs/project-architecture.md](docs/project-architecture.md)
 - [docs/deployment.md](docs/deployment.md)
+- [docs/release-readiness.md](docs/release-readiness.md)
 
 ### Main application areas
 
@@ -106,6 +121,7 @@ src/main/java/com/potterlim/daylog
 src/main/resources
 ├─ application.yml
 ├─ application-local.yml
+├─ application-production.yml
 ├─ db/migration
 ├─ static
 └─ templates
@@ -120,9 +136,19 @@ ops
 
 If your local workspace includes `local-docs/`, those files are intentionally ignored by Git and can be used for deeper private onboarding or working notes.
 
+Screenshot QA artifacts should also stay outside the repository, for example under a timestamped Desktop directory.
+
 ## Quick Start
 
 ### Run locally with the `local` profile
+
+macOS or Linux:
+
+```bash
+./gradlew bootRun --args="--spring.profiles.active=local"
+```
+
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
@@ -133,8 +159,17 @@ The `local` profile:
 - uses in-memory H2 in MySQL compatibility mode
 - runs Flyway migrations on startup
 - disables Thymeleaf template caching
+- logs diagnostic verification and recovery links when SMTP is not configured
 
 ### Run tests
+
+macOS or Linux:
+
+```bash
+./gradlew test
+```
+
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat test
@@ -144,11 +179,27 @@ The `local` profile:
 
 Docker is required because these tests use Testcontainers.
 
+macOS or Linux:
+
+```bash
+./gradlew mysqlIntegrationTest
+```
+
+Windows PowerShell:
+
 ```powershell
 .\gradlew.bat mysqlIntegrationTest
 ```
 
 ### Build the executable JAR
+
+macOS or Linux:
+
+```bash
+./gradlew bootJar
+```
+
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat bootJar
@@ -162,7 +213,7 @@ build/libs/dayLog.jar
 
 Run it with:
 
-```powershell
+```bash
 java -jar build/libs/dayLog.jar
 ```
 
@@ -182,6 +233,7 @@ java -jar build/libs/dayLog.jar
 | Variable | Default |
 | --- | --- |
 | `PORT` | `8080` |
+| `APP_PORT` | `8080`, Compose host port only |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
 | `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
 | `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
@@ -199,6 +251,9 @@ java -jar build/libs/dayLog.jar
 | `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` |
 | `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` |
 | `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` |
+| `DAY_LOG_BACKUP_RETENTION_DAYS` | `14`, Compose backup service only |
+| `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` | `false`, Compose backup service only |
+| `DAY_LOG_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daily_log_entry`, Compose backup service only |
 | `SPRING_MAIL_HOST` | unset |
 | `SPRING_MAIL_PORT` | provider default |
 | `SPRING_MAIL_USERNAME` | unset |
@@ -239,6 +294,15 @@ The repository includes:
 
 Typical workflow:
 
+macOS or Linux:
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+Windows PowerShell:
+
 ```powershell
 Copy-Item .env.example .env
 docker compose up -d --build
@@ -247,6 +311,7 @@ docker compose up -d --build
 Main Compose values:
 
 - `SPRING_PROFILES_ACTIVE`
+- `APP_PORT`
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
@@ -259,12 +324,15 @@ Main Compose values:
 - `SPRING_MAIL_PORT`
 - `SPRING_MAIL_USERNAME`
 - `SPRING_MAIL_PASSWORD`
+- `DAY_LOG_BACKUP_RETENTION_DAYS`
+- `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS`
+- `DAY_LOG_BACKUP_VERIFY_TABLES`
 
 Before exposing the service to real users, replace every example credential and secret in `.env`.
 
 For an on-demand backup from the Compose stack:
 
-```powershell
+```bash
 docker compose --profile ops run --rm backup
 ```
 
@@ -275,8 +343,7 @@ For unattended backups on a Linux host, the repository also includes:
 
 ## Security Notes
 
-- static assets, login, registration, and health checks are public
-- forgot-password and reset-password routes are also public
+- static assets, login, registration, recovery, verification, and health checks are public
 - all product pages require authentication
 - passwords are stored with BCrypt hashing
 - login accepts username or email address
@@ -289,6 +356,7 @@ For unattended backups on a Linux host, the repository also includes:
 - remember-me uses `TokenBasedRememberMeServices`
 - CSRF protection remains enabled
 - session cookies are configured as HTTP only with `SameSite=Lax`
+- default whitelabel errors are disabled and product error pages are rendered for known not-found resource cases
 
 ## Testing Snapshot
 
@@ -301,9 +369,14 @@ Current integration coverage focuses on the main product flows:
 - password reset request and token-based password reset
 - authenticated password change
 - generic login failure feedback
-- morning log persistence
-- morning list rendering
-- core page rendering for home, evening, and weekly views
+- morning log persistence and blank-save protection
+- evening reflection persistence
+- weekly Monday-Sunday range rendering
+- read-only preview rendering and empty-section omission
+- empty preview state for dates without saved content
+- record library search, timeline, Markdown export, and PDF preview routing
+- custom product 404 rendering
+- core page rendering for home, evening, weekly, and library views
 - public health endpoint availability
 
 Main test files:
@@ -324,3 +397,7 @@ For deployment details, use:
 For code structure and request flow details, use:
 
 - [docs/project-architecture.md](docs/project-architecture.md)
+
+For release QA and screenshot expectations, use:
+
+- [docs/release-readiness.md](docs/release-readiness.md)

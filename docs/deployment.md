@@ -10,8 +10,9 @@
 - rolling application logs and embedded Tomcat access logs
 - provider-neutral webhook alerts for operational failures
 - weekly operator summary logs in the production profile
+- Markdown export and print-ready PDF report pages generated from database content
 
-The repository also includes Docker Compose support for environments where packaging the app and MySQL together is preferred.
+The repository also includes Docker Compose support for environments where packaging the app, MySQL, and backup job together is preferred.
 
 ## Supported Deployment Models
 
@@ -31,6 +32,7 @@ Recommended when:
 - you want the app and MySQL defined together
 - you prefer containerized deployment
 - you want an easy local-to-server runtime match
+- you want to use the included Compose backup profile
 
 ## Runtime Requirements
 
@@ -39,12 +41,14 @@ Recommended when:
 - Java 17 installed on the target machine
 - reachable MySQL database
 - reverse proxy or load balancer for HTTPS in internet-facing environments
+- SMTP credentials when password recovery and verification mail should reach real users
 
 ### Docker Compose Deployment
 
 - Docker Engine
 - Docker Compose plugin
 - persistent storage for MySQL data
+- persistent storage for `ops/runtime` logs and backups
 
 ## Configuration Reference
 
@@ -59,17 +63,18 @@ Recommended when:
 
 The application is intentionally fail-fast in the default profile. Missing required values should stop startup immediately.
 
-If SMTP values are not provided, password reset requests still return the same generic success response, but no real recovery email will be delivered. In the `local` and `test` profiles, the application logs the generated reset link for verification instead.
+If SMTP values are not provided, verification and password reset requests still return safe user-facing responses, but no real email will be delivered. In the `local` and `test` profiles, the application logs generated verification and recovery links for validation instead.
 
 ### Optional Environment Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `PORT` | `8080` | application HTTP port |
+| `APP_PORT` | `8080` | Compose host port mapped to the app container |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
 | `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
 | `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
-| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for password reset email |
+| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for verification and password reset email |
 | `DAY_LOG_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
 | `DAY_LOG_WEEKLY_SUMMARY_ENABLED` | `false` | enables scheduled weekly operator summary logging |
 | `DAY_LOG_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` | cron for the weekly operator summary job |
@@ -83,7 +88,10 @@ If SMTP values are not provided, password reset requests still return the same g
 | `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` | requires an alert webhook when production readiness validation is enabled |
 | `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` | requires secure session cookies when production readiness validation is enabled |
 | `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` | minimum allowed remember-me key length when production readiness validation is enabled |
-| `SPRING_MAIL_HOST` | unset | SMTP host for password reset delivery |
+| `DAY_LOG_BACKUP_RETENTION_DAYS` | `14` | backup retention for the Compose backup service |
+| `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` | `false` | whether successful Compose backups send webhook notifications |
+| `DAY_LOG_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daily_log_entry` | comma-separated table list verified by the Compose backup service |
+| `SPRING_MAIL_HOST` | unset | SMTP host for verification and password reset delivery |
 | `SPRING_MAIL_PORT` | provider default | SMTP port |
 | `SPRING_MAIL_USERNAME` | unset | SMTP account username |
 | `SPRING_MAIL_PASSWORD` | unset | SMTP account password |
@@ -103,6 +111,14 @@ Adjust host, port, and database name for your own environment.
 
 Use the local profile when you want to validate application behavior without preparing MySQL first.
 
+macOS or Linux:
+
+```bash
+./gradlew bootRun --args="--spring.profiles.active=local"
+```
+
+Windows PowerShell:
+
 ```powershell
 .\gradlew.bat bootRun --args="--spring.profiles.active=local"
 ```
@@ -112,14 +128,32 @@ Local profile behavior:
 - H2 in-memory database
 - MySQL compatibility mode
 - Flyway migrations run on startup
+- Thymeleaf template caching disabled
+- diagnostic verification and recovery links in logs when SMTP is absent
 
 For real MySQL-backed integration verification, the repository includes Testcontainers-based tests. Run them explicitly with:
+
+macOS or Linux:
+
+```bash
+./gradlew mysqlIntegrationTest
+```
+
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat mysqlIntegrationTest
 ```
 
 ## Build the Executable Artifact
+
+macOS or Linux:
+
+```bash
+./gradlew test bootJar
+```
+
+Windows PowerShell:
 
 ```powershell
 .\gradlew.bat test bootJar
@@ -135,8 +169,8 @@ build/libs/dayLog.jar
 
 ### 1. Build the artifact
 
-```powershell
-.\gradlew.bat bootJar
+```bash
+./gradlew bootJar
 ```
 
 ### 2. Copy the JAR to the target server
@@ -154,6 +188,8 @@ Example:
 ```bash
 sudo mkdir -p /opt/day-log
 sudo mkdir -p /etc/day-log
+sudo mkdir -p /var/log/day-log/app
+sudo mkdir -p /var/log/day-log/tomcat
 ```
 
 ### 4. Create an environment file
@@ -196,8 +232,10 @@ SPRING_PROFILES_ACTIVE=production
 ### 5. Start the application manually once
 
 ```bash
+set -a
 source /etc/day-log/day-log.env
-java -jar /opt/day-log/dayLog.jar --spring.profiles.active=production
+set +a
+java -jar /opt/day-log/dayLog.jar
 ```
 
 Use this first run to verify:
@@ -207,6 +245,10 @@ Use this first run to verify:
 - login and registration flow
 - email verification links can be issued and consumed
 - forgot-password requests can issue either verification or reset links as expected
+- morning and evening records can be saved
+- record library loads the selected range
+- Markdown export downloads with expected content
+- PDF export preview opens and browser "Save as PDF" works
 - `/actuator/health/readiness` returns `UP`
 
 ## Example `systemd` Service
@@ -280,6 +322,14 @@ Recommended responsibilities of the proxy layer:
 
 ### 1. Copy the example environment file
 
+macOS or Linux:
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell:
+
 ```powershell
 Copy-Item .env.example .env
 ```
@@ -289,6 +339,7 @@ Copy-Item .env.example .env
 Update:
 
 - `SPRING_PROFILES_ACTIVE`
+- `APP_PORT`
 - `MYSQL_DATABASE`
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
@@ -301,16 +352,19 @@ Update:
 - `SPRING_MAIL_PORT`
 - `SPRING_MAIL_USERNAME`
 - `SPRING_MAIL_PASSWORD`
+- `DAY_LOG_BACKUP_RETENTION_DAYS` when the default backup retention is not enough
+- `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` when successful backup notifications are required
+- `DAY_LOG_BACKUP_VERIFY_TABLES` when schema-critical tables change
 
 ### 3. Start the stack
 
-```powershell
+```bash
 docker compose up -d --build
 ```
 
 ### 4. Verify the containers
 
-```powershell
+```bash
 docker compose ps
 docker compose logs -f app
 ```
@@ -322,23 +376,32 @@ The Compose file waits for:
 - MySQL health from `mysqladmin ping`
 - application readiness from `/actuator/health/readiness`
 
+Manual check:
+
+```bash
+curl -fsS http://127.0.0.1:${APP_PORT:-8080}/actuator/health/readiness
+```
+
 ### 6. Run an on-demand backup
 
-```powershell
+```bash
 docker compose --profile ops run --rm backup
 ```
 
 ## Operational Notes
 
-- Flyway manages schema changes
-- `ddl-auto=validate` keeps the entity model aligned with the migrated schema
-- the default server port is `8080` unless overridden by `PORT`
-- graceful shutdown is enabled
-- HTTP session timeout is 30 minutes
-- application logs roll under `DAY_LOG_LOG_DIR`
-- embedded Tomcat access logs roll under `DAY_LOG_TOMCAT_BASE_DIR/logs`
-- delivery failures in verification or recovery mail can emit webhook alerts through `DAY_LOG_ALERT_WEBHOOK_URL`
-- the production profile logs `WEEKLY_OPERATIONS_SUMMARY` once per week by default
+- Flyway manages schema changes.
+- `ddl-auto=validate` keeps the entity model aligned with the migrated schema.
+- The default server port is `8080` unless overridden by `PORT`.
+- Compose exposes the app through `APP_PORT`, defaulting to `8080`.
+- Graceful shutdown is enabled.
+- HTTP session timeout is 30 minutes.
+- Application logs roll under `DAY_LOG_LOG_DIR`.
+- Embedded Tomcat access logs roll under `DAY_LOG_TOMCAT_BASE_DIR/logs`.
+- Delivery failures in verification or recovery mail can emit webhook alerts through `DAY_LOG_ALERT_WEBHOOK_URL`.
+- The production profile logs `WEEKLY_OPERATIONS_SUMMARY` once per week by default.
+- Markdown export is generated directly from the selected library range.
+- PDF export is a print-optimized HTML report intended for browser PDF saving.
 
 ## Backup Considerations
 
@@ -346,8 +409,9 @@ Production backup should cover:
 
 - MySQL data
 - application environment secrets stored outside Git
+- generated operational logs when they are needed for audit or support
 
-Because day logs live in MySQL now, there is no separate file storage requirement for user-written content.
+Because day logs live in MySQL now, there is no separate file storage requirement for user-written content or exports.
 
 Repository-provided helpers:
 
@@ -372,12 +436,20 @@ After deployment, confirm all of the following:
 - home page loads after authentication
 - registration creates a new account
 - email verification link flow succeeds
+- verification banner appears for unverified accounts and disappears after verification
 - login failure shows expected generic feedback
 - password reset mail delivery is configured when SMTP values are present
 - password change works for an authenticated account
 - morning plan can be saved
+- blank morning or evening submissions do not create visible records
 - evening reflection can be saved
-- weekly review renders without errors
+- weekly review renders the intended Monday-Sunday range
+- daily preview renders saved content and a clear empty state for blank dates
+- record library searches by date range and keyword
+- Markdown export downloads selected records
+- PDF export preview opens and can be saved from Chrome
+- unknown routes render the product 404 page
+- desktop and mobile layouts have no unintended horizontal overflow or awkward control wrapping
 
 ## Recommended First Production Hardening Steps
 
@@ -390,3 +462,4 @@ After deployment, confirm all of the following:
 - restrict direct database exposure
 - enable scheduled MySQL backups
 - watch readiness and liveness endpoints from your hosting platform
+- keep final release screenshots, generated PDFs, and generated Markdown exports outside Git

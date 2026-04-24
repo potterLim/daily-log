@@ -6,6 +6,7 @@ This directory contains the tracked project documents that should stay aligned w
 
 1. [Project Architecture](project-architecture.md)
 2. [Deployment Guide](deployment.md)
+3. [Release Readiness](release-readiness.md)
 
 ## Included Documents
 
@@ -17,6 +18,7 @@ Use this document when you need to understand:
 - which packages own which responsibilities
 - how requests move from controller to service to persistence
 - how daily log sections are stored and reconstructed
+- how the record library, search, trend, calendar, and export views are assembled
 - which parts are the safest extension points
 
 ### [Deployment Guide](deployment.md)
@@ -30,8 +32,19 @@ Use this document when you need to:
 - place the app behind a reverse proxy or load balancer
 - wire health checks into a VM or container deployment
 
+### [Release Readiness](release-readiness.md)
+
+Use this document when you need to:
+
+- perform final product QA before a release
+- confirm the screen matrix that should be checked in Chrome
+- verify export outputs and not-found states
+- keep screenshot evidence outside Git
+- understand the release acceptance checklist
+
 ## Scope Rules
 
 - Files in this directory are part of the repository and should be kept accurate.
 - Local working notes and private onboarding documents belong outside this directory.
 - If `local-docs/` exists in a workspace, it is intentionally treated as local-only material and is not part of the tracked repository documentation set.
+- Screenshot captures, generated PDFs, generated Markdown exports, local logs, and temporary QA fixtures should not be committed.
