@@ -104,7 +104,7 @@ public class DailyLogController {
             morningFormDto.getChallenges()
         );
 
-        redirectAttributes.addFlashAttribute("message", "✅ 아침 계획이 저장되었습니다.");
+        redirectAttributes.addFlashAttribute("message", "아침 계획이 저장되었습니다.");
         return "redirect:/daily-log/morning";
     }
 
@@ -130,6 +130,7 @@ public class DailyLogController {
         model.addAttribute("previousWeekOffset", weekOffset - 1);
         model.addAttribute("nextWeekOffset", weekOffset + 1);
         model.addAttribute("rangeLabel", startDate + " ~ " + endDate);
+        model.addAttribute("defaultDate", LocalDate.now(mClock));
         return "dailylog/evening";
     }
 
@@ -193,7 +194,7 @@ public class DailyLogController {
             eveningFormDto.getNotes()
         );
 
-        redirectAttributes.addFlashAttribute("message", "🌙 저녁 회고가 저장되었습니다.");
+        redirectAttributes.addFlashAttribute("message", "저녁 회고가 저장되었습니다.");
         return "redirect:/daily-log/evening";
     }
 
@@ -235,6 +236,7 @@ public class DailyLogController {
         model.addAttribute("weekAchieved", weekAchieved);
         model.addAttribute("weekTotal", weekTotal);
         model.addAttribute("weekPercent", weekPercent);
+        model.addAttribute("defaultDate", LocalDate.now(mClock));
         return "dailylog/week";
     }
 

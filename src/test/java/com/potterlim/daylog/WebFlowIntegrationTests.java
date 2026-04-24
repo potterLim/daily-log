@@ -333,14 +333,13 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daily-log/morning")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(not(containsString(
-                "href=\"/daily-log/morning/edit?date=" + TEST_CURRENT_DATE + "\""
-            ))));
+            .andExpect(content().string(containsString("아직 저장된 계획이 없습니다.")))
+            .andExpect(content().string(not(containsString("계획 수정"))));
 
         mMockMvc.perform(get("/daily-log/week")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(not(containsString(TEST_CURRENT_DATE.toString()))))
+            .andExpect(content().string(containsString("이번 주 기록이 없습니다.")))
             .andExpect(content().string(not(containsString("0 / 0 완료"))));
 
         mMockMvc.perform(get("/daily-log/preview")
@@ -448,17 +447,37 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("오늘의 계획을 세우고, 저녁에 실행을 확인하고")));
+            .andExpect(content().string(containsString("오늘의 계획을 세우고, 저녁에 실행을 확인하고")))
+            .andExpect(content().string(containsString("오늘 계획 바로 쓰기")))
+            .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)));
+
+        mMockMvc.perform(get("/daily-log/morning")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("오늘 계획 작성")))
+            .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)));
 
         mMockMvc.perform(get("/daily-log/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("저녁 회고")));
+            .andExpect(content().string(containsString("저녁 회고")))
+            .andExpect(content().string(containsString("이전 주")))
+            .andExpect(content().string(containsString("다음 주")))
+            .andExpect(content().string(containsString("오늘 계획 작성")));
+
+        mMockMvc.perform(get("/daily-log/evening/edit")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString()))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("읽기 전용")));
 
         mMockMvc.perform(get("/daily-log/week")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("주간 리뷰")));
+            .andExpect(content().string(containsString("주간 리뷰")))
+            .andExpect(content().string(containsString("기록에서 다음 계획으로 이어갑니다.")))
+            .andExpect(content().string(containsString("오늘 계획 작성")));
     }
 
     @Test

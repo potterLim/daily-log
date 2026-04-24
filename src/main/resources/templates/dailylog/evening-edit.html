@@ -31,7 +31,7 @@
                     <span class="eyebrow">Morning plan</span>
                     <h2>아침 계획</h2>
                 </div>
-                <span class="content-badge">Read only</span>
+                <span class="content-badge">읽기 전용</span>
             </div>
             <div class="preview-markdown" th:utext="${morningLogHtml}">
                 <p><em>아침 로그가 없습니다.</em></p>
@@ -74,25 +74,41 @@
             <div class="form-section">
                 <label for="achievements" class="form-label field-label">성과</label>
                 <p class="field-hint">오늘 분명히 진행된 일을 적습니다.</p>
-                <textarea id="achievements" th:field="*{achievements}" class="form-control text-area js-autosize" rows="3"></textarea>
+                <textarea id="achievements"
+                          th:field="*{achievements}"
+                          class="form-control text-area js-autosize"
+                          rows="3"
+                          placeholder="예: 핵심 화면의 문구를 정리했다."></textarea>
             </div>
 
             <div class="form-section">
                 <label for="improvements" class="form-label field-label">개선점</label>
                 <p class="field-hint">다음에 다르게 할 한 가지를 남깁니다.</p>
-                <textarea id="improvements" th:field="*{improvements}" class="form-control text-area js-autosize" rows="3"></textarea>
+                <textarea id="improvements"
+                          th:field="*{improvements}"
+                          class="form-control text-area js-autosize"
+                          rows="3"
+                          placeholder="예: 내일은 입력 흐름을 더 짧게 본다."></textarea>
             </div>
 
             <div class="form-section">
                 <label for="gratitude" class="form-label field-label">감사</label>
                 <p class="field-hint">기억하고 싶은 좋은 순간을 적습니다.</p>
-                <textarea id="gratitude" th:field="*{gratitude}" class="form-control text-area js-autosize" rows="3"></textarea>
+                <textarea id="gratitude"
+                          th:field="*{gratitude}"
+                          class="form-control text-area js-autosize"
+                          rows="3"
+                          placeholder="예: 집중해서 마무리할 시간이 있었다."></textarea>
             </div>
 
             <div class="form-section">
                 <label for="notes" class="form-label field-label">내일 메모</label>
                 <p class="field-hint">내일 바로 이어갈 내용을 남깁니다.</p>
-                <textarea id="notes" th:field="*{notes}" class="form-control text-area js-autosize" rows="3"></textarea>
+                <textarea id="notes"
+                          th:field="*{notes}"
+                          class="form-control text-area js-autosize"
+                          rows="3"
+                          placeholder="예: 오전에 주간 리뷰부터 확인한다."></textarea>
             </div>
 
             <div class="action-stack action-stack-inline">

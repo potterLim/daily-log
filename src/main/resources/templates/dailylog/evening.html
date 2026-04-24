@@ -18,8 +18,8 @@
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Week</span>
                     <div class="button-inline-row">
-                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전</a>
-                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음</a>
+                        <a th:href="@{/daily-log/evening(week=${previousWeekOffset})}" class="btn btn-outline-secondary btn-sm">이전 주</a>
+                        <a th:href="@{/daily-log/evening(week=${nextWeekOffset})}" class="btn btn-outline-secondary btn-sm">다음 주</a>
                     </div>
                 </div>
             </div>
@@ -43,6 +43,12 @@
             <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state">
                 <strong>회고할 날짜가 없습니다.</strong>
                 <p>아침 계획을 작성하면 이곳에 표시됩니다.</p>
+                <div class="empty-state-actions">
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
+                        오늘 계획 작성
+                    </a>
+                </div>
             </div>
 
             <div th:if="${!#lists.isEmpty(eveningDates)}" class="entry-grid">

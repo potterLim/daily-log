@@ -32,20 +32,32 @@
             <div class="form-section">
                 <label for="goals" class="form-label field-label">목표</label>
                 <p class="field-hint">오늘 끝내고 싶은 일을 줄마다 하나씩 적습니다.</p>
-                <textarea id="goals" th:field="*{goals}" class="form-control text-area js-autosize" rows="7"></textarea>
+                <textarea id="goals"
+                          th:field="*{goals}"
+                          class="form-control text-area js-autosize"
+                          rows="7"
+                          placeholder="예: 제품 미리보기 점검&#10;예: 고객 피드백 정리"></textarea>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
             <div class="form-section">
                 <label for="focus" class="form-label field-label">집중 영역</label>
                 <p class="field-hint">시간과 주의를 가장 많이 써야 할 영역입니다.</p>
-                <textarea id="focus" th:field="*{focus}" class="form-control text-area js-autosize" rows="4"></textarea>
+                <textarea id="focus"
+                          th:field="*{focus}"
+                          class="form-control text-area js-autosize"
+                          rows="4"
+                          placeholder="예: 오전에는 문서 정리, 오후에는 사용자 흐름 확인"></textarea>
             </div>
 
             <div class="form-section">
                 <label for="challenges" class="form-label field-label">예상 변수</label>
                 <p class="field-hint">방해 요소와 대응 방법을 함께 남깁니다.</p>
-                <textarea id="challenges" th:field="*{challenges}" class="form-control text-area js-autosize" rows="4"></textarea>
+                <textarea id="challenges"
+                          th:field="*{challenges}"
+                          class="form-control text-area js-autosize"
+                          rows="4"
+                          placeholder="예: 회의가 길어지면 핵심 목표부터 처리"></textarea>
             </div>
         </div>
 
@@ -71,7 +83,7 @@
                         <h2>저녁 회고</h2>
                     </div>
                 </div>
-                <p>목표는 저녁 회고에서 완료 체크로 이어집니다.</p>
+                <p>저녁에는 오늘의 목표가 체크리스트로 표시됩니다.</p>
             </div>
 
             <div class="action-stack">

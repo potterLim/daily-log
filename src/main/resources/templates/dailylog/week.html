@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '주간 성취')}">
+      th:replace="~{fragments/layout :: layout(~{::section}, '주간 리뷰')}">
 <section class="workspace-shell">
     <div class="surface-panel workspace-hero workspace-hero-analytic">
         <div class="workspace-header workspace-header-rich">
@@ -46,7 +46,7 @@
         </div>
         <div class="surface-panel summary-card summary-card-accent">
             <span class="eyebrow">Review</span>
-            <h2>날짜별 기록으로 바로 이동합니다.</h2>
+            <h2>기록에서 다음 계획으로 이어갑니다.</h2>
             <div class="summary-insight-list">
                 <span>완료율 확인</span>
                 <span>상세 기록 열기</span>
@@ -58,6 +58,12 @@
     <div th:if="${#lists.isEmpty(weeklyProgressItems)}" class="surface-panel empty-state">
         <strong>이번 주 기록이 없습니다.</strong>
         <p>아침 계획을 저장하면 이곳에 주간 리뷰가 표시됩니다.</p>
+        <div class="empty-state-actions">
+            <a class="btn btn-primary btn-sm"
+               th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
+                오늘 계획 작성
+            </a>
+        </div>
     </div>
 
     <div th:if="${!#lists.isEmpty(weeklyProgressItems)}" class="progress-card-grid">

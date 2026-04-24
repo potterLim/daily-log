@@ -2031,6 +2031,13 @@ ol {
     font-weight: 800;
 }
 
+.empty-state-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
 .empty-inline {
     padding: 18px 20px;
     border-radius: 18px;
@@ -2202,6 +2209,7 @@ ol {
     .button-inline-row,
     .pill-row,
     .action-stack,
+    .empty-state-actions,
     .action-stack-inline {
         width: 100%;
         flex-direction: column;

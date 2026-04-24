@@ -17,7 +17,7 @@
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Next</span>
-                    <strong>오늘 계획 열기</strong>
+                    <strong>저녁 회고 연결</strong>
                     <p>저장한 목표는 저녁 회고의 체크리스트가 됩니다.</p>
                 </div>
             </div>
@@ -74,6 +74,12 @@
             <div th:if="${#lists.isEmpty(morningDates)}" class="empty-state">
                 <strong>아직 저장된 계획이 없습니다.</strong>
                 <p>날짜를 선택해 첫 계획을 작성하세요.</p>
+                <div class="empty-state-actions">
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
+                        오늘 계획 작성
+                    </a>
+                </div>
             </div>
 
             <div th:if="${!#lists.isEmpty(morningDates)}" class="entry-grid">
