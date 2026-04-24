@@ -30,7 +30,6 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,7 +41,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -346,15 +344,15 @@ public class DailyLogController {
     ) {
         UserAccountId userAccountId = userAccount.getUserAccountId();
         String markdownText = mDailyLogService.readLogFileContent(date, userAccountId);
-
-        if (markdownText.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        boolean hasPreviewContent = !markdownText.isBlank();
 
         model.addAttribute("previewDate", date);
+        model.addAttribute("hasPreviewContent", hasPreviewContent);
         model.addAttribute(
             "previewHtml",
-            mSimpleMarkdownRenderer.renderMarkdown(normalizePreviewMarkdownForRendering(markdownText))
+            hasPreviewContent
+                ? mSimpleMarkdownRenderer.renderMarkdown(normalizePreviewMarkdownForRendering(markdownText))
+                : ""
         );
         return "dailylog/log-preview";
     }

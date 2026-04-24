@@ -12,13 +12,18 @@
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">File</span>
-                    <strong th:text="${exportFileName}">daily-log.pdf</strong>
-                    <p>인쇄 대화상자에서 PDF로 저장하세요.</p>
+                    <strong th:text="|${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy.MM.dd')}|">
+                        2026.04.20 ~ 2026.04.24
+                    </strong>
+                    <p>
+                        파일명
+                        <span class="export-file-name" th:text="${exportFileName}">daily-log.pdf</span>
+                    </p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Action</span>
                     <div class="button-inline-row">
-                        <button type="button" class="btn btn-primary btn-sm" data-print-page>인쇄 또는 PDF로 저장</button>
+                        <button type="button" class="btn btn-primary btn-sm" data-print-page>PDF로 저장</button>
                         <a th:href="@{/daily-log/library(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}"
                            class="btn btn-outline-secondary btn-sm">
                             라이브러리로

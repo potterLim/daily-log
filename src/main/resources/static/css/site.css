@@ -242,18 +242,28 @@ ol {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    min-width: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+}
+
+.primary-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     min-height: 42px;
     padding: 0 18px;
     border-radius: 999px;
     color: var(--text-secondary);
     font-size: 0.92rem;
     font-weight: 700;
+    white-space: nowrap;
     transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
@@ -282,10 +292,23 @@ ol {
     gap: 12px;
 }
 
+.topbar-actions,
+.session-cluster,
+.guest-actions {
+    min-width: 0;
+}
+
+.session-cluster,
+.pill-row {
+    flex-wrap: wrap;
+}
+
 .session-chip {
     display: inline-flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+    max-width: 260px;
     padding: 10px 14px;
     border: 1px solid rgba(70, 100, 146, 0.16);
     border-radius: 16px;
@@ -301,9 +324,14 @@ ol {
 }
 
 .session-chip strong {
+    display: block;
+    max-width: 220px;
+    overflow: hidden;
     color: var(--text-strong);
     font-size: 0.92rem;
     font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .app-main {
@@ -517,6 +545,7 @@ ol {
     font-size: 0.82rem;
     font-weight: 800;
     letter-spacing: 0;
+    white-space: nowrap;
     background: rgba(255, 255, 255, 0.78);
     box-shadow: inset 0 0 0 1px rgba(72, 98, 138, 0.14);
 }
@@ -1339,13 +1368,19 @@ ol {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 8px;
     font-size: 0.92rem;
     font-weight: 700;
+    text-align: center;
 }
 
 .auth-helper a {
     color: var(--brand-deep);
+}
+
+.auth-helper-separator {
+    color: var(--text-tertiary);
 }
 
 .workspace-header {
@@ -1435,6 +1470,7 @@ ol {
     font-size: 1rem;
     font-weight: 800;
     line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
 .workspace-meta-card p {
@@ -2156,6 +2192,15 @@ ol {
     font-size: 2.2rem;
 }
 
+.export-file-name {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
 .export-markdown h1 {
     font-size: 1.6rem;
 }
@@ -2549,7 +2594,7 @@ ol {
     width: 7px;
     height: 7px;
     border-radius: 999px;
-    background: var(--brand-primary);
+    background: var(--brand);
     content: "";
 }
 
@@ -2561,6 +2606,34 @@ ol {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+.reader-empty-state {
+    display: grid;
+    gap: 16px;
+    padding: 34px 36px 40px;
+}
+
+.reader-empty-state h2 {
+    margin: 0;
+    color: var(--text-strong);
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.24;
+}
+
+.reader-empty-state p {
+    max-width: 560px;
+    color: var(--text-secondary);
+    font-size: 0.96rem;
+    line-height: 1.68;
+}
+
+.reader-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
 }
 
 .preview-markdown,
@@ -2756,6 +2829,28 @@ ol {
     font-weight: 700;
 }
 
+.error-state-panel {
+    display: grid;
+    gap: 22px;
+    min-height: 520px;
+    align-content: center;
+    padding: 48px;
+    background:
+        radial-gradient(circle at top right, rgba(33, 107, 255, 0.14) 0%, rgba(33, 107, 255, 0) 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 248, 255, 0.86) 100%);
+}
+
+.error-state-panel .section-subtitle {
+    max-width: 560px;
+}
+
+.error-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
 @media (max-width: 1180px) {
     .hero-grid,
     .auth-layout,
@@ -2892,6 +2987,15 @@ ol {
         padding: 22px;
     }
 
+    .reader-empty-state {
+        padding: 28px 22px 32px;
+    }
+
+    .reader-empty-state h2 {
+        font-size: 1.45rem;
+    }
+
+    .reader-empty-actions,
     .reader-action-row {
         flex-direction: column;
     }
@@ -2992,6 +3096,15 @@ ol {
         line-height: 1.5;
     }
 
+    .auth-helper {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .auth-helper-separator {
+        display: none;
+    }
+
     .display-title {
         font-size: 2rem;
     }
@@ -3088,6 +3201,15 @@ ol {
     .auth-stat-card {
         padding: 18px 16px;
         border-radius: 20px;
+    }
+
+    .error-state-panel {
+        min-height: 420px;
+        padding: 32px 22px;
+    }
+
+    .error-action-row {
+        flex-direction: column;
     }
 }
 
