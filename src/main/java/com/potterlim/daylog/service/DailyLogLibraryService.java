@@ -101,7 +101,7 @@ public class DailyLogLibraryService implements IDailyLogLibraryService {
     ) {
         List<DailyLogLibraryItemDto> matchingItemsAscending = listMatchingItems(searchCriteria, userAccountId);
         StringBuilder markdownBuilder = new StringBuilder();
-        markdownBuilder.append("# DailyLog 기록 라이브러리\r\n\r\n");
+        markdownBuilder.append("# Daymark 기록 라이브러리\r\n\r\n");
         markdownBuilder.append("- 기간: ")
             .append(searchCriteria.getStartDate())
             .append(" ~ ")

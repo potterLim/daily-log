@@ -1,6 +1,6 @@
-# dayLog
+# Daymark
 
-`dayLog` is a daily planning and reflection web application that turns morning intention setting, evening review, long-term record exploration, and exportable personal archives into one focused product flow.
+`Daymark` is a daily planning and reflection web application that turns morning intention setting, evening review, long-term record exploration, and exportable personal archives into one focused product flow.
 
 It is built as a multi-user Spring Boot application with:
 

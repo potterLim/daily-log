@@ -837,7 +837,7 @@ ol {
 
 .hero-action-row {
     margin-top: 28px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .hero-action-row .btn {
@@ -1581,8 +1581,8 @@ ol {
 }
 
 .account-security-layout {
-    width: min(860px, 100%);
-    max-width: 860px;
+    width: min(640px, 100%);
+    max-width: 640px;
     margin: 0 auto;
 }
 
@@ -3063,12 +3063,22 @@ ol {
 .error-state-panel {
     display: grid;
     gap: 22px;
-    min-height: 520px;
+    justify-items: center;
+    min-height: 360px;
     align-content: center;
     padding: 48px;
+    text-align: center;
     background:
         radial-gradient(circle at top right, rgba(33, 107, 255, 0.14) 0%, rgba(33, 107, 255, 0) 30%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 248, 255, 0.86) 100%);
+}
+
+.error-layout-centered {
+    display: grid;
+    grid-template-columns: minmax(0, 520px);
+    justify-content: center;
+    min-height: min(640px, calc(100vh - 230px));
+    padding: 36px 0 52px;
 }
 
 .error-state-panel .section-subtitle {
@@ -3078,8 +3088,14 @@ ol {
 .error-action-row {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 12px;
     margin-top: 8px;
+    width: 100%;
+}
+
+.error-action-row .btn {
+    min-width: 160px;
 }
 
 @media (max-width: 1180px) {

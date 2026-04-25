@@ -5,17 +5,21 @@
     <div class="hero-grid hero-grid-premium">
         <div class="surface-panel hero-panel-primary hero-panel-premium">
             <div class="hero-copy-stack">
-                <h1 class="display-title">DailyLog</h1>
+                <h1 class="display-title">Daymark</h1>
             </div>
 
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg"
                    th:href="@{/daily-log/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    Write Morning Plan
+                    Morning Plan
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
                    th:href="@{/daily-log/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    Write Evening Review
+                    Evening Review
+                </a>
+                <a class="btn btn-outline-secondary btn-lg"
+                   th:href="@{/daily-log/preview(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                    View Today
                 </a>
             </div>
         </div>

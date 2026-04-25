@@ -500,7 +500,7 @@ class WebFlowIntegrationTests {
                 .param("keyword", "제품 흐름"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition", containsString("attachment")))
-            .andExpect(content().string(containsString("# DailyLog 기록 라이브러리")))
+            .andExpect(content().string(containsString("# Daymark 기록 라이브러리")))
             .andExpect(content().string(containsString("검색 가능한 제품 흐름 점검")))
             .andExpect(content().string(not(containsString("온보딩 메모 정리"))));
 
@@ -524,13 +524,16 @@ class WebFlowIntegrationTests {
         );
 
         mMockMvc.perform(get("/")
-                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Today")))
-            .andExpect(content().string(containsString("Write Morning Plan")))
-            .andExpect(content().string(containsString("Write Evening Review")))
+            .andExpect(content().string(containsString("Daymark")))
+            .andExpect(content().string(containsString("Morning Plan")))
+            .andExpect(content().string(containsString("Evening Review")))
+            .andExpect(content().string(containsString("View Today")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)))
-            .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)));
+            .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/daily-log/preview?date=" + TEST_CURRENT_DATE)));
 
         mMockMvc.perform(get("/daily-log/morning")
             .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
@@ -577,7 +580,8 @@ class WebFlowIntegrationTests {
             .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isNotFound())
             .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
-            .andExpect(content().string(containsString("Library")));
+            .andExpect(content().string(containsString("Home")))
+            .andExpect(content().string(not(containsString("Library"))));
     }
 
     @Test

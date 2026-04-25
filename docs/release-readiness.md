@@ -1,6 +1,6 @@
 # Release Readiness
 
-This document defines the final product QA checklist for `dayLog`.
+This document defines the final product QA checklist for Daymark.
 
 It is intentionally focused on user-facing readiness: real navigation, visual stability, responsive behavior, account lifecycle flows, record-writing flows, long-term exploration, and export outputs.
 
@@ -129,7 +129,7 @@ For every captured state, verify:
 - mobile helper links stack deliberately rather than wrapping unpredictably
 - page copy is purposeful and short enough that screens do not feel like documentation
 - auth showcase panels do not stretch just because the form column contains validation or success copy
-- guest header actions are visually separated from the DailyLog brand block
+- guest header actions are visually separated from the Daymark brand block
 - empty states explain what happened and offer a useful next action
 - library cards show digestible previews instead of raw Markdown walls
 - library trend labels clearly describe goal-completion rate, not a vague "flow"

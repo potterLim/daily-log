@@ -20,7 +20,7 @@
                         <button type="button" class="btn btn-primary btn-sm" data-print-page>Save PDF</button>
                         <a th:href="@{/daily-log/library(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}"
                            class="btn btn-outline-secondary btn-sm">
-                            Library
+                            Records
                         </a>
                     </div>
                 </div>

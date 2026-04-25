@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#eef3fb" />
-    <title th:text="${pageTitle} + ' · DailyLog'">DailyLog</title>
+    <title th:text="${pageTitle} + ' · Daymark'">Daymark</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
@@ -29,9 +29,9 @@
 <header class="app-header" data-app-header>
     <div class="app-frame topbar-shell">
         <a class="brand-lockup" th:href="@{/}">
-            <span class="brand-symbol">DL</span>
+            <span class="brand-symbol">DM</span>
             <span class="brand-copy">
-                <strong>DailyLog</strong>
+                <strong>Daymark</strong>
             </span>
         </a>
 
@@ -59,7 +59,7 @@
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '기록 라이브러리') || #strings.contains(pageTitle, 'PDF')} ? ' is-active' : ''"
                th:href="@{/daily-log/library}">
-                Library
+                Records
             </a>
         </nav>
 
@@ -120,11 +120,11 @@
 <footer class="app-footer">
     <div class="app-frame footer-shell">
         <div class="footer-copy-block">
-            <strong>DailyLog</strong>
+            <strong>Daymark</strong>
         </div>
         <div class="footer-meta">
             <span th:text="${T(java.time.Year).now().getValue()}">2026</span>
-            <span>DailyLog</span>
+            <span>Daymark</span>
         </div>
     </div>
 </footer>

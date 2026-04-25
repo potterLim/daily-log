@@ -368,7 +368,7 @@ public class DailyLogController {
     }
 
     private static String buildLibraryExportFileName(DailyLogLibrarySearchCriteria searchCriteria, String extension) {
-        return "daily-log-"
+        return "daymark-records-"
             + searchCriteria.getStartDate()
             + "-"
             + searchCriteria.getEndDate()
