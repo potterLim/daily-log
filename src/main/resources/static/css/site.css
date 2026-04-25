@@ -619,11 +619,23 @@ ol {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
     border-radius: 999px;
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: 0;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn.btn-sm {
+    min-height: 38px;
+    padding: 0 14px;
+}
+
+.btn.btn-lg {
+    min-height: 52px;
+    padding: 0 22px;
 }
 
 .btn:hover {
@@ -1197,6 +1209,27 @@ ol {
     align-items: start;
 }
 
+.auth-layout-centered {
+    grid-template-columns: minmax(0, 520px);
+    justify-content: center;
+    min-height: min(680px, calc(100vh - 230px));
+    padding: 36px 0 52px;
+}
+
+.auth-layout-centered .auth-card {
+    width: 100%;
+}
+
+.auth-layout-centered .panel-header {
+    justify-content: center;
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.auth-layout-centered .panel-header h2 {
+    font-size: 1.62rem;
+}
+
 .auth-showcase {
     display: grid;
     align-content: start;
@@ -1353,6 +1386,10 @@ ol {
     font-weight: 800;
 }
 
+.toggle-row span {
+    min-width: 0;
+}
+
 .toggle-row small {
     display: block;
     margin-top: 4px;
@@ -1442,6 +1479,8 @@ ol {
 }
 
 .workspace-header-copy {
+    flex: 0 0 min(360px, 40%);
+    min-width: 260px;
     max-width: 680px;
 }
 
@@ -1449,7 +1488,8 @@ ol {
     display: grid;
     grid-template-columns: repeat(2, minmax(220px, 1fr));
     gap: 14px;
-    min-width: min(100%, 520px);
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .workspace-meta-card {
@@ -1476,11 +1516,15 @@ ol {
 }
 
 .workspace-meta-card strong {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
     color: var(--text-strong);
     font-size: 1rem;
     font-weight: 800;
     line-height: 1.45;
-    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .workspace-meta-card p {

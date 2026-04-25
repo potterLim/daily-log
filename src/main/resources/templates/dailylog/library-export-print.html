@@ -7,7 +7,6 @@
             <div class="workspace-header-copy">
                 <span class="eyebrow">PDF</span>
                 <h1 class="section-title">PDF 리포트 미리보기</h1>
-                <p class="section-subtitle">선택한 기간을 읽기 좋은 문서로 정리했습니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -15,10 +14,6 @@
                     <strong th:text="|${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy.MM.dd')}|">
                         2026.04.20 ~ 2026.04.24
                     </strong>
-                    <p>
-                        파일명
-                        <span class="export-file-name" th:text="${exportFileName}">daily-log.pdf</span>
-                    </p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Action</span>
@@ -51,19 +46,16 @@
                 <div class="export-summary-card export-summary-card-primary">
                     <span>완료율</span>
                     <strong th:text="${libraryViewDto.averageCompletionPercent} + '%'">0%</strong>
-                    <p>선택한 기간에서 목표가 실제로 완료된 비율입니다.</p>
                 </div>
                 <div class="export-summary-card">
                     <span>기록 수</span>
                     <strong th:text="${libraryViewDto.entryCount} + '일'">0일</strong>
-                    <p>포함된 일별 기록입니다.</p>
                 </div>
                 <div class="export-summary-card">
                     <span>목표 현황</span>
                     <strong th:text="${libraryViewDto.achievedGoalCount} + ' / ' + ${libraryViewDto.totalGoalCount}">
                         0 / 0
                     </strong>
-                    <p>완료와 전체 목표입니다.</p>
                 </div>
             </section>
 
@@ -89,7 +81,6 @@
             <section th:if="${!libraryViewDto.hasEntries()}" class="export-empty-state">
                 <span class="eyebrow">No records</span>
                 <h3>조건에 맞는 기록이 없습니다.</h3>
-                <p>검색어를 줄이거나 기간을 넓혀 다시 내보내기를 시도해보세요.</p>
             </section>
 
             <article th:each="libraryItem : ${libraryViewDto.items}" class="export-entry-card">

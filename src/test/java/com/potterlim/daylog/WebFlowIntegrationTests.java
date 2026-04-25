@@ -526,7 +526,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("계획, 실행, 회고를 한 흐름으로 정리합니다.")))
+            .andExpect(content().string(containsString("오늘의 흐름")))
             .andExpect(content().string(containsString("오늘 계획")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)))
             .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)));

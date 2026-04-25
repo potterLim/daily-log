@@ -7,15 +7,11 @@
             <div class="workspace-header-copy">
                 <span class="eyebrow">Read</span>
                 <h1 class="section-title" th:text="'기록 보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">기록 보기</h1>
-                <p class="section-subtitle">계획과 회고를 읽기 모드로 봅니다.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">Mode</span>
                     <strong th:text="${hasPreviewContent} ? '읽기 전용' : '기록 없음'">읽기 전용</strong>
-                    <p th:text="${hasPreviewContent} ? '집중 읽기' : '저장된 기록 없음'">
-                        집중 읽기
-                    </p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Go to</span>
@@ -35,7 +31,6 @@
                 <div>
                     <span class="eyebrow">Daily entry</span>
                     <h2 th:text="${#temporals.format(previewDate, 'yyyy년 M월 d일')}">2026년 4월 1일</h2>
-                    <p>하루 기록을 한 장으로 정리했습니다.</p>
                 </div>
                 <span class="content-badge reader-badge">읽기 모드</span>
             </div>
@@ -47,7 +42,6 @@
             <div th:unless="${hasPreviewContent}" class="reader-empty-state">
                 <span class="eyebrow">No entry</span>
                 <h2>아직 저장된 기록이 없습니다.</h2>
-                <p>새 계획을 작성하거나 다른 날짜를 선택해 보세요.</p>
                 <div class="reader-empty-actions">
                     <a th:href="@{/daily-log/morning/edit(date=${#temporals.format(previewDate, 'yyyy-MM-dd')})}"
                        class="btn btn-primary btn-sm">
@@ -70,21 +64,14 @@
             <div class="reader-date-card">
                 <span>기준 날짜</span>
                 <strong th:text="${#temporals.format(previewDate, 'yyyy.MM.dd')}">2026.04.01</strong>
-                <p th:text="${hasPreviewContent} ? '저장된 로그' : '기록 없음'">
-                    저장된 로그
-                </p>
             </div>
 
             <div class="reader-info-stack">
                 <div class="reader-info-card">
                     <strong th:text="${hasPreviewContent} ? '포함된 흐름' : '다음 행동'">포함된 흐름</strong>
-                    <p th:text="${hasPreviewContent} ? '계획, 체크, 회고' : '계획 작성 후 읽기 모드'">
-                        계획, 체크, 회고
-                    </p>
                 </div>
                 <div class="reader-info-card">
-                    <strong>읽는 방식</strong>
-                    <p>섹션별로 빠르게 훑어봅니다.</p>
+                    <strong>섹션 보기</strong>
                 </div>
             </div>
 
@@ -101,7 +88,6 @@
             <div class="helper-stack reader-action-stack">
                 <div class="helper-card reader-helper-card">
                     <strong>날짜</strong>
-                    <p th:text="${#temporals.format(previewDate, 'yyyy-MM-dd')}">2026-04-01</p>
                 </div>
                 <div class="reader-action-row">
                     <a th:href="@{/daily-log/library}" class="btn btn-primary btn-sm">기록 라이브러리</a>

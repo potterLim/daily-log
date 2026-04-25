@@ -13,7 +13,6 @@
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">Entries</span>
                     <strong th:text="${#lists.size(eveningDates)} + '건'">0건</strong>
-                    <p>계획이나 회고가 있는 날짜입니다.</p>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">Week</span>
@@ -43,12 +42,10 @@
                     <span class="eyebrow">Dates</span>
                     <h2>회고할 날짜</h2>
                 </div>
-                <p>저장된 날짜를 선택해 결과를 정리합니다.</p>
             </div>
 
             <div th:if="${#lists.isEmpty(eveningDates)}" class="empty-state">
                 <strong>회고할 날짜가 없습니다.</strong>
-                <p>아침 계획을 작성하면 이곳에 표시됩니다.</p>
                 <div class="empty-state-actions">
                     <a class="btn btn-primary btn-sm"
                        th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
