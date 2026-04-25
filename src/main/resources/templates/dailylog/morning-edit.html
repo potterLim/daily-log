@@ -5,17 +5,16 @@
     <div class="surface-panel workspace-hero workspace-hero-morning">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Morning</span>
-                <h1 class="section-title" th:text="'아침 계획 · ' + ${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">아침 계획</h1>
+                <h1 class="section-title">아침 계획</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Goal format</span>
-                    <strong>줄마다 하나의 목표</strong>
+                    <span class="workspace-meta-label">날짜</span>
+                    <strong th:text="${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">2026-04-24</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Review</span>
-                    <strong>저녁에 바로 확인</strong>
+                    <span class="workspace-meta-label">회고</span>
+                    <strong>저녁에 확인</strong>
                 </div>
             </div>
         </div>
@@ -59,7 +58,6 @@
             <div class="surface-panel side-note surface-panel-elevated">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Guide</span>
                         <h2>작성 기준</h2>
                     </div>
                 </div>
@@ -73,10 +71,13 @@
             <div class="surface-panel side-note accent-surface">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Linked</span>
                         <h2>저녁 회고</h2>
                     </div>
                 </div>
+                <a th:href="@{/daily-log/evening/edit(date=${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')})}"
+                   class="btn btn-outline-secondary w-100">
+                    회고 열기
+                </a>
             </div>
 
             <div class="action-stack">

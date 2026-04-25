@@ -5,16 +5,15 @@
     <div class="surface-panel workspace-hero workspace-hero-morning">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Morning</span>
                 <h1 class="section-title">아침 계획</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">This week</span>
+                    <span class="workspace-meta-label">이번 주</span>
                     <strong th:text="${#lists.size(morningDates)} + '건'">0건</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Next</span>
+                    <span class="workspace-meta-label">다음</span>
                     <strong>저녁 회고 연결</strong>
                 </div>
             </div>
@@ -29,7 +28,6 @@
         <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">New entry</span>
                     <h2>날짜 선택</h2>
                 </div>
             </div>
@@ -59,7 +57,6 @@
         <div class="surface-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Saved</span>
                     <h2>저장된 계획</h2>
                 </div>
             </div>
@@ -78,7 +75,7 @@
                 <a th:each="morningDate : ${morningDates}"
                    class="entry-card"
                    th:href="@{/daily-log/morning/edit(date=${morningDate})}">
-                    <div class="entry-card-icon">M</div>
+                    <div class="entry-card-icon">아</div>
                     <div class="entry-card-body">
                         <strong th:text="${morningDate}">2026-04-01</strong>
                         <span>계획 수정</span>

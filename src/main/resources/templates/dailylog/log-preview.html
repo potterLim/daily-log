@@ -5,16 +5,15 @@
     <div class="surface-panel workspace-hero workspace-hero-reader">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Read</span>
-                <h1 class="section-title" th:text="'기록 보기 · ' + ${#temporals.format(previewDate, 'yyyy-MM-dd')}">기록 보기</h1>
+                <h1 class="section-title">기록 보기</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Mode</span>
+                    <span class="workspace-meta-label">상태</span>
                     <strong th:text="${hasPreviewContent} ? '읽기 전용' : '기록 없음'">읽기 전용</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Go to</span>
+                    <span class="workspace-meta-label">이동</span>
                     <div class="button-inline-row">
                         <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-sm">기록 라이브러리</a>
                         <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 리뷰</a>
@@ -29,7 +28,6 @@
         <div class="surface-panel reader-article reader-article-premium">
             <div class="reader-document-header">
                 <div>
-                    <span class="eyebrow">Daily entry</span>
                     <h2 th:text="${#temporals.format(previewDate, 'yyyy년 M월 d일')}">2026년 4월 1일</h2>
                 </div>
                 <span class="content-badge reader-badge">읽기 모드</span>
@@ -40,7 +38,6 @@
             </article>
 
             <div th:unless="${hasPreviewContent}" class="reader-empty-state">
-                <span class="eyebrow">No entry</span>
                 <h2>아직 저장된 기록이 없습니다.</h2>
                 <div class="reader-empty-actions">
                     <a th:href="@{/daily-log/morning/edit(date=${#temporals.format(previewDate, 'yyyy-MM-dd')})}"
@@ -56,7 +53,6 @@
         <aside class="surface-panel reader-side reader-side-premium">
             <div class="panel-header compact reader-side-header">
                 <div>
-                    <span class="eyebrow">Reading panel</span>
                     <h2>기록 정보</h2>
                 </div>
             </div>
@@ -76,7 +72,6 @@
             </div>
 
             <div class="reader-outline-card">
-                <span class="eyebrow">Outline</span>
                 <h3>하루의 구조</h3>
                 <div class="reader-outline-list">
                     <span>계획</span>

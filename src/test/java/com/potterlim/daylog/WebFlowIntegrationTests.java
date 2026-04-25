@@ -562,7 +562,7 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("기록 라이브러리")))
-            .andExpect(content().string(containsString("Markdown 다운로드")))
+            .andExpect(content().string(containsString("마크다운 다운로드")))
             .andExpect(content().string(containsString("PDF 미리보기")));
     }
 

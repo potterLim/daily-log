@@ -5,16 +5,15 @@
     <div class="surface-panel workspace-hero workspace-hero-evening">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Evening</span>
-                <h1 class="section-title" th:text="'저녁 회고 · ' + ${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">저녁 회고</h1>
+                <h1 class="section-title">저녁 회고</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Checklist</span>
-                    <strong>완료 여부 확인</strong>
+                    <span class="workspace-meta-label">날짜</span>
+                    <strong th:text="${#temporals.format(eveningFormDto.date, 'yyyy-MM-dd')}">2026-04-24</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Notes</span>
+                    <span class="workspace-meta-label">메모</span>
                     <strong>짧은 회고 저장</strong>
                 </div>
             </div>
@@ -25,7 +24,6 @@
         <div class="surface-panel reference-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Morning plan</span>
                     <h2>아침 계획</h2>
                 </div>
                 <span class="content-badge">읽기 전용</span>
@@ -42,7 +40,6 @@
 
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Reflection</span>
                     <h2>오늘의 결과</h2>
                 </div>
             </div>

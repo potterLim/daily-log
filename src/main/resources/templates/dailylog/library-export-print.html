@@ -5,18 +5,17 @@
     <div class="surface-panel workspace-hero workspace-hero-library print-toolbar">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">PDF</span>
                 <h1 class="section-title">PDF 리포트 미리보기</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">File</span>
+                    <span class="workspace-meta-label">기간</span>
                     <strong th:text="|${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy.MM.dd')}|">
                         2026.04.20 ~ 2026.04.24
                     </strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Action</span>
+                    <span class="workspace-meta-label">실행</span>
                     <div class="button-inline-row">
                         <button type="button" class="btn btn-primary btn-sm" data-print-page>PDF로 저장</button>
                         <a th:href="@{/daily-log/library(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}"
@@ -32,7 +31,6 @@
     <div class="surface-panel reader-article reader-article-premium export-document export-report">
         <div class="reader-document-header export-document-header export-report-cover">
             <div>
-                <span class="eyebrow">DailyLog export</span>
                 <h2>기록 라이브러리</h2>
                 <p th:text="|${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy.MM.dd')} ~ ${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy.MM.dd')}|">
                     2026.01.01 ~ 2026.04.24
@@ -61,7 +59,6 @@
 
             <section class="export-report-insight" aria-label="내보내기 조건">
                 <div>
-                    <span class="eyebrow">Export snapshot</span>
                     <h3>선택한 기간</h3>
                 </div>
                 <div class="export-condition-list">
@@ -79,7 +76,6 @@
             </section>
 
             <section th:if="${!libraryViewDto.hasEntries()}" class="export-empty-state">
-                <span class="eyebrow">No records</span>
                 <h3>조건에 맞는 기록이 없습니다.</h3>
             </section>
 

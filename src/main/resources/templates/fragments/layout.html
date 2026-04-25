@@ -103,10 +103,8 @@
 
         <div sec:authorize="isAuthenticated()" th:if="${isEmailVerificationRequired}" class="message-banner message-banner-warning verification-banner" role="alert">
             <div class="verification-banner-copy">
-                <strong>이메일 인증이 필요합니다.</strong>
-                <p>
-                    <span th:text="${currentUserEmailAddress}">user@example.com</span> 인증을 완료해 주세요.
-                </p>
+                <strong>이메일 인증 필요</strong>
+                <p>메일함에서 인증을 완료해 주세요.</p>
             </div>
             <form th:action="@{/account/email-verification/resend}" method="post" class="verification-banner-action">
                 <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>

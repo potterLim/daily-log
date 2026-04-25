@@ -5,16 +5,15 @@
     <div class="surface-panel workspace-hero workspace-hero-analytic">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Weekly</span>
                 <h1 class="section-title">주간 리뷰</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Completed</span>
+                    <span class="workspace-meta-label">완료</span>
                     <strong th:text="${weekAchieved} + '건'">0건</strong>
                 </div>
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Planned</span>
+                    <span class="workspace-meta-label">목표</span>
                     <strong th:text="${weekTotal} + '건'">0건</strong>
                 </div>
             </div>
@@ -23,7 +22,7 @@
 
     <div class="summary-grid summary-grid-premium">
         <div class="surface-panel summary-card summary-card-featured">
-            <span class="summary-label">Completion</span>
+            <span class="summary-label">완료율</span>
             <strong class="summary-value" th:text="${weekPercent} + '%'">0%</strong>
             <div class="summary-kpi-row">
                 <span class="info-pill" th:text="'완료 ' + ${weekAchieved} + '건'">완료 0건</span>
@@ -39,7 +38,6 @@
             <strong class="summary-value" th:text="${weekTotal}">0</strong>
         </div>
         <div class="surface-panel summary-card summary-card-accent">
-            <span class="eyebrow">Review</span>
             <h2>다음 계획으로 연결</h2>
             <div class="summary-insight-list">
                 <span>완료율 확인</span>
@@ -63,7 +61,6 @@
         <article th:each="progressItem : ${weeklyProgressItems}" class="surface-panel progress-card">
             <div class="progress-card-top">
                 <div>
-                    <span class="eyebrow">Day</span>
                     <h2 th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</h2>
                 </div>
                 <div class="progress-percent-badge" th:text="${progressItem.percent} + '%'">0%</div>

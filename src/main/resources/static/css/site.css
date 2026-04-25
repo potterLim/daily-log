@@ -467,10 +467,14 @@ ol {
 }
 
 .display-title {
-    margin-top: 14px;
+    margin-top: 0;
     font-size: 3.45rem;
     font-weight: 800;
     line-height: 1.08;
+}
+
+.eyebrow + .display-title {
+    margin-top: 14px;
 }
 
 .lead-copy,
@@ -496,10 +500,14 @@ ol {
 }
 
 .section-title {
-    margin-top: 10px;
+    margin-top: 0;
     font-size: 2.35rem;
     font-weight: 800;
     line-height: 1.18;
+}
+
+.eyebrow + .section-title {
+    margin-top: 10px;
 }
 
 .section-subtitle {
@@ -518,9 +526,13 @@ ol {
 }
 
 .panel-header h2 {
-    margin-top: 8px;
+    margin-top: 0;
     font-size: 1.32rem;
     font-weight: 800;
+}
+
+.panel-header .eyebrow + h2 {
+    margin-top: 8px;
 }
 
 .panel-header p {
@@ -858,11 +870,15 @@ ol {
 
 .hero-story-card strong {
     display: block;
-    margin-top: 16px;
+    margin-top: 0;
     color: var(--text-strong);
     font-size: 0.98rem;
     font-weight: 800;
     line-height: 1.55;
+}
+
+.story-kicker + strong {
+    margin-top: 16px;
 }
 
 .hero-story-card p {
@@ -907,10 +923,14 @@ ol {
 
 .metric-tile strong {
     display: block;
-    margin-top: 10px;
+    margin-top: 0;
     color: var(--text-strong);
     font-size: 0.94rem;
     line-height: 1.48;
+}
+
+.metric-tile span + strong {
+    margin-top: 10px;
 }
 
 .product-window {

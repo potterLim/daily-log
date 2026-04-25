@@ -5,16 +5,15 @@
     <div class="surface-panel workspace-hero workspace-hero-library">
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
-                <span class="eyebrow">Library</span>
                 <h1 class="section-title">기록 라이브러리</h1>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">Entries</span>
+                    <span class="workspace-meta-label">기록</span>
                     <strong th:text="${libraryViewDto.entryCount} + '일'">0일</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">Completion</span>
+                    <span class="workspace-meta-label">완료율</span>
                     <strong th:text="${libraryViewDto.averageCompletionPercent} + '%'">0%</strong>
                 </div>
             </div>
@@ -23,7 +22,6 @@
 
     <form th:action="@{/daily-log/library}" method="get" class="surface-panel library-filter-panel">
         <div class="library-filter-copy">
-            <span class="eyebrow">Search</span>
             <h2>필요한 기록만 찾기</h2>
         </div>
         <div class="library-filter-grid">
@@ -63,7 +61,6 @@
         <div class="surface-panel library-timeline-panel surface-panel-elevated">
             <div class="panel-header">
                 <div>
-                    <span class="eyebrow">Timeline</span>
                     <h2>타임라인</h2>
                 </div>
             </div>
@@ -102,7 +99,6 @@
                                      class="library-snapshot-card library-snapshot-card-goals"
                                      aria-label="목표 미리보기">
                                 <div class="library-snapshot-heading">
-                                    <span>Plan</span>
                                     <strong>오늘의 목표</strong>
                                 </div>
                                 <ul class="library-goal-preview-list">
@@ -128,7 +124,6 @@
                                      class="library-snapshot-card"
                                      th:classappend="${' ' + contentBlock.toneCssClass}">
                                 <div class="library-snapshot-heading">
-                                    <span th:text="${contentBlock.eyebrow}">Focus</span>
                                     <strong th:text="${contentBlock.title}">집중 영역</strong>
                                 </div>
                                 <ul class="library-content-line-list">
@@ -164,7 +159,6 @@
             <div class="surface-panel library-trend-panel">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Completion</span>
                         <h2>목표 완료율 추이</h2>
                     </div>
                 </div>
@@ -184,7 +178,6 @@
             <div class="surface-panel library-calendar-panel">
                 <div class="panel-header compact">
                     <div>
-                        <span class="eyebrow">Calendar</span>
                         <h2 th:text="${#temporals.format(libraryViewDto.calendarMonthDate, 'yyyy년 M월')}">2026년 4월</h2>
                     </div>
                 </div>
@@ -208,12 +201,11 @@
             </div>
 
             <div class="surface-panel library-export-panel">
-                <span class="eyebrow">Export</span>
                 <h2>내보내기</h2>
                 <div class="action-stack">
                     <a class="btn btn-primary"
                        th:href="@{/daily-log/library/export/markdown(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
-                        Markdown 다운로드
+                        마크다운 다운로드
                     </a>
                     <a class="btn btn-outline-secondary"
                        th:href="@{/daily-log/library/export/pdf(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
