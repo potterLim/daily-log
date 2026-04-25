@@ -627,6 +627,7 @@ ol {
 }
 
 .btn {
+    appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -635,8 +636,11 @@ ol {
     padding: 0 18px;
     border-radius: 999px;
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1;
     letter-spacing: 0;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -1560,6 +1564,18 @@ ol {
 .workspace-grid-two {
     grid-template-columns: minmax(340px, 0.9fr) minmax(0, 1.1fr);
     align-items: start;
+}
+
+.workspace-grid-one,
+.account-security-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+}
+
+.account-security-layout {
+    max-width: 680px;
+    margin: 0 auto;
 }
 
 .launcher-form {
@@ -2691,6 +2707,10 @@ ol {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+.reader-action-row .btn {
+    flex: 1 1 0;
 }
 
 .reader-empty-state {

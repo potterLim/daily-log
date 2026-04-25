@@ -39,27 +39,27 @@
             <a class="nav-chip"
                th:classappend="${pageTitle == '홈'} ? ' is-active' : ''"
                th:href="@{/}">
-                홈
+                Home
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '아침')} ? ' is-active' : ''"
                th:href="@{/daily-log/morning}">
-                아침 계획
+                Morning
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '저녁')} ? ' is-active' : ''"
                th:href="@{/daily-log/evening}">
-                저녁 회고
+                Evening
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '주간')} ? ' is-active' : ''"
                th:href="@{/daily-log/week}">
-                주간 리뷰
+                Week
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '기록 라이브러리') || #strings.contains(pageTitle, 'PDF')} ? ' is-active' : ''"
                th:href="@{/daily-log/library}">
-                기록
+                Library
             </a>
         </nav>
 
@@ -69,16 +69,16 @@
                     <span class="session-label">현재 워크스페이스</span>
                     <strong sec:authentication="name">user</strong>
                 </div>
-                <a class="btn btn-outline-secondary btn-sm" th:href="@{/account/password}">계정 보안</a>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/account/password}">Account</a>
                 <form th:action="@{/logout}" method="post">
                     <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">나가기</button>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Sign Out</button>
                 </form>
             </div>
 
             <div sec:authorize="isAnonymous()" class="guest-actions">
-                <a class="btn btn-outline-secondary btn-sm" th:href="@{/login}">로그인</a>
-                <a class="btn btn-primary btn-sm" th:href="@{/register}">회원가입</a>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/login}">Sign In</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/register}">Create Account</a>
             </div>
         </div>
     </div>
@@ -104,11 +104,10 @@
         <div sec:authorize="isAuthenticated()" th:if="${isEmailVerificationRequired}" class="message-banner message-banner-warning verification-banner" role="alert">
             <div class="verification-banner-copy">
                 <strong>이메일 인증 필요</strong>
-                <p>메일함에서 인증을 완료해 주세요.</p>
             </div>
             <form th:action="@{/account/email-verification/resend}" method="post" class="verification-banner-action">
                 <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                <button type="submit" class="btn btn-outline-secondary btn-sm">메일 다시 보내기</button>
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Resend Email</button>
             </form>
         </div>
 

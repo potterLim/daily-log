@@ -17,10 +17,10 @@
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">실행</span>
                     <div class="button-inline-row">
-                        <button type="button" class="btn btn-primary btn-sm" data-print-page>PDF로 저장</button>
+                        <button type="button" class="btn btn-primary btn-sm" data-print-page>Save PDF</button>
                         <a th:href="@{/daily-log/library(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}"
                            class="btn btn-outline-secondary btn-sm">
-                            라이브러리로
+                            Library
                         </a>
                     </div>
                 </div>

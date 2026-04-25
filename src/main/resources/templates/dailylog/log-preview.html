@@ -9,16 +9,12 @@
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">상태</span>
-                    <strong th:text="${hasPreviewContent} ? '읽기 전용' : '기록 없음'">읽기 전용</strong>
+                    <span class="workspace-meta-label">날짜</span>
+                    <strong th:text="${#temporals.format(previewDate, 'yyyy-MM-dd')}">2026-04-01</strong>
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">이동</span>
-                    <div class="button-inline-row">
-                        <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-sm">기록 라이브러리</a>
-                        <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">주간 리뷰</a>
-                        <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
-                    </div>
+                    <span class="workspace-meta-label">상태</span>
+                    <strong th:text="${hasPreviewContent} ? '읽기 전용' : '기록 없음'">읽기 전용</strong>
                 </div>
             </div>
         </div>
@@ -30,7 +26,6 @@
                 <div>
                     <h2 th:text="${#temporals.format(previewDate, 'yyyy년 M월 d일')}">2026년 4월 1일</h2>
                 </div>
-                <span class="content-badge reader-badge">읽기 모드</span>
             </div>
 
             <article th:if="${hasPreviewContent}" class="preview-markdown log-article log-article-premium" th:utext="${previewHtml}">
@@ -42,10 +37,9 @@
                 <div class="reader-empty-actions">
                     <a th:href="@{/daily-log/morning/edit(date=${#temporals.format(previewDate, 'yyyy-MM-dd')})}"
                        class="btn btn-primary btn-sm">
-                        계획 작성
+                        New Plan
                     </a>
-                    <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-sm">라이브러리</a>
-                    <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
+                    <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-sm">Library</a>
                 </div>
             </div>
         </div>
@@ -58,37 +52,13 @@
             </div>
 
             <div class="reader-date-card">
-                <span>기준 날짜</span>
+                <span>Date</span>
                 <strong th:text="${#temporals.format(previewDate, 'yyyy.MM.dd')}">2026.04.01</strong>
             </div>
 
-            <div class="reader-info-stack">
-                <div class="reader-info-card">
-                    <strong th:text="${hasPreviewContent} ? '포함된 흐름' : '다음 행동'">포함된 흐름</strong>
-                </div>
-                <div class="reader-info-card">
-                    <strong>섹션 보기</strong>
-                </div>
-            </div>
-
-            <div class="reader-outline-card">
-                <h3>하루의 구조</h3>
-                <div class="reader-outline-list">
-                    <span>계획</span>
-                    <span>실행 확인</span>
-                    <span>회고 메모</span>
-                </div>
-            </div>
-
-            <div class="helper-stack reader-action-stack">
-                <div class="helper-card reader-helper-card">
-                    <strong>날짜</strong>
-                </div>
-                <div class="reader-action-row">
-                    <a th:href="@{/daily-log/library}" class="btn btn-primary btn-sm">기록 라이브러리</a>
-                    <a th:href="@{/daily-log/week}" class="btn btn-primary btn-sm">주간 리뷰로</a>
-                    <a th:href="@{/}" class="btn btn-light btn-sm">홈</a>
-                </div>
+            <div class="reader-action-row">
+                <a th:href="@{/daily-log/library}" class="btn btn-primary btn-sm">Library</a>
+                <a th:href="@{/daily-log/week}" class="btn btn-outline-secondary btn-sm">Week</a>
             </div>
         </aside>
     </div>

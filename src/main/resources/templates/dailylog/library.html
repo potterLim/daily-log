@@ -52,8 +52,8 @@
             </div>
         </div>
         <div class="library-filter-actions">
-            <button type="submit" class="btn btn-primary btn-lg">기록 찾기</button>
-            <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-lg">최근 90일</a>
+            <button type="submit" class="btn btn-primary btn-lg">Search</button>
+            <a th:href="@{/daily-log/library}" class="btn btn-outline-secondary btn-lg">Last 90 Days</a>
         </div>
     </form>
 
@@ -70,9 +70,9 @@
                 <div class="empty-state-actions">
                     <a class="btn btn-primary btn-sm"
                        th:href="@{/daily-log/morning/edit(date=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')})}">
-                        오늘 계획 작성
+                        New Plan
                     </a>
-                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/daily-log/library}">최근 90일 보기</a>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/daily-log/library}">Reset</a>
                 </div>
             </div>
 
@@ -147,7 +147,7 @@
                             <span th:if="${libraryItem.hasEveningLog()}" class="info-pill">저녁</span>
                             <a th:href="@{/daily-log/preview(date=${#temporals.format(libraryItem.date, 'yyyy-MM-dd')})}"
                                class="btn btn-outline-secondary btn-sm">
-                                기록 보기
+                                Open Log
                             </a>
                         </div>
                     </div>
@@ -205,11 +205,11 @@
                 <div class="action-stack">
                     <a class="btn btn-primary"
                        th:href="@{/daily-log/library/export/markdown(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
-                        마크다운 다운로드
+                        Download MD
                     </a>
                     <a class="btn btn-outline-secondary"
                        th:href="@{/daily-log/library/export/pdf(from=${#temporals.format(libraryViewDto.searchCriteria.startDate, 'yyyy-MM-dd')},to=${#temporals.format(libraryViewDto.searchCriteria.endDate, 'yyyy-MM-dd')},keyword=${libraryViewDto.searchCriteria.keywordOrNull})}">
-                        PDF 미리보기
+                        Preview PDF
                     </a>
                 </div>
             </div>

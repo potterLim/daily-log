@@ -55,19 +55,6 @@
         </div>
 
         <aside class="editor-side">
-            <div class="surface-panel side-note surface-panel-elevated">
-                <div class="panel-header compact">
-                    <div>
-                        <h2>작성 기준</h2>
-                    </div>
-                </div>
-                <ul class="helper-list">
-                    <li>오늘 끝낼 크기</li>
-                    <li>가장 중요한 한두 가지</li>
-                    <li>방해 요소와 대응</li>
-                </ul>
-            </div>
-
             <div class="surface-panel side-note accent-surface">
                 <div class="panel-header compact">
                     <div>
@@ -76,14 +63,13 @@
                 </div>
                 <a th:href="@{/daily-log/evening/edit(date=${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')})}"
                    class="btn btn-outline-secondary w-100">
-                    회고 열기
+                    Open Review
                 </a>
             </div>
 
             <div class="action-stack">
-                <button type="submit" class="btn btn-primary btn-lg">계획 저장</button>
-                <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">아침 목록</a>
-                <a th:href="@{/}" class="btn btn-light">홈</a>
+                <button type="submit" class="btn btn-primary btn-lg">Save Plan</button>
+                <a th:href="@{/daily-log/morning}" class="btn btn-outline-secondary">Morning List</a>
             </div>
         </aside>
     </form>

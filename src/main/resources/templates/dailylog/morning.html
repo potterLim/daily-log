@@ -41,17 +41,8 @@
                            class="form-control form-control-lg"
                            th:value="${#temporals.format(defaultDate, 'yyyy-MM-dd')}" />
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg">계획 열기</button>
+                <button type="submit" class="btn btn-primary btn-lg">Open Plan</button>
             </form>
-
-            <div class="helper-stack helper-stack-tight">
-                <div class="helper-card">
-                    <strong>목표</strong>
-                </div>
-                <div class="helper-card">
-                    <strong>집중</strong>
-                </div>
-            </div>
         </div>
 
         <div class="surface-panel surface-panel-elevated">
@@ -66,7 +57,7 @@
                 <div class="empty-state-actions">
                     <a class="btn btn-primary btn-sm"
                        th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
-                        오늘 계획 작성
+                        New Plan
                     </a>
                 </div>
             </div>
@@ -78,9 +69,8 @@
                     <div class="entry-card-icon">아</div>
                     <div class="entry-card-body">
                         <strong th:text="${morningDate}">2026-04-01</strong>
-                        <span>계획 수정</span>
                     </div>
-                    <span class="entry-card-action">열기</span>
+                    <span class="entry-card-action">Open</span>
                 </a>
             </div>
         </div>

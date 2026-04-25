@@ -11,13 +11,13 @@
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg"
                    th:href="@{/daily-log/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    오늘 계획
+                    Plan Today
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
                    th:href="@{/daily-log/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    오늘 회고
+                    Review Today
                 </a>
-                <a class="btn btn-outline-secondary btn-lg" th:href="@{/daily-log/week}">주간 리뷰</a>
+                <a class="btn btn-outline-secondary btn-lg" th:href="@{/daily-log/week}">Weekly Review</a>
             </div>
 
             <div class="hero-story-grid">
@@ -30,18 +30,6 @@
                 <article class="hero-story-card">
                     <strong>주간 리뷰</strong>
                 </article>
-            </div>
-
-            <div class="hero-metric-grid">
-                <div class="metric-tile">
-                    <strong>아침 계획</strong>
-                </div>
-                <div class="metric-tile">
-                    <strong>저녁 회고</strong>
-                </div>
-                <div class="metric-tile">
-                    <strong>주간 리뷰</strong>
-                </div>
             </div>
         </div>
 
@@ -101,38 +89,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="feature-grid feature-grid-premium">
-        <article class="surface-panel feature-card">
-            <div class="feature-card-header">
-                <span class="feature-icon">01</span>
-            </div>
-            <h2>아침 계획</h2>
-        </article>
-
-        <article class="surface-panel feature-card">
-            <div class="feature-card-header">
-                <span class="feature-icon">02</span>
-            </div>
-            <h2>저녁 회고</h2>
-        </article>
-
-        <article class="surface-panel feature-card">
-            <div class="feature-card-header">
-                <span class="feature-icon">03</span>
-            </div>
-            <h2>주간 리뷰</h2>
-        </article>
-
-        <article class="surface-panel philosophy-card">
-            <h2>조용한 사용감</h2>
-            <div class="pill-row">
-                <span class="info-pill">위계</span>
-                <span class="info-pill">입력</span>
-                <span class="info-pill">읽기</span>
-            </div>
-        </article>
     </div>
 </section>
 </html>

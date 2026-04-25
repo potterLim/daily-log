@@ -37,14 +37,6 @@
             <span class="summary-label">전체 목표</span>
             <strong class="summary-value" th:text="${weekTotal}">0</strong>
         </div>
-        <div class="surface-panel summary-card summary-card-accent">
-            <h2>다음 계획으로 연결</h2>
-            <div class="summary-insight-list">
-                <span>완료율 확인</span>
-                <span>상세 기록 열기</span>
-                <span>다음 계획 준비</span>
-            </div>
-        </div>
     </div>
 
     <div th:if="${#lists.isEmpty(weeklyProgressItems)}" class="surface-panel empty-state">
@@ -52,7 +44,7 @@
         <div class="empty-state-actions">
             <a class="btn btn-primary btn-sm"
                th:href="@{/daily-log/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
-                오늘 계획 작성
+                New Plan
             </a>
         </div>
     </div>
@@ -78,7 +70,7 @@
                 <span class="progress-pill" th:text="${progressItem.achieved} + ' / ' + ${progressItem.total} + ' 완료'">0 / 0 완료</span>
                 <a th:href="@{/daily-log/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
                    class="btn btn-outline-secondary btn-sm">
-                    기록 보기
+                    Open Log
                 </a>
             </div>
         </article>

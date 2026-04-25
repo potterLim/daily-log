@@ -350,7 +350,7 @@ class WebFlowIntegrationTests {
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("아직 저장된 기록이 없습니다.")))
-            .andExpect(content().string(containsString("계획 작성")))
+            .andExpect(content().string(containsString("New Plan")))
             .andExpect(content().string(not(containsString("오늘의 목표"))));
     }
 
@@ -487,7 +487,7 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("기록 라이브러리")))
             .andExpect(content().string(containsString("타임라인")))
             .andExpect(content().string(containsString("목표 완료율 추이")))
-            .andExpect(content().string(containsString("PDF 미리보기")))
+            .andExpect(content().string(containsString("Preview PDF")))
             .andExpect(content().string(containsString("오늘의 목표")))
             .andExpect(content().string(containsString("검색 가능한 제품 흐름 점검")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")))
@@ -513,7 +513,7 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("PDF 리포트 미리보기")))
             .andExpect(content().string(containsString("완료율")))
             .andExpect(content().string(containsString("선택한 기간")))
-            .andExpect(content().string(containsString("PDF로 저장")))
+            .andExpect(content().string(containsString("Save PDF")))
             .andExpect(content().string(containsString("검색 가능한 성과를 남겼다.")));
     }
 
@@ -527,23 +527,23 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("오늘의 흐름")))
-            .andExpect(content().string(containsString("오늘 계획")))
+            .andExpect(content().string(containsString("Plan Today")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)))
             .andExpect(content().string(containsString("/daily-log/evening/edit?date=" + TEST_CURRENT_DATE)));
 
         mMockMvc.perform(get("/daily-log/morning")
-                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("오늘 계획 작성")))
+            .andExpect(content().string(containsString("New Plan")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)));
 
         mMockMvc.perform(get("/daily-log/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("저녁 회고")))
-            .andExpect(content().string(containsString("이전 주")))
-            .andExpect(content().string(containsString("다음 주")))
-            .andExpect(content().string(containsString("오늘 계획 작성")));
+            .andExpect(content().string(containsString("Prev")))
+            .andExpect(content().string(containsString("Next")))
+            .andExpect(content().string(containsString("New Plan")));
 
         mMockMvc.perform(get("/daily-log/evening/edit")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
@@ -552,18 +552,18 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("읽기 전용")));
 
         mMockMvc.perform(get("/daily-log/week")
-                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("주간 리뷰")))
-            .andExpect(content().string(containsString("다음 계획으로 연결")))
-            .andExpect(content().string(containsString("오늘 계획 작성")));
+            .andExpect(content().string(containsString("완료율")))
+            .andExpect(content().string(containsString("New Plan")));
 
         mMockMvc.perform(get("/daily-log/library")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("기록 라이브러리")))
-            .andExpect(content().string(containsString("마크다운 다운로드")))
-            .andExpect(content().string(containsString("PDF 미리보기")));
+            .andExpect(content().string(containsString("Download MD")))
+            .andExpect(content().string(containsString("Preview PDF")));
     }
 
     @Test
@@ -573,10 +573,10 @@ class WebFlowIntegrationTests {
         );
 
         mMockMvc.perform(get("/missing-product-page")
-                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isNotFound())
             .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
-            .andExpect(content().string(containsString("기록 라이브러리")));
+            .andExpect(content().string(containsString("Library")));
     }
 
     @Test
