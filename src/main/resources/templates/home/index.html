@@ -11,25 +11,12 @@
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg"
                    th:href="@{/daily-log/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    Plan Today
+                    Write Morning Plan
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
                    th:href="@{/daily-log/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
-                    Review Today
+                    Write Evening Review
                 </a>
-                <a class="btn btn-outline-secondary btn-lg" th:href="@{/daily-log/week}">Weekly Review</a>
-            </div>
-
-            <div class="hero-story-grid">
-                <article class="hero-story-card hero-story-card-highlight">
-                    <strong>오늘의 기준</strong>
-                </article>
-                <article class="hero-story-card">
-                    <strong>실행 확인</strong>
-                </article>
-                <article class="hero-story-card">
-                    <strong>주간 리뷰</strong>
-                </article>
             </div>
         </div>
 
@@ -37,7 +24,7 @@
             <div class="surface-panel hero-side-panel hero-side-panel-dark">
                 <div class="panel-header compact panel-header-inverse">
                     <div>
-                        <h2>오늘의 흐름</h2>
+                        <h2>Today</h2>
                     </div>
                 </div>
 
@@ -46,46 +33,25 @@
                         <span class="window-dot"></span>
                         <span class="window-dot"></span>
                         <span class="window-dot"></span>
-                        <strong>오늘의 흐름</strong>
+                        <strong>Daily rhythm</strong>
                     </div>
                     <div class="window-content">
                         <div class="window-row">
-                            <span>08:30</span>
-                            <strong>오늘 계획 작성</strong>
-                            <em>계획</em>
+                            <span>AM</span>
+                            <strong>Morning Plan</strong>
+                            <em>Start</em>
                         </div>
                         <div class="window-row">
-                            <span>14:00</span>
-                            <strong>집중 영역 확인</strong>
-                            <em>진행</em>
+                            <span>DAY</span>
+                            <strong>Focus Check</strong>
+                            <em>Now</em>
                         </div>
                         <div class="window-row">
-                            <span>21:20</span>
-                            <strong>회고와 메모 저장</strong>
-                            <em>회고</em>
+                            <span>PM</span>
+                            <strong>Evening Review</strong>
+                            <em>Close</em>
                         </div>
                     </div>
-                </div>
-
-                <div class="hero-glance-row">
-                    <div class="glance-pill">
-                        <strong>빠른 입력</strong>
-                    </div>
-                    <div class="glance-pill">
-                        <strong>선명한 읽기</strong>
-                    </div>
-                    <div class="glance-pill">
-                        <strong>주간 리뷰</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="hero-side-split">
-                <div class="surface-panel hero-side-panel hero-side-panel-soft">
-                    <h2>가벼운 루틴</h2>
-                </div>
-                <div class="surface-panel hero-side-panel hero-side-panel-soft">
-                    <h2>한 화면, 한 일</h2>
                 </div>
             </div>
         </div>

@@ -791,7 +791,10 @@ ol {
 }
 
 .hero-panel-primary {
+    display: grid;
+    align-content: center;
     padding: 36px;
+    min-height: 420px;
     overflow: hidden;
 }
 
@@ -835,6 +838,10 @@ ol {
 .hero-action-row {
     margin-top: 28px;
     flex-wrap: wrap;
+}
+
+.hero-action-row .btn {
+    min-width: 190px;
 }
 
 .hero-story-grid {
@@ -1574,8 +1581,62 @@ ol {
 }
 
 .account-security-layout {
-    max-width: 680px;
+    width: min(860px, 100%);
+    max-width: 860px;
     margin: 0 auto;
+}
+
+.account-security-card {
+    padding: 36px;
+}
+
+.account-security-header {
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.account-security-header h2 {
+    margin-top: 8px;
+    font-size: 1.9rem;
+}
+
+.account-identity-card,
+.password-rule-card {
+    display: grid;
+    gap: 6px;
+    padding: 15px 18px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: inset 0 0 0 1px rgba(84, 109, 150, 0.12);
+}
+
+.account-identity-card {
+    min-width: min(320px, 100%);
+}
+
+.account-identity-card span,
+.password-rule-card span {
+    color: var(--text-tertiary);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.account-identity-card strong,
+.password-rule-card strong {
+    overflow: hidden;
+    color: var(--text-strong);
+    font-size: 0.96rem;
+    font-weight: 800;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.password-rule-card {
+    background: linear-gradient(180deg, rgba(241, 247, 255, 0.96) 0%, rgba(230, 240, 255, 0.88) 100%);
+    box-shadow: inset 0 0 0 1px rgba(33, 107, 255, 0.12);
 }
 
 .launcher-form {
