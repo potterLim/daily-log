@@ -6,12 +6,12 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-daylog}
-      MYSQL_USER: ${MYSQL_USER:-daylog}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-daymark}
+      MYSQL_USER: ${MYSQL_USER:-daymark}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - daylog-mysql-data:/var/lib/mysql
+      - daymark-mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
@@ -29,21 +29,21 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-production}
       PORT: 8080
-      DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-daylog}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      DATABASE_USERNAME: ${MYSQL_USER:-daylog}
+      DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-daymark}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      DATABASE_USERNAME: ${MYSQL_USER:-daymark}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
-      DAY_LOG_REMEMBER_ME_KEY: ${DAY_LOG_REMEMBER_ME_KEY}
+      DAYMARK_REMEMBER_ME_KEY: ${DAYMARK_REMEMBER_ME_KEY}
       SERVER_SERVLET_SESSION_COOKIE_SECURE: ${SERVER_SERVLET_SESSION_COOKIE_SECURE:-true}
-      DAY_LOG_MAIL_FROM_ADDRESS: ${DAY_LOG_MAIL_FROM_ADDRESS:-no-reply@example.com}
-      DAY_LOG_ALERT_WEBHOOK_URL: ${DAY_LOG_ALERT_WEBHOOK_URL:-}
+      DAYMARK_MAIL_FROM_ADDRESS: ${DAYMARK_MAIL_FROM_ADDRESS:-no-reply@example.com}
+      DAYMARK_ALERT_WEBHOOK_URL: ${DAYMARK_ALERT_WEBHOOK_URL:-}
       SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-}
       SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-}
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:-}
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-}
-      DAY_LOG_LOG_DIR: /app/ops/runtime/logs
-      DAY_LOG_TOMCAT_BASE_DIR: /app/ops/runtime/tomcat
+      DAYMARK_LOG_DIR: /app/ops/runtime/logs
+      DAYMARK_TOMCAT_BASE_DIR: /app/ops/runtime/tomcat
     ports:
       - "${APP_PORT:-8080}:8080"
     volumes:
@@ -64,18 +64,18 @@ services:
     environment:
       MYSQL_HOST: db
       MYSQL_PORT: 3306
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-daylog}
-      MYSQL_USER: ${MYSQL_USER:-daylog}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-daymark}
+      MYSQL_USER: ${MYSQL_USER:-daymark}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      DAY_LOG_BACKUP_DIR: /backups
-      DAY_LOG_BACKUP_RETENTION_DAYS: ${DAY_LOG_BACKUP_RETENTION_DAYS:-14}
-      DAY_LOG_ALERT_WEBHOOK_URL: ${DAY_LOG_ALERT_WEBHOOK_URL:-}
-      DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS: ${DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS:-false}
-      DAY_LOG_BACKUP_VERIFY_TABLES: ${DAY_LOG_BACKUP_VERIFY_TABLES:-flyway_schema_history,user_account,daily_log_entry}
+      DAYMARK_BACKUP_DIR: /backups
+      DAYMARK_BACKUP_RETENTION_DAYS: ${DAYMARK_BACKUP_RETENTION_DAYS:-14}
+      DAYMARK_ALERT_WEBHOOK_URL: ${DAYMARK_ALERT_WEBHOOK_URL:-}
+      DAYMARK_BACKUP_NOTIFY_ON_SUCCESS: ${DAYMARK_BACKUP_NOTIFY_ON_SUCCESS:-false}
+      DAYMARK_BACKUP_VERIFY_TABLES: ${DAYMARK_BACKUP_VERIFY_TABLES:-flyway_schema_history,user_account,daymark_entry}
     volumes:
-      - ./ops/backup:/opt/day-log/backup:ro
+      - ./ops/backup:/opt/daymark/backup:ro
       - ./ops/runtime/backups:/backups
-    entrypoint: ["/bin/bash", "/opt/day-log/backup/mysql-backup.sh"]
+    entrypoint: ["/bin/bash", "/opt/daymark/backup/mysql-backup.sh"]
 
 volumes:
-  daylog-mysql-data:
+  daymark-mysql-data:

@@ -2,9 +2,9 @@
 
 ## Overview
 
-`dayLog` is designed to run as a multi-user web application with:
+`daymark` is designed to run as a multi-user web application with:
 
-- MySQL for account data and daily log content
+- MySQL for account data and Daymark content
 - executable JAR deployment as the primary runtime model
 - Actuator health endpoints for readiness and liveness checks
 - rolling application logs and embedded Tomcat access logs
@@ -60,7 +60,7 @@ Recommended when:
 | `DATABASE_URL` | MySQL JDBC URL used by the app |
 | `DATABASE_USERNAME` | MySQL account for the app |
 | `DATABASE_PASSWORD` | MySQL password for the app |
-| `DAY_LOG_REMEMBER_ME_KEY` | remember-me signing key |
+| `DAYMARK_REMEMBER_ME_KEY` | remember-me signing key |
 
 The application is intentionally fail-fast in the default profile. Missing required values should stop startup immediately.
 
@@ -73,25 +73,25 @@ If SMTP values are not provided, verification and password reset requests still 
 | `PORT` | `8080` | application HTTP port |
 | `APP_PORT` | `8080` | Compose host port mapped to the app container |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
-| `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
-| `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
-| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` | sender address used for verification and password reset email |
-| `DAY_LOG_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
-| `DAY_LOG_WEEKLY_SUMMARY_ENABLED` | `false` | enables scheduled weekly operator summary logging |
-| `DAY_LOG_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` | cron for the weekly operator summary job |
-| `DAY_LOG_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` | time zone for the weekly operator summary job |
-| `DAY_LOG_LOG_DIR` | `./logs` | application log output directory |
-| `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | base directory for embedded Tomcat access logs |
-| `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` | remember-me cookie name |
-| `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
-| `DAY_LOG_PRODUCTION_READINESS_ENABLED` | `false` | turns on strict production fail-fast validation |
-| `DAY_LOG_REQUIRE_SMTP` | `false` | requires SMTP configuration when production readiness validation is enabled |
-| `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` | requires an alert webhook when production readiness validation is enabled |
-| `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` | requires secure session cookies when production readiness validation is enabled |
-| `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` | minimum allowed remember-me key length when production readiness validation is enabled |
-| `DAY_LOG_BACKUP_RETENTION_DAYS` | `14` | backup retention for the Compose backup service |
-| `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` | `false` | whether successful Compose backups send webhook notifications |
-| `DAY_LOG_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daily_log_entry` | comma-separated table list verified by the Compose backup service |
+| `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
+| `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
+| `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` | sender address used for verification and password reset email |
+| `DAYMARK_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
+| `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` | enables scheduled weekly operator summary logging |
+| `DAYMARK_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` | cron for the weekly operator summary job |
+| `DAYMARK_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` | time zone for the weekly operator summary job |
+| `DAYMARK_LOG_DIR` | `./logs` | application log output directory |
+| `DAYMARK_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | base directory for embedded Tomcat access logs |
+| `DAYMARK_REMEMBER_ME_COOKIE_NAME` | `DAYMARK_REMEMBER_ME` | remember-me cookie name |
+| `DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
+| `DAYMARK_PRODUCTION_READINESS_ENABLED` | `false` | turns on strict production fail-fast validation |
+| `DAYMARK_REQUIRE_SMTP` | `false` | requires SMTP configuration when production readiness validation is enabled |
+| `DAYMARK_REQUIRE_ALERT_WEBHOOK` | `false` | requires an alert webhook when production readiness validation is enabled |
+| `DAYMARK_REQUIRE_SECURE_SESSION_COOKIE` | `false` | requires secure session cookies when production readiness validation is enabled |
+| `DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` | minimum allowed remember-me key length when production readiness validation is enabled |
+| `DAYMARK_BACKUP_RETENTION_DAYS` | `14` | backup retention for the Compose backup service |
+| `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` | `false` | whether successful Compose backups send webhook notifications |
+| `DAYMARK_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daymark_entry` | comma-separated table list verified by the Compose backup service |
 | `SPRING_MAIL_HOST` | unset | SMTP host for verification and password reset delivery |
 | `SPRING_MAIL_PORT` | provider default | SMTP port |
 | `SPRING_MAIL_USERNAME` | unset | SMTP account username |
@@ -103,7 +103,7 @@ If SMTP values are not provided, verification and password reset requests still 
 ## Example JDBC URL
 
 ```text
-jdbc:mysql://localhost:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+jdbc:mysql://localhost:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 ```
 
 Adjust host, port, and database name for your own environment.
@@ -163,7 +163,7 @@ Windows PowerShell:
 Generated artifact:
 
 ```text
-build/libs/dayLog.jar
+build/libs/daymark.jar
 ```
 
 ## JAR Deployment Workflow
@@ -179,7 +179,7 @@ build/libs/dayLog.jar
 Example target:
 
 ```text
-/opt/day-log/dayLog.jar
+/opt/daymark/daymark.jar
 ```
 
 ### 3. Prepare runtime directories
@@ -187,10 +187,10 @@ Example target:
 Example:
 
 ```bash
-sudo mkdir -p /opt/day-log
-sudo mkdir -p /etc/day-log
-sudo mkdir -p /var/log/day-log/app
-sudo mkdir -p /var/log/day-log/tomcat
+sudo mkdir -p /opt/daymark
+sudo mkdir -p /etc/daymark
+sudo mkdir -p /var/log/daymark/app
+sudo mkdir -p /var/log/daymark/tomcat
 ```
 
 ### 4. Create an environment file
@@ -198,27 +198,27 @@ sudo mkdir -p /var/log/day-log/tomcat
 Example file:
 
 ```text
-/etc/day-log/day-log.env
+/etc/daymark/daymark.env
 ```
 
 Example contents:
 
 ```bash
-DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daylog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-DATABASE_USERNAME=daylog
+DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DATABASE_USERNAME=daymark
 DATABASE_PASSWORD=replace-this
-DAY_LOG_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
-DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
-DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES=1440
-DAY_LOG_MAIL_FROM_ADDRESS=no-reply@example.com
-DAY_LOG_ALERT_WEBHOOK_URL=https://example.com/alerts/day-log
-DAY_LOG_WEEKLY_SUMMARY_ENABLED=true
-DAY_LOG_PRODUCTION_READINESS_ENABLED=true
-DAY_LOG_REQUIRE_SMTP=true
-DAY_LOG_REQUIRE_ALERT_WEBHOOK=true
-DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE=true
-DAY_LOG_LOG_DIR=/var/log/day-log/app
-DAY_LOG_TOMCAT_BASE_DIR=/var/log/day-log/tomcat
+DAYMARK_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
+DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
+DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES=1440
+DAYMARK_MAIL_FROM_ADDRESS=no-reply@example.com
+DAYMARK_ALERT_WEBHOOK_URL=https://example.com/alerts/daymark
+DAYMARK_WEEKLY_SUMMARY_ENABLED=true
+DAYMARK_PRODUCTION_READINESS_ENABLED=true
+DAYMARK_REQUIRE_SMTP=true
+DAYMARK_REQUIRE_ALERT_WEBHOOK=true
+DAYMARK_REQUIRE_SECURE_SESSION_COOKIE=true
+DAYMARK_LOG_DIR=/var/log/daymark/app
+DAYMARK_TOMCAT_BASE_DIR=/var/log/daymark/tomcat
 SPRING_MAIL_HOST=smtp.example.com
 SPRING_MAIL_PORT=587
 SPRING_MAIL_USERNAME=mailer@example.com
@@ -234,9 +234,9 @@ SPRING_PROFILES_ACTIVE=production
 
 ```bash
 set -a
-source /etc/day-log/day-log.env
+source /etc/daymark/daymark.env
 set +a
-java -jar /opt/day-log/dayLog.jar
+java -jar /opt/daymark/daymark.jar
 ```
 
 Use this first run to verify:
@@ -257,21 +257,21 @@ Use this first run to verify:
 Example file:
 
 ```text
-/etc/systemd/system/day-log.service
+/etc/systemd/system/daymark.service
 ```
 
 Example contents:
 
 ```ini
 [Unit]
-Description=dayLog application
+Description=daymark application
 After=network.target
 
 [Service]
-User=daylog
-WorkingDirectory=/opt/day-log
-EnvironmentFile=/etc/day-log/day-log.env
-ExecStart=/usr/bin/java -jar /opt/day-log/dayLog.jar
+User=daymark
+WorkingDirectory=/opt/daymark
+EnvironmentFile=/etc/daymark/daymark.env
+ExecStart=/usr/bin/java -jar /opt/daymark/daymark.jar
 SuccessExitStatus=143
 Restart=always
 RestartSec=5
@@ -284,9 +284,9 @@ Then:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable day-log
-sudo systemctl start day-log
-sudo systemctl status day-log
+sudo systemctl enable daymark
+sudo systemctl start daymark
+sudo systemctl status daymark
 ```
 
 ## Health Endpoints
@@ -345,17 +345,17 @@ Update:
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
-- `DAY_LOG_REMEMBER_ME_KEY`
+- `DAYMARK_REMEMBER_ME_KEY`
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`
-- `DAY_LOG_MAIL_FROM_ADDRESS`
-- `DAY_LOG_ALERT_WEBHOOK_URL` when you want webhook alerts
+- `DAYMARK_MAIL_FROM_ADDRESS`
+- `DAYMARK_ALERT_WEBHOOK_URL` when you want webhook alerts
 - `SPRING_MAIL_HOST`
 - `SPRING_MAIL_PORT`
 - `SPRING_MAIL_USERNAME`
 - `SPRING_MAIL_PASSWORD`
-- `DAY_LOG_BACKUP_RETENTION_DAYS` when the default backup retention is not enough
-- `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` when successful backup notifications are required
-- `DAY_LOG_BACKUP_VERIFY_TABLES` when schema-critical tables change
+- `DAYMARK_BACKUP_RETENTION_DAYS` when the default backup retention is not enough
+- `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` when successful backup notifications are required
+- `DAYMARK_BACKUP_VERIFY_TABLES` when schema-critical tables change
 
 ### 3. Start the stack
 
@@ -397,9 +397,9 @@ docker compose --profile ops run --rm backup
 - Compose exposes the app through `APP_PORT`, defaulting to `8080`.
 - Graceful shutdown is enabled.
 - HTTP session timeout is 30 minutes.
-- Application logs roll under `DAY_LOG_LOG_DIR`.
-- Embedded Tomcat access logs roll under `DAY_LOG_TOMCAT_BASE_DIR/logs`.
-- Delivery failures in verification or recovery mail can emit webhook alerts through `DAY_LOG_ALERT_WEBHOOK_URL`.
+- Application logs roll under `DAYMARK_LOG_DIR`.
+- Embedded Tomcat access logs roll under `DAYMARK_TOMCAT_BASE_DIR/logs`.
+- Delivery failures in verification or recovery mail can emit webhook alerts through `DAYMARK_ALERT_WEBHOOK_URL`.
 - The production profile logs `WEEKLY_OPERATIONS_SUMMARY` once per week by default.
 - Markdown export is generated directly from the selected library range.
 - PDF export is a print-optimized HTML report intended for browser PDF saving.
@@ -418,8 +418,8 @@ Repository-provided helpers:
 
 - `ops/backup/mysql-backup.sh`
 - `ops/backup/mysql-restore.sh`
-- `ops/backup/day-log-backup.service`
-- `ops/backup/day-log-backup.timer`
+- `ops/backup/daymark-backup.service`
+- `ops/backup/daymark-backup.timer`
 
 Recommended production pattern:
 
@@ -427,7 +427,7 @@ Recommended production pattern:
 - write backups to persistent storage
 - keep checksum files next to backup archives
 - periodically rehearse `mysql-restore.sh` against a non-production database
-- let backup failures emit alert webhooks through `DAY_LOG_ALERT_WEBHOOK_URL` when possible
+- let backup failures emit alert webhooks through `DAYMARK_ALERT_WEBHOOK_URL` when possible
 
 ## Suggested Post-Deploy Smoke Test
 
@@ -457,7 +457,7 @@ After deployment, confirm all of the following:
 
 ## Recommended First Production Hardening Steps
 
-- generate a strong `DAY_LOG_REMEMBER_ME_KEY`
+- generate a strong `DAYMARK_REMEMBER_ME_KEY`
 - use a real MySQL password, never an example value
 - place the app behind HTTPS
 - set `SERVER_SERVLET_SESSION_COOKIE_SECURE=true` when TLS is terminated before the app

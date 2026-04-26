@@ -54,7 +54,7 @@ Screenshots and generated export artifacts are evidence, not source code.
 Keep them outside the repository, for example:
 
 ```text
-~/Desktop/daily-log-final-qa-YYYYMMDD-HHMMSS
+~/Desktop/daymark-final-qa-YYYYMMDD-HHMMSS
 ```
 
 Do not commit:

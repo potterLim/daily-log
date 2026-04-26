@@ -17,7 +17,7 @@ Use this document when you need to understand:
 - how the application is structured
 - which packages own which responsibilities
 - how requests move from controller to service to persistence
-- how daily log sections are stored and reconstructed
+- how Daymark sections are stored and reconstructed
 - how the record library, search, trend, calendar, and export views are assembled
 - which parts are the safest extension points
 

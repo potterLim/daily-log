@@ -18,18 +18,18 @@ ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -XX:+UseContainerSupport -XX:MaxRAM
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --shell /usr/sbin/nologin daylog
+    && useradd --create-home --shell /usr/sbin/nologin daymark
 
-COPY --from=builder /workspace/build/libs/*.jar /app/daylog.jar
+COPY --from=builder /workspace/build/libs/*.jar /app/daymark.jar
 
 RUN mkdir -p /app/ops/runtime/logs /app/ops/runtime/tomcat \
-    && chown -R daylog:daylog /app
+    && chown -R daymark:daymark /app
 
-USER daylog
+USER daymark
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
     CMD curl -fsS http://127.0.0.1:8080/actuator/health/readiness || exit 1
 
-ENTRYPOINT ["java", "-jar", "/app/daylog.jar"]
+ENTRYPOINT ["java", "-jar", "/app/daymark.jar"]

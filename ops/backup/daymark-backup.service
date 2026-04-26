@@ -1,10 +1,10 @@
 [Unit]
-Description=Run Day Log MySQL backup
+Description=Run Daymark MySQL backup
 Wants=docker.service
 After=docker.service
 
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/day-log
-EnvironmentFile=/opt/day-log/.env
+WorkingDirectory=/opt/daymark
+EnvironmentFile=/opt/daymark/.env
 ExecStart=/usr/bin/docker compose --profile ops run --rm backup

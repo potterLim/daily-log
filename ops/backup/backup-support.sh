@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DAY_LOG_ALERT_WEBHOOK_URL="${DAY_LOG_ALERT_WEBHOOK_URL:-}"
+DAYMARK_ALERT_WEBHOOK_URL="${DAYMARK_ALERT_WEBHOOK_URL:-}"
 
 json_escape() {
   local value="$1"
@@ -15,18 +15,18 @@ send_operational_alert() {
   local alert_type="$1"
   local message="$2"
 
-  if [[ -z "${DAY_LOG_ALERT_WEBHOOK_URL}" ]]; then
+  if [[ -z "${DAYMARK_ALERT_WEBHOOK_URL}" ]]; then
     return 0
   fi
 
   local payload
-  payload="$(printf '{"application":"dayLog","alertType":"%s","message":"%s"}' "${alert_type}" "$(json_escape "${message}")")"
+  payload="$(printf '{"application":"daymark","alertType":"%s","message":"%s"}' "${alert_type}" "$(json_escape "${message}")")"
 
   if command -v curl >/dev/null 2>&1; then
     curl -fsS -X POST \
       -H 'Content-Type: application/json' \
       -d "${payload}" \
-      "${DAY_LOG_ALERT_WEBHOOK_URL}" >/dev/null
+      "${DAYMARK_ALERT_WEBHOOK_URL}" >/dev/null
     return 0
   fi
 
@@ -35,7 +35,7 @@ send_operational_alert() {
       | wget -qO- \
         --header='Content-Type: application/json' \
         --post-data=- \
-        "${DAY_LOG_ALERT_WEBHOOK_URL}" >/dev/null
+        "${DAYMARK_ALERT_WEBHOOK_URL}" >/dev/null
     return 0
   fi
 

@@ -15,8 +15,8 @@ MYSQL_DATABASE="${MYSQL_DATABASE:?MYSQL_DATABASE must be set.}"
 MYSQL_USER="${MYSQL_USER:?MYSQL_USER must be set.}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set.}"
 backup_file_path="$1"
-DAY_LOG_BACKUP_VERIFY_TABLES="${DAY_LOG_BACKUP_VERIFY_TABLES:-flyway_schema_history,user_account,daily_log_entry}"
-DAY_LOG_RESTORE_NOTIFY_ON_SUCCESS="$(normalize_boolean "${DAY_LOG_RESTORE_NOTIFY_ON_SUCCESS:-false}")"
+DAYMARK_BACKUP_VERIFY_TABLES="${DAYMARK_BACKUP_VERIFY_TABLES:-flyway_schema_history,user_account,daymark_entry}"
+DAYMARK_RESTORE_NOTIFY_ON_SUCCESS="$(normalize_boolean "${DAYMARK_RESTORE_NOTIFY_ON_SUCCESS:-false}")"
 
 if [[ ! -f "${backup_file_path}" ]]; then
   echo "Backup file not found: ${backup_file_path}" >&2
@@ -48,7 +48,7 @@ gunzip -c "${backup_file_path}" | mysql \
   "${MYSQL_DATABASE}"
 
 verification_results=()
-IFS=',' read -r -a verify_tables <<< "${DAY_LOG_BACKUP_VERIFY_TABLES}"
+IFS=',' read -r -a verify_tables <<< "${DAYMARK_BACKUP_VERIFY_TABLES}"
 for table_name in "${verify_tables[@]}"; do
   trimmed_table_name="$(printf '%s' "${table_name}" | xargs)"
   if [[ -z "${trimmed_table_name}" ]]; then
@@ -75,6 +75,6 @@ if [[ ${#verification_results[@]} -gt 0 ]]; then
 fi
 
 echo "${restore_message}"
-if [[ "${DAY_LOG_RESTORE_NOTIFY_ON_SUCCESS}" == "true" ]]; then
+if [[ "${DAYMARK_RESTORE_NOTIFY_ON_SUCCESS}" == "true" ]]; then
   send_operational_alert "mysql-restore-succeeded" "${restore_message}" || true
 fi

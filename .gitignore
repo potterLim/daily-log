@@ -5,6 +5,7 @@ out/
 
 # IntelliJ IDEA
 .idea/
+.run/
 *.iml
 *.ipr
 *.iws

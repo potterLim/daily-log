@@ -4,7 +4,7 @@
 
 It is built as a multi-user Spring Boot application with:
 
-- MySQL-backed account and daily log storage
+- MySQL-backed account and Daymark storage
 - Flyway-managed schema changes
 - server-rendered Thymeleaf pages with a concise, responsive product interface
 - executable JAR deployment as the primary runtime model
@@ -19,7 +19,7 @@ It is built as a multi-user Spring Boot application with:
 - Timeline-first library view with structured record previews, goal-completion trend bars, and a compact calendar
 - Markdown export for selected library ranges
 - Print-ready PDF report preview with readable daily report cards
-- Read-only daily log preview rendered as a polished reading surface
+- Read-only record preview rendered as a polished reading surface
 - Copy-light UI that favors clear labels, stable button text, and short product guidance
 - Product-grade empty states and a custom 404 page instead of default error output
 - Account creation with username, email address, and password
@@ -93,8 +93,8 @@ The current product UI is tuned for a final-product feel rather than an instruct
 - `user_account` also stores the unique recovery email address and email verification state.
 - `user_email_verification_token` stores one-time email verification tokens.
 - `user_password_reset_token` stores one-time password reset tokens.
-- `daily_log_entry` stores one entry per user per date.
-- Daily log sections are persisted as database text columns.
+- `daymark_entry` stores one entry per user per date.
+- Daymark sections are persisted as database text columns.
 - Preview, library, Markdown export, and PDF report pages reconstruct output from stored sections instead of reading files from disk.
 
 ### Operational shape
@@ -119,7 +119,7 @@ The current product UI is tuned for a final-product feel rather than an instruct
 ### Main application areas
 
 ```text
-src/main/java/com/potterlim/daylog
+src/main/java/com/potterlim/daymark
 ├─ config
 ├─ controller
 ├─ dto
@@ -221,13 +221,13 @@ Windows PowerShell:
 Generated artifact:
 
 ```text
-build/libs/dayLog.jar
+build/libs/daymark.jar
 ```
 
 Run it with:
 
 ```bash
-java -jar build/libs/dayLog.jar
+java -jar build/libs/daymark.jar
 ```
 
 ## Configuration
@@ -239,7 +239,7 @@ java -jar build/libs/dayLog.jar
 | `DATABASE_URL` | MySQL JDBC URL |
 | `DATABASE_USERNAME` | MySQL account name |
 | `DATABASE_PASSWORD` | MySQL account password |
-| `DAY_LOG_REMEMBER_ME_KEY` | remember-me signing key |
+| `DAYMARK_REMEMBER_ME_KEY` | remember-me signing key |
 
 ### Optional
 
@@ -248,25 +248,25 @@ java -jar build/libs/dayLog.jar
 | `PORT` | `8080` |
 | `APP_PORT` | `8080`, Compose host port only |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
-| `DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
-| `DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
-| `DAY_LOG_MAIL_FROM_ADDRESS` | `no-reply@daylog.local` |
-| `DAY_LOG_ALERT_WEBHOOK_URL` | unset |
-| `DAY_LOG_WEEKLY_SUMMARY_ENABLED` | `false` |
-| `DAY_LOG_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` |
-| `DAY_LOG_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` |
-| `DAY_LOG_LOG_DIR` | `./logs` |
-| `DAY_LOG_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` |
-| `DAY_LOG_REMEMBER_ME_COOKIE_NAME` | `DAY_LOG_REMEMBER_ME` |
-| `DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
-| `DAY_LOG_PRODUCTION_READINESS_ENABLED` | `false` |
-| `DAY_LOG_REQUIRE_SMTP` | `false` |
-| `DAY_LOG_REQUIRE_ALERT_WEBHOOK` | `false` |
-| `DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE` | `false` |
-| `DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` |
-| `DAY_LOG_BACKUP_RETENTION_DAYS` | `14`, Compose backup service only |
-| `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS` | `false`, Compose backup service only |
-| `DAY_LOG_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daily_log_entry`, Compose backup service only |
+| `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
+| `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
+| `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` |
+| `DAYMARK_ALERT_WEBHOOK_URL` | unset |
+| `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` |
+| `DAYMARK_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` |
+| `DAYMARK_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` |
+| `DAYMARK_LOG_DIR` | `./logs` |
+| `DAYMARK_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` |
+| `DAYMARK_REMEMBER_ME_COOKIE_NAME` | `DAYMARK_REMEMBER_ME` |
+| `DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
+| `DAYMARK_PRODUCTION_READINESS_ENABLED` | `false` |
+| `DAYMARK_REQUIRE_SMTP` | `false` |
+| `DAYMARK_REQUIRE_ALERT_WEBHOOK` | `false` |
+| `DAYMARK_REQUIRE_SECURE_SESSION_COOKIE` | `false` |
+| `DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` |
+| `DAYMARK_BACKUP_RETENTION_DAYS` | `14`, Compose backup service only |
+| `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` | `false`, Compose backup service only |
+| `DAYMARK_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daymark_entry`, Compose backup service only |
 | `SPRING_MAIL_HOST` | unset |
 | `SPRING_MAIL_PORT` | provider default |
 | `SPRING_MAIL_USERNAME` | unset |
@@ -291,8 +291,8 @@ These endpoints are public so that a reverse proxy, container platform, or load 
 
 Runtime operations also include:
 
-- rolling application logs written to `DAY_LOG_LOG_DIR`
-- embedded Tomcat access logs written under `DAY_LOG_TOMCAT_BASE_DIR/logs`
+- rolling application logs written to `DAYMARK_LOG_DIR`
+- embedded Tomcat access logs written under `DAYMARK_TOMCAT_BASE_DIR/logs`
 - optional webhook alerts for critical mail delivery failures
 - weekly operator summary logs in the `WEEKLY_OPERATIONS_SUMMARY` format
 - MySQL backup, restore, and host scheduler helpers under `ops/backup`
@@ -329,17 +329,17 @@ Main Compose values:
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
-- `DAY_LOG_REMEMBER_ME_KEY`
+- `DAYMARK_REMEMBER_ME_KEY`
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`
-- `DAY_LOG_MAIL_FROM_ADDRESS`
-- `DAY_LOG_ALERT_WEBHOOK_URL`
+- `DAYMARK_MAIL_FROM_ADDRESS`
+- `DAYMARK_ALERT_WEBHOOK_URL`
 - `SPRING_MAIL_HOST`
 - `SPRING_MAIL_PORT`
 - `SPRING_MAIL_USERNAME`
 - `SPRING_MAIL_PASSWORD`
-- `DAY_LOG_BACKUP_RETENTION_DAYS`
-- `DAY_LOG_BACKUP_NOTIFY_ON_SUCCESS`
-- `DAY_LOG_BACKUP_VERIFY_TABLES`
+- `DAYMARK_BACKUP_RETENTION_DAYS`
+- `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS`
+- `DAYMARK_BACKUP_VERIFY_TABLES`
 
 Before exposing the service to real users, replace every example credential and secret in `.env`.
 
@@ -351,8 +351,8 @@ docker compose --profile ops run --rm backup
 
 For unattended backups on a Linux host, the repository also includes:
 
-- `ops/backup/day-log-backup.service`
-- `ops/backup/day-log-backup.timer`
+- `ops/backup/daymark-backup.service`
+- `ops/backup/daymark-backup.timer`
 
 ## Security Notes
 
@@ -395,10 +395,10 @@ Current integration coverage focuses on the main product flows:
 
 Main test files:
 
-- `src/test/java/com/potterlim/daylog/DayLogApplicationTests.java`
-- `src/test/java/com/potterlim/daylog/WebFlowIntegrationTests.java`
-- `src/test/java/com/potterlim/daylog/MySqlIntegrationTests.java`
-- `src/test/java/com/potterlim/daylog/WeeklyOperationsSummaryServiceTests.java`
+- `src/test/java/com/potterlim/daymark/DaymarkApplicationTests.java`
+- `src/test/java/com/potterlim/daymark/WebFlowIntegrationTests.java`
+- `src/test/java/com/potterlim/daymark/MySqlIntegrationTests.java`
+- `src/test/java/com/potterlim/daymark/WeeklyOperationsSummaryServiceTests.java`
 
 ## Deployment Notes
 

@@ -1,9 +1,14 @@
 .git
 .gradle
 .idea
+.run
 build
 out
 local-docs
 *.iml
 *.log
 logs
+ops/runtime
+.env
+.env.*
+!.env.example
