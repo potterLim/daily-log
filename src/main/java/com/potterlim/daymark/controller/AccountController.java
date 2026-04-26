@@ -30,6 +30,16 @@ public class AccountController {
         mAuthenticationMailWorkflowService = authenticationMailWorkflowService;
     }
 
+    @GetMapping("/account")
+    public String showAccountPage(@AuthenticationPrincipal UserAccount userAccount, Model model) {
+        UserAccount currentUserAccount = findCurrentUserAccount(userAccount);
+
+        model.addAttribute("accountWorkspaceId", currentUserAccount.getUsername());
+        model.addAttribute("accountEmailAddress", currentUserAccount.getEmailAddress());
+        model.addAttribute("isAccountEmailVerified", currentUserAccount.hasVerifiedEmailAddress());
+        return "account/index";
+    }
+
     @GetMapping("/account/password")
     public String showPasswordChangePage(Model model) {
         if (!model.containsAttribute("changePasswordRequestDto")) {
@@ -75,8 +85,7 @@ public class AccountController {
         HttpServletRequest httpServletRequest,
         RedirectAttributes redirectAttributes
     ) {
-        UserAccount currentUserAccount = mUserAccountService.findUserAccountByLoginIdentifier(userAccount.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Authenticated user account not found."));
+        UserAccount currentUserAccount = findCurrentUserAccount(userAccount);
 
         if (currentUserAccount.hasVerifiedEmailAddress()) {
             redirectAttributes.addFlashAttribute(
@@ -101,5 +110,10 @@ public class AccountController {
         }
 
         return "redirect:/";
+    }
+
+    private UserAccount findCurrentUserAccount(UserAccount userAccount) {
+        return mUserAccountService.findUserAccountByLoginIdentifier(userAccount.getUsername())
+            .orElseThrow(() -> new IllegalStateException("Authenticated user account not found."));
     }
 }

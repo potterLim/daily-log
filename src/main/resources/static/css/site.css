@@ -1636,6 +1636,56 @@ ol {
     gap: 18px;
 }
 
+.account-overview-card {
+    gap: 18px;
+}
+
+.account-overview-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.account-profile-card,
+.account-info-card {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+    padding: 18px 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: inset 0 0 0 1px rgba(84, 109, 150, 0.12);
+}
+
+.account-profile-card {
+    background: var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
+}
+
+.account-info-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.account-profile-card span,
+.account-info-card span {
+    color: var(--text-tertiary);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.account-profile-card strong,
+.account-info-card strong {
+    overflow: hidden;
+    color: var(--text-strong);
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .account-security-header {
     align-items: center;
     margin-bottom: 22px;

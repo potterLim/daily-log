@@ -92,7 +92,7 @@
                     <span class="session-label">Workspace</span>
                     <strong sec:authentication="name">user</strong>
                 </div>
-                <a class="btn btn-outline-secondary btn-sm" th:href="@{/account/password}">Security</a>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/account}">Account</a>
                 <form th:action="@{/logout}" method="post">
                     <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
                     <button type="submit" class="btn btn-outline-secondary btn-sm">Sign Out</button>

@@ -180,6 +180,36 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void loginShouldRedirectToSafeNextPathAfterAuthentication() throws Exception {
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("next-user", "next-user@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "next-user")
+                .param("password", "pass1234")
+                .param("nextPath", "/daymark/preview?date=" + TEST_CURRENT_DATE))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/daymark/preview?date=" + TEST_CURRENT_DATE));
+    }
+
+    @Test
+    void loginShouldRejectExternalNextPathAfterAuthentication() throws Exception {
+        mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("safe-next-user", "safe-next-user@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "safe-next-user")
+                .param("password", "pass1234")
+                .param("nextPath", "https://example.com/daymark/preview"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
     void loginShouldShowGenericErrorWhenPasswordIsWrong() throws Exception {
         mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("tester", "tester@example.com", "pass1234")
@@ -620,6 +650,16 @@ class WebFlowIntegrationTests {
             new RegisterUserAccountCommand("reviewer", "reviewer@example.com", "pass1234")
         );
 
+        mMockMvc.perform(get("/"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Daymark")))
+            .andExpect(content().string(containsString("Sign In")))
+            .andExpect(content().string(containsString("Create Account")))
+            .andExpect(content().string(containsString("/login?next=/daymark/morning/edit?date%3D" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/login?next=/daymark/evening/edit?date%3D" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/login?next=/daymark/preview?date%3D" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(not(containsString("Sign Out"))));
+
         mMockMvc.perform(get("/")
             .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
@@ -688,6 +728,15 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("비밀번호 변경")))
             .andExpect(content().string(containsString("8자 이상 72자 이하")));
+
+        mMockMvc.perform(get("/account")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("계정")))
+            .andExpect(content().string(containsString("Workspace ID")))
+            .andExpect(content().string(containsString("reviewer")))
+            .andExpect(content().string(containsString("reviewer@example.com")))
+            .andExpect(content().string(containsString("Change Password")));
 
         mMockMvc.perform(get("/images/daymark-logo.svg"))
             .andExpect(status().isOk())

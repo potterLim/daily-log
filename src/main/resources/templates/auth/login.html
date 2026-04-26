@@ -11,6 +11,7 @@
 
         <form th:action="@{/login}" th:object="${loginRequestDto}" method="post" class="form-stack">
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+            <input type="hidden" th:field="*{nextPath}" />
 
             <div th:if="${param.logout}" class="message-banner message-banner-success" role="alert">
                 로그아웃되었습니다.

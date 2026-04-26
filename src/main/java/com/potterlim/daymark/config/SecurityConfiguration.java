@@ -42,6 +42,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/actuator/health", "/actuator/health/**")
                     .permitAll()
                     .requestMatchers(
+                        "/",
                         "/css/**",
                         "/images/**",
                         "/js/**",

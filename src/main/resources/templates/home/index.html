@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{fragments/layout :: layout(~{::section}, '홈')}">
 <section class="home-shell">
     <div class="hero-grid hero-grid-premium">
@@ -10,15 +11,33 @@
 
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg"
-                   th:href="@{/daymark/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   sec:authorize="isAuthenticated()"
+                   th:href="${todayMorningPath}">
+                    Plan
+                </a>
+                <a class="btn btn-primary btn-lg"
+                   sec:authorize="isAnonymous()"
+                   th:href="@{/login(next=${todayMorningPath})}">
                     Plan
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
-                   th:href="@{/daymark/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   sec:authorize="isAuthenticated()"
+                   th:href="${todayEveningPath}">
                     Review
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
-                   th:href="@{/daymark/preview(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   sec:authorize="isAnonymous()"
+                   th:href="@{/login(next=${todayEveningPath})}">
+                    Review
+                </a>
+                <a class="btn btn-outline-secondary btn-lg"
+                   sec:authorize="isAuthenticated()"
+                   th:href="${todayPreviewPath}">
+                    View Today
+                </a>
+                <a class="btn btn-outline-secondary btn-lg"
+                   sec:authorize="isAnonymous()"
+                   th:href="@{/login(next=${todayPreviewPath})}">
                     View Today
                 </a>
             </div>

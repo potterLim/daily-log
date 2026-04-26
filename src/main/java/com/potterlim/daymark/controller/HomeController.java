@@ -17,7 +17,13 @@ public class HomeController {
 
     @GetMapping("/")
     public String showHomePage(Model model) {
-        model.addAttribute("today", LocalDate.now(mClock));
+        LocalDate today = LocalDate.now(mClock);
+        String todayDateText = today.toString();
+
+        model.addAttribute("today", today);
+        model.addAttribute("todayMorningPath", "/daymark/morning/edit?date=" + todayDateText);
+        model.addAttribute("todayEveningPath", "/daymark/evening/edit?date=" + todayDateText);
+        model.addAttribute("todayPreviewPath", "/daymark/preview?date=" + todayDateText);
         return "home/index";
     }
 }

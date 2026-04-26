@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '계정')}">
+<section class="auth-layout auth-layout-centered">
+    <div class="surface-panel auth-card account-overview-card">
+        <div class="panel-header">
+            <div>
+                <h2>계정</h2>
+            </div>
+        </div>
+
+        <div class="account-overview-stack">
+            <div class="account-profile-card">
+                <span>Workspace ID</span>
+                <strong th:text="${accountWorkspaceId}">workspace</strong>
+            </div>
+
+            <div class="account-info-grid">
+                <div class="account-info-card">
+                    <span>가입 이메일</span>
+                    <strong th:text="${accountEmailAddress}">user@example.com</strong>
+                </div>
+                <div class="account-info-card">
+                    <span>이메일 상태</span>
+                    <strong th:text="${isAccountEmailVerified} ? '인증 완료' : '인증 필요'">인증 완료</strong>
+                </div>
+            </div>
+
+            <a class="btn btn-primary btn-lg w-100" th:href="@{/account/password}">Change Password</a>
+        </div>
+    </div>
+</section>
+</html>

@@ -13,6 +13,7 @@ import com.potterlim.daymark.service.DuplicateUserNameException;
 import com.potterlim.daymark.service.IEmailVerificationTokenService;
 import com.potterlim.daymark.service.IPasswordResetTokenService;
 import com.potterlim.daymark.service.IUserAccountService;
+import com.potterlim.daymark.support.LoginRedirectSupport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -64,13 +65,20 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLoginPage(Authentication authentication, Model model) {
+    public String showLoginPage(
+        @RequestParam(name = "next", required = false) String nextPathOrNull,
+        Authentication authentication,
+        Model model
+    ) {
+        String loginRedirectPath = LoginRedirectSupport.resolveLoginRedirectPath(nextPathOrNull);
         if (isAuthenticated(authentication)) {
-            return "redirect:/";
+            return "redirect:" + loginRedirectPath;
         }
 
         if (!model.containsAttribute("loginRequestDto")) {
-            model.addAttribute("loginRequestDto", new LoginRequestDto());
+            LoginRequestDto loginRequestDto = new LoginRequestDto();
+            loginRequestDto.setNextPath(loginRedirectPath);
+            model.addAttribute("loginRequestDto", loginRequestDto);
         }
 
         return "auth/login";
@@ -84,6 +92,9 @@ public class AuthController {
         HttpServletResponse httpServletResponse,
         Model model
     ) {
+        String loginRedirectPath = LoginRedirectSupport.resolveLoginRedirectPath(loginRequestDto.getNextPath());
+        loginRequestDto.setNextPath(loginRedirectPath);
+
         if (bindingResult.hasErrors()) {
             return "auth/login";
         }
@@ -112,7 +123,7 @@ public class AuthController {
             return "auth/login";
         }
 
-        return "redirect:/";
+        return "redirect:" + loginRedirectPath;
     }
 
     @GetMapping("/register")
