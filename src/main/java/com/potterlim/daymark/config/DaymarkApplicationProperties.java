@@ -94,9 +94,9 @@ public class DaymarkApplicationProperties {
     public static final class ProductionReadinessProperties {
 
         private boolean mIsEnabled;
-        private boolean mRequireSmtp;
-        private boolean mRequireAlertWebhook;
-        private boolean mRequireSecureSessionCookie;
+        private boolean mShouldRequireSmtp;
+        private boolean mShouldRequireAlertWebhook;
+        private boolean mShouldRequireSecureSessionCookie;
         @Positive
         private int mMinimumRememberMeKeyLength = 32;
 
@@ -109,27 +109,27 @@ public class DaymarkApplicationProperties {
         }
 
         public boolean isRequireSmtp() {
-            return mRequireSmtp;
+            return mShouldRequireSmtp;
         }
 
         public void setRequireSmtp(boolean requireSmtp) {
-            mRequireSmtp = requireSmtp;
+            mShouldRequireSmtp = requireSmtp;
         }
 
         public boolean isRequireAlertWebhook() {
-            return mRequireAlertWebhook;
+            return mShouldRequireAlertWebhook;
         }
 
         public void setRequireAlertWebhook(boolean requireAlertWebhook) {
-            mRequireAlertWebhook = requireAlertWebhook;
+            mShouldRequireAlertWebhook = requireAlertWebhook;
         }
 
         public boolean isRequireSecureSessionCookie() {
-            return mRequireSecureSessionCookie;
+            return mShouldRequireSecureSessionCookie;
         }
 
         public void setRequireSecureSessionCookie(boolean requireSecureSessionCookie) {
-            mRequireSecureSessionCookie = requireSecureSessionCookie;
+            mShouldRequireSecureSessionCookie = requireSecureSessionCookie;
         }
 
         public int getMinimumRememberMeKeyLength() {

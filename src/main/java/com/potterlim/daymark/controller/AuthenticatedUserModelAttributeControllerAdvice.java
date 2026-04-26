@@ -20,7 +20,7 @@ public class AuthenticatedUserModelAttributeControllerAdvice {
 
     @ModelAttribute
     public void populateAuthenticatedUserState(Authentication authenticationOrNull, Model model) {
-        UserAccount userAccountOrNull = findAuthenticatedUserAccount(authenticationOrNull);
+        UserAccount userAccountOrNull = findAuthenticatedUserAccountOrNull(authenticationOrNull);
         if (userAccountOrNull == null) {
             return;
         }
@@ -30,7 +30,7 @@ public class AuthenticatedUserModelAttributeControllerAdvice {
         model.addAttribute("currentUserEmailAddress", userAccountOrNull.getEmailAddress());
     }
 
-    private UserAccount findAuthenticatedUserAccount(Authentication authenticationOrNull) {
+    private UserAccount findAuthenticatedUserAccountOrNull(Authentication authenticationOrNull) {
         if (authenticationOrNull == null
             || !authenticationOrNull.isAuthenticated()
             || authenticationOrNull instanceof AnonymousAuthenticationToken) {

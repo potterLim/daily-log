@@ -150,6 +150,7 @@ public class DaymarkEntry {
             case IMPROVEMENTS -> mImprovementsText;
             case GRATITUDE -> mGratitudeText;
             case NOTES -> mNotesText;
+            default -> throw new IllegalStateException("Unexpected daymarkSectionType: " + daymarkSectionType);
         };
     }
 
@@ -180,6 +181,9 @@ public class DaymarkEntry {
             }
             case NOTES -> {
                 mNotesText = safeBody;
+            }
+            default -> {
+                throw new IllegalStateException("Unexpected daymarkSectionType: " + daymarkSectionType);
             }
         }
 

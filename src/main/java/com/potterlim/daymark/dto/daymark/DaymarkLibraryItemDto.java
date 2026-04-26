@@ -122,6 +122,7 @@ public final class DaymarkLibraryItemDto {
             case FRIDAY -> "금";
             case SATURDAY -> "토";
             case SUNDAY -> "일";
+            default -> throw new IllegalStateException("Unexpected dayOfWeek: " + dayOfWeek);
         };
     }
 
