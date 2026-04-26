@@ -5,16 +5,13 @@ import jakarta.validation.constraints.Size;
 
 public final class ChangePasswordRequestDto {
 
-    @NotBlank(message = "현재 비밀번호를 입력해주세요.")
     private String mCurrentPassword = "";
 
-    @NotBlank(message = "새 비밀번호를 입력해주세요.")
-    @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
     private String mNewPassword = "";
 
-    @NotBlank(message = "새 비밀번호 확인을 입력해주세요.")
     private String mConfirmNewPassword = "";
 
+    @NotBlank(message = "현재 비밀번호를 입력해주세요.")
     public String getCurrentPassword() {
         return mCurrentPassword;
     }
@@ -23,6 +20,8 @@ public final class ChangePasswordRequestDto {
         mCurrentPassword = currentPassword;
     }
 
+    @NotBlank(message = "새 비밀번호를 입력해주세요.")
+    @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
     public String getNewPassword() {
         return mNewPassword;
     }
@@ -31,6 +30,7 @@ public final class ChangePasswordRequestDto {
         mNewPassword = newPassword;
     }
 
+    @NotBlank(message = "새 비밀번호 확인을 입력해주세요.")
     public String getConfirmNewPassword() {
         return mConfirmNewPassword;
     }

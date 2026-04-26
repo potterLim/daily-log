@@ -8,8 +8,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public final class EveningFormDto {
 
-    @NotNull(message = "날짜가 필요합니다.")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate mDate;
 
     private List<EveningGoalItemDto> mGoals = new ArrayList<>();
@@ -18,6 +16,8 @@ public final class EveningFormDto {
     private String mGratitude = "";
     private String mNotes = "";
 
+    @NotNull(message = "날짜가 필요합니다.")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     public LocalDate getDate() {
         return mDate;
     }

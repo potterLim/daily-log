@@ -6,14 +6,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public final class MorningFormDto {
 
-    @NotNull(message = "날짜가 필요합니다.")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate mDate;
 
     private String mGoals = "";
     private String mFocus = "";
     private String mChallenges = "";
 
+    @NotNull(message = "날짜가 필요합니다.")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     public LocalDate getDate() {
         return mDate;
     }

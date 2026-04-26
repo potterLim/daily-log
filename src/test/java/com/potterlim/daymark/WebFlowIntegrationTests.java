@@ -169,6 +169,17 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void loginShouldRenderProductStyledFieldValidationMessages() throws Exception {
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "")
+                .param("password", ""))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("아이디 또는 이메일을 입력해주세요.")))
+            .andExpect(content().string(containsString("비밀번호를 입력해주세요.")));
+    }
+
+    @Test
     void loginShouldShowGenericErrorWhenPasswordIsWrong() throws Exception {
         mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("tester", "tester@example.com", "pass1234")
@@ -289,6 +300,46 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void resetPasswordShouldRenderPasswordLengthValidationMessage() throws Exception {
+        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
+        AtomicReference<String> sentResetPasswordUrl = new AtomicReference<>();
+        doAnswer(invocation -> {
+            sentVerificationUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
+        doAnswer(invocation -> {
+            sentResetPasswordUrl.set(invocation.getArgument(1));
+            return null;
+        }).when(mAuthenticationMailService).sendPasswordResetMail(any(UserAccount.class), anyString());
+
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "reset-validation-user")
+                .param("emailAddress", "reset-validation-user@example.com")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().is3xxRedirection());
+
+        String rawVerificationToken = extractTokenFromUrl(sentVerificationUrl.get(), "token");
+        mMockMvc.perform(get("/verify-email").param("token", rawVerificationToken))
+            .andExpect(status().is3xxRedirection());
+
+        mMockMvc.perform(post("/forgot-password")
+                .with(csrf())
+                .param("emailAddress", "reset-validation-user@example.com"))
+            .andExpect(status().is3xxRedirection());
+
+        String rawResetToken = extractTokenFromUrl(sentResetPasswordUrl.get(), "token");
+        mMockMvc.perform(post("/reset-password")
+                .with(csrf())
+                .param("token", rawResetToken)
+                .param("password", "short")
+                .param("confirmPassword", "short"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("비밀번호는 8자 이상 72자 이하여야 합니다.")));
+    }
+
+    @Test
     void changePasswordShouldPersistNewPassword() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("changer", "changer@example.com", "pass1234")
@@ -316,6 +367,24 @@ class WebFlowIntegrationTests {
                 .param("password", "pass6789"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void changePasswordShouldRenderProductStyledFieldValidationMessages() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("blank-changer", "blank-changer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/account/password")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("currentPassword", "")
+                .param("newPassword", "")
+                .param("confirmNewPassword", ""))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("현재 비밀번호를 입력해주세요.")))
+            .andExpect(content().string(containsString("새 비밀번호를 입력해주세요.")))
+            .andExpect(content().string(containsString("새 비밀번호 확인을 입력해주세요.")));
     }
 
     @Test
