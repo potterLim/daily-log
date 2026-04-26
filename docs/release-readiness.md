@@ -1,202 +1,162 @@
-# Release Readiness
+# 출시 점검표
 
-This document defines the final product QA checklist for Daymark.
+이 문서는 Daymark를 공개하기 전 마지막으로 확인할 항목을 정리합니다. 기준은 실제 사용자가 보는 화면, 주요 기능, 보안 흐름, 내보내기 결과입니다.
 
-It is intentionally focused on user-facing readiness: real navigation, visual stability, responsive behavior, account lifecycle flows, record-writing flows, long-term exploration, and export outputs.
+## 자동 검증
 
-## Current Release Baseline
-
-As of the 2026-04-24 release polish pass, the product includes:
-
-- account registration, login, logout, email verification, password recovery, and authenticated password change
-- authenticated home, morning planning, evening reflection, weekly review, record library, daily preview, and account pages
-- copy-light product surfaces with short button labels and reduced instructional text
-- unauthenticated header layout with brand content on the left and account actions on the right
-- record library search by date range and keyword
-- timeline-first record library cards with structured previews
-- explicit goal-completion trend bars and a compact calendar side panel
-- Markdown export for selected library records
-- print-ready PDF report preview with readable daily cards for browser PDF saving
-- polished reading surfaces for daily preview, evening reference, library previews, and PDF report content
-- product empty states for no records, no search results, and blank previews
-- product 404 page for unknown routes
-
-## Required Automated Checks
-
-Run these before release:
+기본 테스트:
 
 ```bash
 ./gradlew test
 ```
 
-Run this when MySQL and Docker are available:
+Docker가 준비된 환경에서는 MySQL 통합 테스트도 실행합니다.
 
 ```bash
 ./gradlew mysqlIntegrationTest
 ```
 
-Recommended pre-commit hygiene:
+커밋 전 공백 검증:
 
 ```bash
 git diff --check
 ```
 
-## Required Browser
+## 브라우저 기준
 
-Final visual QA should be performed in Google Chrome, not the in-app browser.
+최종 화면 검증은 Google Chrome에서 진행합니다. PDF 저장 흐름이 실제 브라우저 인쇄 기능에 의존하므로, 인앱 브라우저만으로 출시 판단을 하지 않습니다.
 
-Use Chrome because the export workflow depends on real browser print behavior and because final UI verification should match the browser most likely to be used during manual QA.
+## 캡처 보관 원칙
 
-## Screenshot Policy
+화면 캡처와 내보내기 결과물은 검증 자료일 뿐 소스가 아닙니다.
 
-Screenshots and generated export artifacts are evidence, not source code.
-
-Keep them outside the repository, for example:
+권장 경로:
 
 ```text
 ~/Desktop/daymark-final-qa-YYYYMMDD-HHMMSS
 ```
 
-Do not commit:
+커밋하지 않을 항목:
 
-- PNG screenshots
-- generated PDF exports
-- generated Markdown exports
-- QA JSON reports
-- temporary users or fixture dumps
+- 화면 캡처
+- 생성된 PDF
+- 생성된 Markdown
+- 임시 테스트 계정 덤프
+- 로컬 로그
 
-## Desktop Screen Matrix
+## 데스크톱 화면 점검
 
-Capture and inspect at least these desktop states:
+최소한 다음 화면을 확인합니다.
 
-- login
-- login validation error
-- registration
-- registration validation error
-- forgot-password form
-- forgot-password success
-- forgot-password success with one-line generic delivery copy
-- reset-password valid token
-- reset-password validation error
-- reset-password invalid token
-- authenticated home with verified account
-- home with unverified-account banner
-- account password page
-- account password validation error
-- account page with unverified-account banner
-- morning list with data
-- morning edit with data
-- morning empty state
-- evening list with data
-- evening list week navigation with previous and next date ranges
-- evening edit with data
-- evening empty state
-- weekly review with data
-- weekly empty state
-- record library with data
-- record library keyword result
-- record library empty search result
-- record library empty account state
-- daily preview with content
-- daily preview for a blank or missing date
-- PDF export preview
-- unknown route 404
-- long username/header stress case
+- 로그인
+- 로그인 검증 오류
+- 회원가입
+- 회원가입 검증 오류
+- 비밀번호 찾기
+- 비밀번호 찾기 성공 메시지
+- 비밀번호 재설정
+- 비밀번호 재설정 검증 오류
+- 잘못된 재설정 토큰
+- 인증된 계정의 홈
+- 미인증 계정 배너가 있는 홈
+- 계정 비밀번호 변경
+- 계정 비밀번호 변경 검증 오류
+- 아침 계획 목록
+- 아침 계획 작성
+- 아침 계획 빈 상태
+- 저녁 회고 목록
+- 저녁 회고 작성
+- 저녁 회고 빈 상태
+- 주간 리뷰
+- 주간 리뷰 빈 상태
+- 기록 라이브러리
+- 기록 라이브러리 검색 결과
+- 기록 라이브러리 빈 결과
+- 날짜별 기록 보기
+- 기록이 없는 날짜 보기
+- PDF 미리보기
+- 404 화면
+- 긴 사용자 이름이 있는 상단바
 
-## Mobile Screen Matrix
+## 모바일 화면 점검
 
-Capture and inspect at least these mobile states:
+최소한 다음 화면을 확인합니다.
 
-- login
-- registration
-- authenticated home
-- home with unverified-account banner
-- morning edit
-- evening edit
-- weekly review
-- record library
-- daily preview
-- PDF export preview
+- 로그인
+- 회원가입
+- 홈
+- 미인증 계정 배너
+- 아침 계획 작성
+- 저녁 회고 작성
+- 주간 리뷰
+- 기록 라이브러리
+- 날짜별 기록 보기
+- PDF 미리보기
 
-## UX Checks
+## UI/UX 기준
 
-For every captured state, verify:
+모든 화면에서 다음 기준을 확인합니다.
 
-- no unintended horizontal scrolling
-- no primary action button text wraps awkwardly
-- no navigation item collapses into vertical letters
-- long usernames truncate gracefully instead of breaking layout
-- mobile helper links stack deliberately rather than wrapping unpredictably
-- page copy is purposeful and short enough that screens do not feel like documentation
-- auth showcase panels do not stretch just because the form column contains validation or success copy
-- guest header actions are visually separated from the Daymark brand block
-- empty states explain what happened and offer a useful next action
-- library cards show digestible previews instead of raw Markdown walls
-- library trend labels clearly describe goal-completion rate, not a vague "flow"
-- preview pages feel like a reading surface, not debug output
-- PDF export preview has report structure, summary metrics, and readable daily cards instead of raw Markdown output
-- custom 404 page gives a clear recovery path
+- 설명문이 화면을 지배하지 않는지 확인합니다.
+- 버튼 이름만으로 동작을 이해할 수 있는지 확인합니다.
+- 버튼 텍스트가 어색하게 두 줄로 내려가지 않는지 확인합니다.
+- 상단바의 로고, 내비게이션, 계정 영역이 안정적으로 분리되는지 확인합니다.
+- 인증 화면의 카드 폭이 화면마다 흔들리지 않는지 확인합니다.
+- 긴 사용자 이름이 레이아웃을 깨지 않는지 확인합니다.
+- 빈 상태가 짧고 명확한 다음 행동을 제공하는지 확인합니다.
+- 라이브러리와 미리보기가 단순 Markdown 벽처럼 보이지 않는지 확인합니다.
+- PDF 미리보기가 보고서 구조와 읽기 좋은 카드 구성을 유지하는지 확인합니다.
+- 모바일에서 가로 스크롤이 생기지 않는지 확인합니다.
 
-## Export Checks
+## 기능 점검
+
+출시 전 다음 흐름을 실제로 실행합니다.
+
+- 새 사용자가 회원가입 후 로그인 상태가 되는지 확인합니다.
+- 이메일 인증 전에는 인증 배너가 보이는지 확인합니다.
+- 이메일 인증 링크는 한 번만 사용할 수 있는지 확인합니다.
+- 사용자 이름과 이메일 모두로 로그인되는지 확인합니다.
+- 로그인 실패 메시지가 계정 존재 여부를 노출하지 않는지 확인합니다.
+- 비밀번호 찾기 성공 메시지가 계정 존재 여부를 노출하지 않는지 확인합니다.
+- 인증된 계정은 비밀번호 재설정 링크를 받는지 확인합니다.
+- 미인증 계정은 재설정 링크 대신 인증 링크를 받는지 확인합니다.
+- 비밀번호 재설정 토큰은 한 번만 사용할 수 있는지 확인합니다.
+- 로그인 상태의 비밀번호 변경은 현재 비밀번호 검증을 요구하는지 확인합니다.
+- 아침 계획이 저장되고 다시 표시되는지 확인합니다.
+- 빈 아침 저장이 기록으로 보이지 않는지 확인합니다.
+- 저녁 회고가 저장되고 다시 표시되는지 확인합니다.
+- 빈 저녁 저장이 기록으로 보이지 않는지 확인합니다.
+- 주간 리뷰가 월요일부터 일요일까지의 범위를 사용하는지 확인합니다.
+- 기록 미리보기에서 빈 섹션 제목이 보이지 않는지 확인합니다.
+- 기록 라이브러리가 의미 있는 기록만 보여주는지 확인합니다.
+- 키워드 검색이 저장된 섹션 내용까지 찾는지 확인합니다.
+- 알 수 없는 경로가 제품형 404 화면으로 연결되는지 확인합니다.
+
+## 내보내기 점검
 
 ### Markdown
 
-Verify that the Markdown export:
+- 선택한 날짜 범위를 따르는지 확인합니다.
+- 키워드 조건을 따르는지 확인합니다.
+- 파일이 Markdown으로 다운로드되는지 확인합니다.
+- 기록 개수와 선택 조건이 포함되는지 확인합니다.
+- 날짜가 시간순으로 정렬되는지 확인합니다.
+- 빈 섹션 제목이 포함되지 않는지 확인합니다.
 
-- respects the selected `from`, `to`, and `keyword` filters
-- downloads as `text/markdown; charset=UTF-8`
-- includes date range metadata
-- includes search keyword metadata when a keyword is present
-- includes record count
-- orders exported entries chronologically
-- includes reconstructed daily sections without empty section headers
+### PDF 미리보기
 
-### PDF preview
+- 라이브러리와 같은 조건을 사용하는지 확인합니다.
+- 표지, 요약 지표, 필터 정보가 보이는지 확인합니다.
+- 날짜별 기록이 읽기 좋은 카드로 보이는지 확인합니다.
+- Chrome에서 PDF로 저장했을 때 레이아웃이 깨지지 않는지 확인합니다.
 
-Verify that the PDF preview:
+## 출시 판단 기준
 
-- respects the same filters as the library page
-- renders a report cover/header
-- shows completion, record count, and goal summary metrics
-- shows selected filter metadata
-- renders one readable card per exported day
-- opens Chrome print/save-to-PDF cleanly
+다음 조건을 모두 만족하면 공개 가능한 상태로 봅니다.
 
-## Functional Acceptance Checklist
-
-Before calling the product release-ready, confirm:
-
-- a new user can register and is signed in
-- the unverified email banner appears until verification
-- verification links can be consumed once
-- login works with username and email address
-- failed login feedback remains generic
-- forgot-password feedback remains generic
-- verified accounts receive reset links
-- unverified accounts receive verification links instead of reset links
-- password reset tokens are one-time use
-- authenticated password change requires the current password
-- morning plans persist and re-render
-- blank morning saves do not create visible logs
-- evening reflections persist and re-render
-- blank evening saves do not create visible logs
-- weekly review uses a Monday-Sunday range
-- daily preview omits empty section headers
-- blank daily preview shows a product empty state
-- record library only shows meaningful saved entries
-- record library keyword search works across reconstructed content
-- Markdown export and PDF preview match the selected library criteria
-- unknown routes render the product 404 page
-
-## Release Notes Guidance
-
-When writing release notes, group changes by product outcome:
-
-- planning and reflection workflow
-- long-term record exploration
-- export and portability
-- account security
-- operations and deployment
-- release QA and visual polish
-
-Avoid listing every template or CSS class unless the audience is internal engineering.
+- 자동 테스트가 통과합니다.
+- 주요 화면에서 레이아웃 흔들림이 없습니다.
+- 인증과 비밀번호 복구 흐름이 계정 정보를 노출하지 않습니다.
+- 기록 작성, 리뷰, 검색, 내보내기 흐름이 같은 데이터를 기준으로 동작합니다.
+- 공개 문서가 현재 코드와 다르지 않습니다.
+- 캡처, 로그, 내보내기 결과물, secret이 Git에 포함되지 않습니다.

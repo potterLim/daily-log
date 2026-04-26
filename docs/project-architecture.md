@@ -1,45 +1,30 @@
-# Project Architecture
+# 프로젝트 구조
 
-## Overview
+Daymark는 Spring Boot 기반의 서버 렌더링 웹 애플리케이션입니다. 핵심 흐름은 아침 계획, 저녁 회고, 주간 리뷰, 기록 라이브러리, Markdown/PDF 내보내기입니다.
 
-`daymark` is a Spring Boot web application for:
+사용자 기록은 파일이 아니라 데이터베이스에 저장합니다. 화면에 필요한 미리보기와 내보내기 결과는 저장된 섹션 데이터를 다시 조합해 만듭니다.
 
-- morning planning
-- evening reflection
-- weekly progress review
-- long-term record exploration
-- Markdown and print-ready PDF export
-
-The application uses a single relational storage model:
-
-- MySQL stores accounts, authentication state, and day-by-day writing.
-- Markdown is reconstructed on demand for preview, library, and export pages instead of being stored as files on disk.
-- Library views derive timeline, trend, calendar, search, and export models from the same persisted day sections.
-- The Thymeleaf presentation layer renders reconstructed content through product-grade reading surfaces instead of raw debug-style Markdown blocks.
-
-This keeps the product easier to back up, scale, and operate in a multi-user deployment.
-
-## System Shape
+## 전체 흐름
 
 ```text
-Browser
+브라우저
   -> Spring MVC + Thymeleaf
-  -> controller layer
-  -> service layer
-  -> Spring Data JPA repositories
+  -> Controller
+  -> Service
+  -> Repository
   -> MySQL
 ```
 
-## Top-Level Repository Layout
+## 저장소 구조
 
 ```text
-daymark
+.
 ├─ build.gradle
 ├─ compose.yaml
 ├─ Dockerfile
 ├─ docs
-├─ gradle
 ├─ ops
+│  └─ backup
 ├─ src
 │  ├─ main
 │  │  ├─ java/com/potterlim/daymark
@@ -48,15 +33,13 @@ daymark
 └─ settings.gradle
 ```
 
-## Main Java Packages
+## 주요 패키지
 
 ```text
 com.potterlim.daymark
 ├─ config
 ├─ controller
 ├─ dto
-│  ├─ auth
-│  └─ daymark
 ├─ entity
 ├─ repository
 ├─ security
@@ -64,157 +47,18 @@ com.potterlim.daymark
 └─ support
 ```
 
-## Package Responsibilities
+| 패키지 | 역할 |
+| --- | --- |
+| `config` | 애플리케이션 설정, 보안 설정, 운영 준비 상태 검증 |
+| `controller` | HTTP 요청 처리와 화면 모델 구성 |
+| `dto` | 폼 입력, 화면 출력, 서비스 명령 객체 |
+| `entity` | JPA 엔티티와 도메인 값 객체 |
+| `repository` | Spring Data JPA 저장소 |
+| `security` | Spring Security 사용자 조회 |
+| `service` | 계정, 인증 메일, 기록 저장, 라이브러리, 운영 요약 로직 |
+| `support` | 섹션 타입, 간단한 Markdown 렌더링 등 공통 지원 코드 |
 
-### `config`
-
-Application-wide configuration and framework integration.
-
-- `ApplicationClockConfiguration`
-  - provides the application `Clock` used by date-sensitive views and tests
-- `DaymarkApplicationProperties`
-  - binds `daymark.account.*`, `daymark.mail.*`, `daymark.operations.*`, and `daymark.security.*` settings into a strongly typed configuration object
-- `ProductionReadinessValidator`
-  - enforces strict runtime checks in the `production` profile
-  - blocks startup when SMTP, alerting, secure cookies, or remember-me secrets do not meet the configured baseline
-- `SecurityConfiguration`
-  - configures authentication, authorization, remember-me, logout, public health endpoints, and password encoding
-- `WebServerConfiguration`
-  - holds embedded web-server customization
-
-### `controller`
-
-HTTP entry points and page model composition.
-
-- `HomeController`
-  - renders the product home page
-- `AuthController`
-  - renders login, registration, forgot-password, and reset-password pages
-  - coordinates registration, auto-login, and public email verification
-  - keeps login and password recovery feedback generic where account existence must stay hidden
-- `AccountController`
-  - renders the authenticated password change page
-  - resends verification mail for the signed-in user
-  - verifies the current password before saving a new one
-- `AuthenticatedUserModelAttributeControllerAdvice`
-  - injects current account verification state into page models for the shared layout banner
-- `ProductErrorControllerAdvice`
-  - renders the product 404 page for missing static or resource-backed routes
-- `DaymarkController`
-  - handles morning, evening, weekly, preview, library, Markdown export, and PDF export-preview routes
-  - assembles page-ready data from service output, including week navigation ranges and export report models
-
-### `dto`
-
-DTOs are split by feature and intent.
-
-- `dto.auth`
-  - form DTOs for login, registration, forgot-password, reset-password, and password change
-  - command DTO for registration service input
-- `dto.daymark`
-  - form DTOs for morning and evening flows
-  - checklist item DTOs
-  - weekly status and per-day progress DTOs
-  - library search criteria, timeline items, structured preview blocks, goal preview rows, trend items, and calendar days
-
-### `entity`
-
-Persistence model and authenticated principal model.
-
-- `UserAccount`
-  - JPA entity
-  - also implements `UserDetails`
-- `UserEmailVerificationToken`
-  - one-time email ownership verification token entity bound to a user account
-- `UserPasswordResetToken`
-  - one-time reset token entity bound to a user account
-- `DaymarkEntry`
-  - one persisted Daymark entry per user per date
-  - stores the morning and evening sections as text columns
-  - derives morning/evening presence from actual non-blank section content
-  - reconstructs Markdown when preview, library, or export output is needed
-- `UserAccountId`
-  - value object wrapper around the account id
-- `EUserRole`
-  - role enum used by security and persistence
-
-### `repository`
-
-Data access for relational storage.
-
-- `IUserAccountRepository`
-  - JPA repository for user accounts
-  - supports lookup by username, email address, and login identifier
-- `IUserEmailVerificationTokenRepository`
-  - JPA repository for one-time email verification tokens
-  - supports token lookup and invalidation of earlier active tokens
-- `IUserPasswordResetTokenRepository`
-  - JPA repository for one-time password reset tokens
-  - supports token lookup and invalidation of earlier active tokens
-- `IDaymarkEntryRepository`
-  - JPA repository for day entries
-  - supports lookup by user/date, ordered week queries, and date-range library queries
-
-### `security`
-
-Spring Security integration layer.
-
-- `SecurityUserDetailsService`
-  - resolves `UserAccount` by username for authentication
-
-### `service`
-
-Core business logic.
-
-- `UserAccountService`
-  - validates registration input
-  - checks duplicate usernames and email addresses
-  - hashes passwords
-  - persists new accounts
-  - changes or resets passwords
-- `EmailVerificationTokenService`
-  - generates strong verification tokens
-  - stores only token hashes
-  - enforces token expiration and one-time consumption
-- `PasswordResetTokenService`
-  - generates strong reset tokens
-  - stores only token hashes
-  - enforces token expiration and one-time consumption
-- `IAuthenticationMailService`
-  - abstracts verification and password reset mail delivery
-  - can be backed by SMTP or a diagnostic local mode
-- `AuthenticationMailWorkflowService`
-  - chooses between verification and recovery delivery flows
-  - builds absolute verification and reset URLs from the current request
-  - reports delivery failures to operations alerts
-- `IAlertNotificationService`
-  - abstracts operational alert delivery
-  - can fall back to logging or send to an external webhook
-- `WeeklyOperationsSummaryService`
-  - calculates operator-facing weekly metrics such as total registrations, weekly active writers, writing frequency, and checklist completion rate
-- `WeeklyOperationsSummaryScheduler`
-  - emits the weekly operator summary log on a configurable schedule
-- `DaymarkService`
-  - reads and writes day sections
-  - creates day entries on first write
-  - lists weekly day status
-  - extracts checked goals
-  - rebuilds Markdown text for previews
-- `DaymarkLibraryService`
-  - searches long-term records by date range and keyword
-  - builds timeline items, goal previews, structured content blocks, trend bars, and calendar days
-  - builds chronological Markdown exports for selected library ranges
-
-### `support`
-
-Shared helper types outside the controller and service contracts.
-
-- `EDaymarkSectionType`
-  - defines Markdown section headers and logical order
-- `SimpleMarkdownRenderer`
-  - renders the supported Markdown subset used by the app
-
-## Main Resource Layout
+## 리소스 구조
 
 ```text
 src/main/resources
@@ -234,330 +78,137 @@ src/main/resources
    └─ home
 ```
 
-### Templates
+## 주요 화면과 라우트
 
-- `fragments/layout.html`
-  - shared frame, navigation, footer, verification banner, and background system
-- `auth/*`
-  - login, registration, forgot-password, and reset-password screens
-- `account/*`
-  - authenticated account settings pages such as password change
-- `daymark/*`
-  - morning list/editor
-  - evening list/editor
-  - weekly review
-  - long-term record library
-  - Markdown export endpoint support through controller output
-  - print-optimized PDF export preview
-  - read-only log preview and empty preview state
-- `error/404.html`
-  - product-styled not-found page
-- `home/index.html`
-  - landing page and product overview
-
-### Static Assets
-
-- `static/css/site.css`
-  - global visual system, product surfaces, responsive layout, print report styling, empty states, and interaction styling
-- `static/js/site.js`
-  - lightweight browser behavior such as scroll-driven header state and textarea auto-resize
-
-### Database Migrations
-
-- `db/migration/V1__create_user_account.sql`
-  - creates the account table
-- `db/migration/V2__create_daymark_entry.sql`
-  - creates the Daymark entry table with one row per user and date
-- `db/migration/V3__add_email_to_user_account.sql`
-  - adds the unique recovery email column to existing accounts
-- `db/migration/V4__create_user_password_reset_token.sql`
-  - creates the one-time password reset token table
-- `db/migration/V5__add_email_verification_state_to_user_account.sql`
-  - adds email verification state to user accounts
-- `db/migration/V6__create_user_email_verification_token.sql`
-  - creates the one-time email verification token table
-
-## Route Map
-
-| Area | Routes | Responsibility |
+| 영역 | 라우트 | 설명 |
 | --- | --- | --- |
-| Home | `/` | product landing page for authenticated users |
-| Auth | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | authentication entry, account creation, verification, and recovery |
-| Account | `/account/password`, `/account/email-verification/resend` | authenticated password maintenance and verification resend |
-| Morning | `/daymark/morning`, `/daymark/morning/edit`, `/daymark/morning/save` | create and update morning plans |
-| Evening | `/daymark/evening`, `/daymark/evening/edit`, `/daymark/evening/save` | complete evening reflections and goal checks |
-| Weekly | `/daymark/week` | Monday-Sunday weekly review and completion summary |
-| Library | `/daymark/library` | long-term date-range search, keyword search, timeline, trend, and calendar view |
-| Markdown export | `/daymark/library/export/markdown` | downloads selected library records as Markdown |
-| PDF preview | `/daymark/library/export/pdf` | renders a print-optimized report for browser PDF saving |
-| Preview | `/daymark/preview` | read-only view of a saved record or a product empty state for blank dates |
-| Error | missing product/resource routes through Spring error handling | product not-found experience |
-| Health | `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` | runtime monitoring without authentication |
+| 홈 | `/` | 제품 홈 |
+| 인증 | `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | 로그인, 가입, 인증, 복구 |
+| 계정 | `/account/password`, `/account/email-verification/resend` | 비밀번호 변경, 인증 메일 재전송 |
+| 아침 계획 | `/daymark/morning`, `/daymark/morning/edit`, `/daymark/morning/save` | 아침 기록 목록, 편집, 저장 |
+| 저녁 회고 | `/daymark/evening`, `/daymark/evening/edit`, `/daymark/evening/save` | 저녁 기록 목록, 편집, 저장 |
+| 주간 리뷰 | `/daymark/week` | 월요일부터 일요일까지의 실행 요약 |
+| 라이브러리 | `/daymark/library` | 날짜 범위와 키워드 기반 기록 탐색 |
+| Markdown 내보내기 | `/daymark/library/export/markdown` | 선택한 기록 다운로드 |
+| PDF 미리보기 | `/daymark/library/export/pdf` | 브라우저 PDF 저장용 보고서 |
+| 기록 보기 | `/daymark/preview` | 날짜별 읽기 전용 기록 |
+| 상태 확인 | `/actuator/health/**` | 런타임 상태 확인 |
 
-## Presentation Baseline
+## 데이터 모델
 
-The UI layer is intentionally copy-light and product-oriented:
+주요 테이블:
 
-- shared headers keep brand, navigation, and account actions in separate visual zones
-- public authentication pages use concise security and workflow labels instead of explanatory paragraphs
-- writing pages avoid duplicate helper text when the adjacent guide already explains the section
-- preview, evening reference, library card, and PDF report content use the same polished reading language
-- library trend labels explicitly describe goal-completion rate over time
-- export preview output is optimized for Chrome print/save-to-PDF rather than plain browser text output
+- `user_account`: 사용자 계정, 비밀번호 해시, 이메일 인증 상태
+- `user_email_verification_token`: 이메일 인증용 1회성 토큰
+- `user_password_reset_token`: 비밀번호 재설정용 1회성 토큰
+- `daymark_entry`: 사용자와 날짜 기준의 하루 기록
 
-## Relational Account Storage
+`daymark_entry`는 하루 기록을 하나의 Markdown 문자열로 저장하지 않습니다. 목표, 집중 영역, 예상 변수, 저녁 체크리스트, 성과, 개선점, 감사, 메모를 섹션별 텍스트로 저장합니다.
 
-MySQL stores the `user_account`, `user_email_verification_token`, and `user_password_reset_token` tables used for:
+이 구조 덕분에 다음 동작을 안정적으로 처리할 수 있습니다.
 
-- authentication
-- role lookup
-- account lifecycle status
-- username uniqueness
-- email uniqueness, ownership verification, and recovery routing
-- one-time email verification token storage
-- one-time password reset token storage
+- 빈 저장은 실제 기록으로 보이지 않음
+- 미리보기에서 빈 섹션 제목을 숨김
+- 라이브러리 검색과 내보내기가 같은 저장 데이터를 사용함
+- 사용자별 기록이 데이터베이스 수준에서 분리됨
 
-## Relational Daymark Storage
+## 핵심 서비스
 
-MySQL stores the `daymark_entry` table used for:
+| 서비스 | 역할 |
+| --- | --- |
+| `UserAccountService` | 회원가입, 중복 확인, 비밀번호 변경과 재설정 |
+| `EmailVerificationTokenService` | 이메일 인증 토큰 생성, 검증, 소비 |
+| `PasswordResetTokenService` | 비밀번호 재설정 토큰 생성, 검증, 소비 |
+| `AuthenticationMailWorkflowService` | 인증/복구 메일 흐름과 실패 알림 연결 |
+| `DaymarkService` | 날짜별 기록 읽기, 쓰기, 주간 상태 계산 |
+| `DaymarkLibraryService` | 장기 기록 검색, 타임라인, 추세, 캘린더, Markdown 내보내기 |
+| `WeeklyOperationsSummaryService` | 운영용 주간 지표 계산 |
 
-- one row per user per date
-- morning section content
-- evening section content
-- day-level morning/evening completion flags derived from non-blank content
-- audit timestamps
+## 주요 요청 흐름
 
-Important design notes:
+### 회원가입과 인증
 
-- the unique key is `(user_account_id, entry_date)`
-- daily writing is stored as section text, not as one opaque Markdown blob
-- preview, library, and export pages reconstruct Markdown from stored sections when needed
-- empty section headers are omitted from reconstructed Markdown
-- blank saves do not produce visible library or review records
-- the system does not depend on local disk files for user-written content
+1. 사용자가 이름, 이메일, 비밀번호를 입력합니다.
+2. 서버가 입력값과 중복 계정을 검증합니다.
+3. 계정을 생성하고 이메일 인증 토큰을 발급합니다.
+4. 인증 링크를 메일로 보내고 사용자를 로그인 상태로 전환합니다.
+5. 인증 링크가 소비되면 인증 배너가 사라집니다.
 
-## Daymark Section Model
+### 비밀번호 복구
 
-One day's log can contain multiple ordered sections.
+1. 사용자는 이메일을 입력합니다.
+2. 화면에는 항상 같은 성공 메시지를 보여 계정 존재 여부를 숨깁니다.
+3. 인증된 계정이면 비밀번호 재설정 링크를 보냅니다.
+4. 미인증 계정이면 인증 링크를 다시 보냅니다.
+5. 재설정 토큰은 한 번만 사용할 수 있습니다.
 
-Morning sections:
+### 아침 계획
 
-- goals
-- focus areas
-- challenges and strategies
+1. 날짜를 선택합니다.
+2. 목표, 집중 영역, 예상 변수를 입력합니다.
+3. 서버가 내용을 정리해 섹션별로 저장합니다.
+4. 실제 내용이 없는 저장은 기록으로 집계하지 않습니다.
 
-Evening sections:
+### 저녁 회고
 
-- evening goal checklist
-- achievements
-- improvements
-- gratitude
-- notes
+1. 같은 날짜의 아침 계획을 읽기 좋은 카드로 보여줍니다.
+2. 아침 목표를 체크리스트로 변환합니다.
+3. 완료 여부와 회고 내용을 저장합니다.
+4. 저장 후 주간 리뷰와 라이브러리에서 같은 데이터를 사용합니다.
 
-Section ordering and header text are controlled by:
+### 기록 라이브러리와 내보내기
 
-- `EDaymarkSectionType`
-- `DaymarkEntry`
-- `DaymarkController` preview normalization for browser rendering
+1. 기본 최근 90일 범위를 구성합니다.
+2. 날짜 범위와 키워드 조건으로 기록을 조회합니다.
+3. 의미 있는 내용이 있는 기록만 타임라인에 표시합니다.
+4. 같은 조건으로 Markdown 다운로드와 PDF 미리보기를 생성합니다.
 
-## Core Request Flows
+## 보안 기준
 
-### Registration Flow
+- 공개 라우트는 정적 파일, 인증 화면, 이메일 인증, 상태 확인으로 제한합니다.
+- 제품 기능은 로그인 후 접근할 수 있습니다.
+- 비밀번호는 BCrypt로 저장합니다.
+- 인증/재설정 토큰은 원문이 아니라 해시로 저장합니다.
+- 로그인 실패와 비밀번호 찾기 응답은 일반화합니다.
+- CSRF 보호를 유지합니다.
+- 세션 쿠키는 HTTP-only와 `SameSite=Lax`를 사용합니다.
 
-1. Render registration page.
-2. Validate username, email address, and password input.
-3. Create account through `UserAccountService`.
-4. Catch duplicate username or duplicate email collisions.
-5. Issue and deliver an email ownership verification link.
-6. Auto-authenticate the new account.
-7. Redirect to home.
+## 실행 프로필
 
-### Email Verification Flow
+| 프로필 | 용도 |
+| --- | --- |
+| 기본 | MySQL 기반 실행. 필수 환경 변수가 없으면 시작하지 않음 |
+| `local` | H2 메모리 DB와 진단용 인증/복구 링크 로그. 로컬 개발용 |
+| `production` | 운영 준비 상태 검증, 보안 쿠키 기본값, 주간 운영 요약 활성화 |
 
-1. Issue a one-time token through `EmailVerificationTokenService`.
-2. Deliver the verification link through `IAuthenticationMailService`.
-3. Consume the token exactly once when the user opens the link.
-4. Mark the user account email as verified.
-5. Remove the verification banner from subsequent page renders.
+## 테스트 범위
 
-### Login Flow
+주요 테스트는 실제 웹 흐름을 중심으로 구성되어 있습니다.
 
-1. Render login page.
-2. Validate form input.
-3. Authenticate through Spring Security with username or email.
-4. Save the authenticated principal into the session.
-5. Return a generic login error message when authentication fails.
+- 회원가입, 로그인, 이메일 인증
+- 비밀번호 찾기, 재설정, 변경
+- 아침 계획과 빈 저장 방지
+- 저녁 회고와 체크리스트 저장
+- 월요일부터 일요일까지의 주간 리뷰
+- 기록 미리보기와 빈 섹션 숨김
+- 라이브러리 검색, Markdown 내보내기, PDF 미리보기
+- 제품형 404 화면
+- 상태 확인 엔드포인트
 
-### Password Recovery Flow
-
-1. Render the forgot-password page.
-2. Accept an email address and always return the same success message.
-3. When the account exists and the email is verified, generate a one-time token through `PasswordResetTokenService`.
-4. When the account exists but the email is still unverified, resend the ownership verification link instead.
-5. Consume the password reset token exactly once when the user submits a new password.
-
-### Password Change Flow
-
-1. Require an authenticated session.
-2. Render the password change form.
-3. Verify the current password through `UserAccountService`.
-4. Hash and persist the new password.
-5. Redirect back with a success banner.
-
-### Morning Planning Flow
-
-1. Open a date.
-2. Load current goals, focus, and challenges from `DaymarkService`.
-3. Submit the morning form.
-4. Normalize goals into Markdown-style list lines.
-5. Write updated sections into `daymark_entry`.
-6. Recompute day presence from actual section content.
-
-### Evening Reflection Flow
-
-1. Load the reconstructed morning plan preview as a structured read-only card surface.
-2. Convert morning goals into checklist items.
-3. Submit checked goals and reflection content.
-4. Persist evening sections back into the same day entry.
-5. Recompute day presence from actual section content.
-6. Redirect to the evening list.
-
-### Weekly Review Flow
-
-1. List the current Monday-Sunday week.
-2. Read total goals and checked goals per day.
-3. Calculate totals and percentages.
-4. Render progress cards and links to preview pages.
-
-### Record Library Flow
-
-1. Build default search criteria for the recent 90-day range.
-2. Accept optional `from`, `to`, and `keyword` query parameters.
-3. Query only the authenticated user's entries inside the selected range.
-4. Ignore entries that have no meaningful saved content.
-5. Filter by keyword across date, flow label, excerpt, and reconstructed Markdown.
-6. Render newest-first timeline items with structured previews.
-7. Render goal-completion trend and calendar side panels as supporting context.
-
-### Markdown Export Flow
-
-1. Reuse the same library search criteria.
-2. Build matching records in chronological order.
-3. Prepend export metadata such as date range, keyword, and record count.
-4. Return `text/markdown; charset=UTF-8` with a download filename.
-
-### PDF Preview Flow
-
-1. Reuse the same library search criteria.
-2. Render a print-optimized Thymeleaf report with cover, summary metrics, selected filters, and polished daily record cards.
-3. Let the browser save the print view as PDF.
-
-### Product Error Flow
-
-1. Disable the default whitelabel error page.
-2. Convert missing resource routes into a product-styled 404 view.
-3. Offer clear navigation back to home or the record library.
-
-## Security Model
-
-Public routes:
-
-- `/css/**`
-- `/js/**`
-- `/favicon.ico`
-- `/login`
-- `/register`
-- `/forgot-password`
-- `/reset-password`
-- `/verify-email`
-- `/actuator/health`
-- `/actuator/health/**`
-
-All other routes require authentication.
-
-Additional notes:
-
-- BCrypt password hashing
-- login by username or email address
-- remember-me support via `TokenBasedRememberMeServices`
-- generic login failure feedback
-- generic forgot-password feedback
-- email ownership verification with one-time hashed tokens
-- one-time password reset tokens stored as hashes
-- CSRF protection enabled
-- HTTP-only session cookie with `SameSite=Lax`
-- basic security headers for content type, referrer policy, and frame handling
-
-## Runtime Profiles
-
-### Default Profile
-
-- MySQL-backed
-- production-oriented
-- Flyway migrations enabled
-- fails fast when required environment variables are missing
-
-### `production` Profile
-
-- turns on strict production readiness validation
-- enables weekly operator summary logging
-- defaults the session cookie to `secure=true`
-
-### `local` Profile
-
-- H2 in-memory database in MySQL compatibility mode
-- Flyway migrations enabled
-- Thymeleaf cache disabled
-- diagnostic verification and recovery links when SMTP is not configured
-
-## Testing Strategy
-
-The test suite focuses on live application behavior rather than only isolated units.
-
-Current integration coverage includes:
-
-- registration
-- email verification
-- password validation
-- username or email login
-- password reset request and token-based reset
-- authenticated password change
-- generic login failure feedback
-- morning log persistence and blank-save protection
-- evening reflection persistence
-- weekly Monday-Sunday range rendering
-- read-only preview rendering and empty-section omission
-- empty preview state for dates without saved content
-- record library search, timeline, Markdown export, and PDF preview routing
-- product copy and polished page-rendering expectations for home, library, and export surfaces
-- custom product 404 rendering
-- core page rendering for home, evening, weekly, and library views
-- public health endpoint availability
-
-Primary test classes:
+주요 테스트 파일:
 
 - `DaymarkApplicationTests`
 - `WebFlowIntegrationTests`
 - `MySqlIntegrationTests`
 - `WeeklyOperationsSummaryServiceTests`
 
-## Extension Guidance
+## 확장 시 주의할 부분
 
-Safe extension points usually start in:
+다음 영역은 저장 데이터, 검색, 내보내기에 함께 영향을 줄 수 있으므로 신중히 변경합니다.
 
-- `dto.daymark` when a page shape changes
-- `DaymarkService` when entry-level business logic changes
-- `DaymarkLibraryService` when long-term exploration, export, trend, or calendar behavior changes
-- `DaymarkEntry` when section persistence rules change
-- `site.css` when the product presentation changes
-
-Be careful when changing:
-
-- Markdown header text
-- section ordering
-- goal list formatting
-- date-range semantics
-- uniqueness rules on user/date
-- export filename or content-disposition behavior
-
-Those areas affect compatibility with already saved user data, previews, library search, and exported records.
+- 섹션 타입과 순서
+- Markdown 헤더 문구
+- 목표 목록 정규화 방식
+- 날짜 범위 계산
+- 사용자와 날짜의 유일성 제약
+- 내보내기 파일명과 응답 헤더

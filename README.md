@@ -1,417 +1,117 @@
 # Daymark
 
-`Daymark` is a daily planning and reflection web application that turns morning intention setting, evening review, long-term record exploration, and exportable personal archives into one focused product flow.
+Daymark는 하루의 계획과 회고를 한 흐름으로 정리하는 개인 기록 웹 애플리케이션입니다.
 
-It is built as a multi-user Spring Boot application with:
+아침에는 오늘의 기준을 세우고, 저녁에는 실행 결과를 체크하며, 쌓인 기록은 라이브러리에서 검색하고 내보낼 수 있습니다. 화면은 설명을 길게 읽히기보다 바로 사용할 수 있도록 간결한 문구와 안정적인 레이아웃을 기준으로 다듬었습니다.
 
-- MySQL-backed account and Daymark storage
-- Flyway-managed schema changes
-- server-rendered Thymeleaf pages with a concise, responsive product interface
-- executable JAR deployment as the primary runtime model
-- Docker Compose support for app, MySQL, and backup workflows
+## 핵심 기능
 
-## Highlights
+- 아침 계획: 목표, 집중 영역, 예상 변수를 날짜별로 기록
+- 저녁 회고: 아침 목표를 체크리스트로 다시 확인하고 성과와 개선점을 정리
+- 주간 리뷰: 월요일부터 일요일까지의 실행 흐름과 목표 달성률 확인
+- 기록 라이브러리: 날짜 범위와 키워드로 장기 기록 탐색
+- 내보내기: 선택한 기록을 Markdown으로 다운로드하거나 PDF 저장용 보고서로 확인
+- 계정 보안: 회원가입, 로그인, 이메일 인증, 비밀번호 재설정, 비밀번호 변경
 
-- Morning planning with goals, focus areas, and anticipated challenges
-- Evening reflection that reuses morning goals as a completion checklist
-- Weekly review with completion counts and progress percentages
-- Record library for long-term exploration across date ranges and keywords
-- Timeline-first library view with structured record previews, goal-completion trend bars, and a compact calendar
-- Markdown export for selected library ranges
-- Print-ready PDF report preview with readable daily report cards
-- Read-only record preview rendered as a polished reading surface
-- Copy-light UI that favors clear labels, stable button text, and short product guidance
-- Product-grade empty states and a custom 404 page instead of default error output
-- Account creation with username, email address, and password
-- Sign-in with either username or email address
-- Email ownership verification, email-based password reset, and authenticated password change
-- Per-user isolation at the database level
-- Public health endpoints for runtime monitoring
-- Rolling application logs, Tomcat access logs, and provider-neutral alert webhook support
-- Weekly operator summary logs for registrations, active writers, and completion rates
-
-## Product Flow
-
-### Morning planning
-
-- Open a date.
-- Write goals, focus areas, and likely challenges with compact field labels and side guidance.
-- Save only meaningful content so blank submissions do not create phantom logs.
-
-### Evening reflection
-
-- Reopen the same date.
-- Review the morning plan in a structured read-only card surface.
-- Mark completed goals and capture achievements, improvements, gratitude, and notes.
-- Navigate weeks with previous and next week cards that include the exact date ranges.
-
-### Weekly review
-
-- Scan the current Monday-Sunday week.
-- Compare total goals against completed goals.
-- Open any saved day in a detailed preview.
-
-### Record library and export
-
-- Explore recent or custom date ranges in a timeline.
-- Narrow results with keyword search.
-- Use explicit goal-completion trend bars and the calendar as secondary navigation cues.
-- Export the selected range as Markdown.
-- Open a print-optimized report with daily cards and save it as PDF from Chrome.
-
-## UX Baseline
-
-The current product UI is tuned for a final-product feel rather than an instructional prototype:
-
-- unauthenticated header actions stay visually separated from the brand area
-- auth pages avoid stretched showcase panels when form validation or success banners appear
-- primary buttons use short action labels
-- editor pages remove duplicate helper copy when the right-side guide already explains the flow
-- preview, library, evening reference, and PDF report views avoid raw Markdown-style walls
-- library trend language is explicit: goal completion rate over time
-
-## Technology Stack
+## 기술 구성
 
 - Java 17
-- Spring Boot 3.5.9
-- Spring MVC
-- Thymeleaf
+- Spring Boot 3.5
+- Spring MVC, Thymeleaf
 - Spring Security
 - Spring Data JPA
-- Bean Validation
 - Flyway
 - MySQL
-- H2 for the local development profile
+- H2 로컬 개발 프로필
 - Gradle
-- Executable JAR packaging
 
-## Runtime Model
+## 빠른 실행
 
-### Primary storage
-
-- `user_account` stores identity, password hashes, role, and account status.
-- `user_account` also stores the unique recovery email address and email verification state.
-- `user_email_verification_token` stores one-time email verification tokens.
-- `user_password_reset_token` stores one-time password reset tokens.
-- `daymark_entry` stores one entry per user per date.
-- Daymark sections are persisted as database text columns.
-- Preview, library, Markdown export, and PDF report pages reconstruct output from stored sections instead of reading files from disk.
-
-### Operational shape
-
-- Executable JAR behind Nginx, Caddy, or a managed load balancer.
-- MySQL as the persistent system of record.
-- Actuator health endpoints for liveness and readiness checks.
-- Rolling application logs and embedded Tomcat access logs.
-- Optional webhook-based operational alerts for delivery failures.
-- Weekly operator summary logs in the production profile.
-- Backup scripts under `ops/backup`.
-
-## Repository Guide
-
-### Tracked documentation
-
-- [docs/README.md](docs/README.md)
-- [docs/project-architecture.md](docs/project-architecture.md)
-- [docs/deployment.md](docs/deployment.md)
-- [docs/release-readiness.md](docs/release-readiness.md)
-
-### Main application areas
-
-```text
-src/main/java/com/potterlim/daymark
-├─ config
-├─ controller
-├─ dto
-├─ entity
-├─ repository
-├─ security
-├─ service
-└─ support
-```
-
-```text
-src/main/resources
-├─ application.yml
-├─ application-local.yml
-├─ application-production.yml
-├─ db/migration
-├─ static
-└─ templates
-```
-
-```text
-ops
-└─ backup
-```
-
-### Local-only working documents
-
-If your local workspace includes `local-docs/`, those files are intentionally ignored by Git and can be used for deeper private onboarding or working notes.
-
-Screenshot QA artifacts should also stay outside the repository, for example under a timestamped Desktop directory.
-
-## Quick Start
-
-### Run locally with the `local` profile
-
-macOS or Linux:
+로컬에서는 별도 MySQL 없이 H2 메모리 데이터베이스로 바로 실행할 수 있습니다.
 
 ```bash
 ./gradlew bootRun --args="--spring.profiles.active=local"
 ```
 
-Windows PowerShell:
+실행 후 브라우저에서 접속합니다.
 
-```powershell
-.\gradlew.bat bootRun --args="--spring.profiles.active=local"
+```text
+http://127.0.0.1:8080
 ```
 
-The `local` profile:
-
-- uses in-memory H2 in MySQL compatibility mode
-- runs Flyway migrations on startup
-- disables Thymeleaf template caching
-- logs diagnostic verification and recovery links when SMTP is not configured
-
-### Run tests
-
-macOS or Linux:
+테스트는 다음 명령으로 실행합니다.
 
 ```bash
 ./gradlew test
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat test
-```
-
-### Run real MySQL integration tests
-
-Docker is required because these tests use Testcontainers.
-
-macOS or Linux:
+Docker가 준비되어 있다면 MySQL 통합 테스트도 실행할 수 있습니다.
 
 ```bash
 ./gradlew mysqlIntegrationTest
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat mysqlIntegrationTest
-```
-
-### Build the executable JAR
-
-macOS or Linux:
+배포용 JAR는 다음 명령으로 생성합니다.
 
 ```bash
 ./gradlew bootJar
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat bootJar
-```
-
-Generated artifact:
+생성 결과:
 
 ```text
 build/libs/daymark.jar
 ```
 
-Run it with:
+## 실행 설정
 
-```bash
-java -jar build/libs/daymark.jar
-```
+기본 프로필은 MySQL과 필수 보안 값을 요구합니다.
 
-## Configuration
-
-### Required in the default profile
-
-| Variable | Purpose |
+| 환경 변수 | 설명 |
 | --- | --- |
 | `DATABASE_URL` | MySQL JDBC URL |
-| `DATABASE_USERNAME` | MySQL account name |
-| `DATABASE_PASSWORD` | MySQL account password |
-| `DAYMARK_REMEMBER_ME_KEY` | remember-me signing key |
+| `DATABASE_USERNAME` | MySQL 사용자 |
+| `DATABASE_PASSWORD` | MySQL 비밀번호 |
+| `DAYMARK_REMEMBER_ME_KEY` | remember-me 서명 키 |
 
-### Optional
+운영 환경에서는 HTTPS 뒤에서 실행하고, 세션 쿠키 보안 설정과 SMTP 설정을 함께 준비하는 것을 권장합니다.
 
-| Variable | Default |
+주요 선택 설정:
+
+| 환경 변수 | 기본값 |
 | --- | --- |
 | `PORT` | `8080` |
-| `APP_PORT` | `8080`, Compose host port only |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
-| `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` |
-| `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` |
 | `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` |
-| `DAYMARK_ALERT_WEBHOOK_URL` | unset |
+| `DAYMARK_ALERT_WEBHOOK_URL` | 없음 |
 | `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` |
-| `DAYMARK_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` |
-| `DAYMARK_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` |
 | `DAYMARK_LOG_DIR` | `./logs` |
-| `DAYMARK_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` |
-| `DAYMARK_REMEMBER_ME_COOKIE_NAME` | `DAYMARK_REMEMBER_ME` |
-| `DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` |
-| `DAYMARK_PRODUCTION_READINESS_ENABLED` | `false` |
-| `DAYMARK_REQUIRE_SMTP` | `false` |
-| `DAYMARK_REQUIRE_ALERT_WEBHOOK` | `false` |
-| `DAYMARK_REQUIRE_SECURE_SESSION_COOKIE` | `false` |
-| `DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` |
-| `DAYMARK_BACKUP_RETENTION_DAYS` | `14`, Compose backup service only |
-| `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` | `false`, Compose backup service only |
-| `DAYMARK_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daymark_entry`, Compose backup service only |
-| `SPRING_MAIL_HOST` | unset |
-| `SPRING_MAIL_PORT` | provider default |
-| `SPRING_MAIL_USERNAME` | unset |
-| `SPRING_MAIL_PASSWORD` | unset |
-| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent |
-| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent |
-| `SPRING_PROFILES_ACTIVE` | unset |
 
-The default profile is intentionally fail-fast. If a required runtime value is missing, the application should stop during startup instead of running in a partially configured state.
+전체 배포 설정은 [배포 문서](docs/deployment.md)를 확인하세요.
 
-When SMTP is not configured, the application does not create a real mail sender. In the `local` and `test` flows, verification and recovery links are emitted through diagnostic logs so the account lifecycle can still be validated without external mail infrastructure.
+## 저장 구조
 
-## Health and Operations
+사용자 계정, 인증 토큰, 날짜별 기록은 MySQL에 저장됩니다. 기록 내용은 파일로 저장하지 않고 섹션별 텍스트 컬럼에 보관하며, 미리보기와 라이브러리, Markdown/PDF 내보내기는 저장된 섹션을 다시 조합해 생성합니다.
 
-The application exposes:
+주요 테이블:
 
-- `/actuator/health`
-- `/actuator/health/liveness`
-- `/actuator/health/readiness`
+- `user_account`
+- `user_email_verification_token`
+- `user_password_reset_token`
+- `daymark_entry`
 
-These endpoints are public so that a reverse proxy, container platform, or load balancer can verify runtime state without authentication.
+## 운영과 보안
 
-Runtime operations also include:
+- 비밀번호는 BCrypt로 저장합니다.
+- 이메일 인증과 비밀번호 재설정 토큰은 해시로 저장하고 1회만 사용할 수 있습니다.
+- 로그인 실패와 비밀번호 찾기 응답은 계정 존재 여부를 노출하지 않도록 일반화합니다.
+- CSRF 보호와 HTTP-only 세션 쿠키를 사용합니다.
+- 상태 확인 엔드포인트는 `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`입니다.
+- 로그, 백업, 캡처, 생성된 PDF/Markdown 파일은 저장소에 커밋하지 않습니다.
 
-- rolling application logs written to `DAYMARK_LOG_DIR`
-- embedded Tomcat access logs written under `DAYMARK_TOMCAT_BASE_DIR/logs`
-- optional webhook alerts for critical mail delivery failures
-- weekly operator summary logs in the `WEEKLY_OPERATIONS_SUMMARY` format
-- MySQL backup, restore, and host scheduler helpers under `ops/backup`
+## 문서
 
-## Docker Compose
-
-The repository includes:
-
-- `Dockerfile`
-- `compose.yaml`
-- `.env.example`
-
-Typical workflow:
-
-macOS or Linux:
-
-```bash
-cp .env.example .env
-docker compose up -d --build
-```
-
-Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-docker compose up -d --build
-```
-
-Main Compose values:
-
-- `SPRING_PROFILES_ACTIVE`
-- `APP_PORT`
-- `MYSQL_DATABASE`
-- `MYSQL_USER`
-- `MYSQL_PASSWORD`
-- `MYSQL_ROOT_PASSWORD`
-- `DAYMARK_REMEMBER_ME_KEY`
-- `SERVER_SERVLET_SESSION_COOKIE_SECURE`
-- `DAYMARK_MAIL_FROM_ADDRESS`
-- `DAYMARK_ALERT_WEBHOOK_URL`
-- `SPRING_MAIL_HOST`
-- `SPRING_MAIL_PORT`
-- `SPRING_MAIL_USERNAME`
-- `SPRING_MAIL_PASSWORD`
-- `DAYMARK_BACKUP_RETENTION_DAYS`
-- `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS`
-- `DAYMARK_BACKUP_VERIFY_TABLES`
-
-Before exposing the service to real users, replace every example credential and secret in `.env`.
-
-For an on-demand backup from the Compose stack:
-
-```bash
-docker compose --profile ops run --rm backup
-```
-
-For unattended backups on a Linux host, the repository also includes:
-
-- `ops/backup/daymark-backup.service`
-- `ops/backup/daymark-backup.timer`
-
-## Security Notes
-
-- static assets, login, registration, recovery, verification, and health checks are public
-- all product pages require authentication
-- passwords are stored with BCrypt hashing
-- login accepts username or email address
-- login failure uses a generic credential error message
-- forgot-password also returns a generic success message
-- newly registered accounts receive an email ownership verification link
-- unverified accounts receive verification mail instead of a password reset mail
-- password reset uses one-time hashed tokens with expiration
-- email verification uses one-time hashed tokens with expiration
-- remember-me uses `TokenBasedRememberMeServices`
-- CSRF protection remains enabled
-- session cookies are configured as HTTP only with `SameSite=Lax`
-- default whitelabel errors are disabled and product error pages are rendered for known not-found resource cases
-
-## Testing Snapshot
-
-Current integration coverage focuses on the main product flows:
-
-- registration
-- email verification
-- password validation
-- username or email login
-- password reset request and token-based password reset
-- authenticated password change
-- generic login failure feedback
-- morning log persistence and blank-save protection
-- evening reflection persistence
-- weekly Monday-Sunday range rendering
-- read-only preview rendering and empty-section omission
-- empty preview state for dates without saved content
-- record library search, timeline, Markdown export, and PDF preview routing
-- product copy and page rendering expectations for the polished home and library surfaces
-- custom product 404 rendering
-- core page rendering for home, evening, weekly, and library views
-- public health endpoint availability
-
-Main test files:
-
-- `src/test/java/com/potterlim/daymark/DaymarkApplicationTests.java`
-- `src/test/java/com/potterlim/daymark/WebFlowIntegrationTests.java`
-- `src/test/java/com/potterlim/daymark/MySqlIntegrationTests.java`
-- `src/test/java/com/potterlim/daymark/WeeklyOperationsSummaryServiceTests.java`
-
-## Deployment Notes
-
-The primary production path is executable JAR deployment on a Linux VM behind a reverse proxy. Docker Compose is also supported when packaging the app and MySQL together is more convenient.
-
-For deployment details, use:
-
-- [docs/deployment.md](docs/deployment.md)
-
-For code structure and request flow details, use:
-
-- [docs/project-architecture.md](docs/project-architecture.md)
-
-For release QA and screenshot expectations, use:
-
-- [docs/release-readiness.md](docs/release-readiness.md)
+- [문서 안내](docs/README.md)
+- [프로젝트 구조](docs/project-architecture.md)
+- [배포 가이드](docs/deployment.md)
+- [출시 점검표](docs/release-readiness.md)

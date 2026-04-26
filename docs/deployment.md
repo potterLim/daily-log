@@ -1,190 +1,95 @@
-# Deployment Guide
+# 배포 가이드
 
-## Overview
+Daymark는 실행 가능한 JAR 또는 Docker Compose로 배포할 수 있습니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
 
-`daymark` is designed to run as a multi-user web application with:
+## 배포 방식
 
-- MySQL for account data and Daymark content
-- executable JAR deployment as the primary runtime model
-- Actuator health endpoints for readiness and liveness checks
-- rolling application logs and embedded Tomcat access logs
-- provider-neutral webhook alerts for operational failures
-- weekly operator summary logs in the production profile
-- Markdown export and print-ready PDF report pages generated from database content
-- Chrome-verified product UI surfaces for account, writing, library, preview, and export flows
-
-The repository also includes Docker Compose support for environments where packaging the app, MySQL, and backup job together is preferred.
-
-## Supported Deployment Models
-
-### Option 1. Executable JAR on a VM
-
-Recommended when:
-
-- you are deploying to a Linux VM or server directly
-- you want to manage the process with `systemd`
-- you plan to place the app behind Nginx, Caddy, or a managed load balancer
-- you want provider-neutral deployment that can later fit AWS, a VPS, or another compute host
-
-### Option 2. Docker Compose
-
-Recommended when:
-
-- you want the app and MySQL defined together
-- you prefer containerized deployment
-- you want an easy local-to-server runtime match
-- you want to use the included Compose backup profile
-
-## Runtime Requirements
-
-### Executable JAR Deployment
-
-- Java 17 installed on the target machine
-- reachable MySQL database
-- reverse proxy or load balancer for HTTPS in internet-facing environments
-- SMTP credentials when password recovery and verification mail should reach real users
-
-### Docker Compose Deployment
-
-- Docker Engine
-- Docker Compose plugin
-- persistent storage for MySQL data
-- persistent storage for `ops/runtime` logs and backups
-
-## Configuration Reference
-
-### Required Environment Variables
-
-| Variable | Description |
+| 방식 | 적합한 경우 |
 | --- | --- |
-| `DATABASE_URL` | MySQL JDBC URL used by the app |
-| `DATABASE_USERNAME` | MySQL account for the app |
-| `DATABASE_PASSWORD` | MySQL password for the app |
-| `DAYMARK_REMEMBER_ME_KEY` | remember-me signing key |
+| JAR 배포 | VM, VPS, 클라우드 서버에서 직접 운영할 때 |
+| Docker Compose | 애플리케이션과 MySQL을 함께 컨테이너로 관리할 때 |
 
-The application is intentionally fail-fast in the default profile. Missing required values should stop startup immediately.
+운영 환경에서는 Nginx, Caddy, 로드 밸런서 같은 앞단에서 HTTPS를 종료하는 구성을 권장합니다.
 
-If SMTP values are not provided, verification and password reset requests still return safe user-facing responses, but no real email will be delivered. In the `local` and `test` profiles, the application logs generated verification and recovery links for validation instead.
+## 로컬 확인
 
-### Optional Environment Variables
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `PORT` | `8080` | application HTTP port |
-| `APP_PORT` | `8080` | Compose host port mapped to the app container |
-| `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | marks the session cookie as secure when TLS is terminated before the app |
-| `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | password reset link lifetime in minutes |
-| `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | email verification link lifetime in minutes |
-| `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` | sender address used for verification and password reset email |
-| `DAYMARK_ALERT_WEBHOOK_URL` | unset | webhook endpoint for operational failure alerts |
-| `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` | enables scheduled weekly operator summary logging |
-| `DAYMARK_WEEKLY_SUMMARY_CRON` | `0 0 9 * * MON` | cron for the weekly operator summary job |
-| `DAYMARK_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` | time zone for the weekly operator summary job |
-| `DAYMARK_LOG_DIR` | `./logs` | application log output directory |
-| `DAYMARK_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | base directory for embedded Tomcat access logs |
-| `DAYMARK_REMEMBER_ME_COOKIE_NAME` | `DAYMARK_REMEMBER_ME` | remember-me cookie name |
-| `DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS` | `1209600` | remember-me lifetime in seconds |
-| `DAYMARK_PRODUCTION_READINESS_ENABLED` | `false` | turns on strict production fail-fast validation |
-| `DAYMARK_REQUIRE_SMTP` | `false` | requires SMTP configuration when production readiness validation is enabled |
-| `DAYMARK_REQUIRE_ALERT_WEBHOOK` | `false` | requires an alert webhook when production readiness validation is enabled |
-| `DAYMARK_REQUIRE_SECURE_SESSION_COOKIE` | `false` | requires secure session cookies when production readiness validation is enabled |
-| `DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH` | `32` | minimum allowed remember-me key length when production readiness validation is enabled |
-| `DAYMARK_BACKUP_RETENTION_DAYS` | `14` | backup retention for the Compose backup service |
-| `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` | `false` | whether successful Compose backups send webhook notifications |
-| `DAYMARK_BACKUP_VERIFY_TABLES` | `flyway_schema_history,user_account,daymark_entry` | comma-separated table list verified by the Compose backup service |
-| `SPRING_MAIL_HOST` | unset | SMTP host for verification and password reset delivery |
-| `SPRING_MAIL_PORT` | provider default | SMTP port |
-| `SPRING_MAIL_USERNAME` | unset | SMTP account username |
-| `SPRING_MAIL_PASSWORD` | unset | SMTP account password |
-| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | provider dependent | whether SMTP auth is enabled |
-| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | provider dependent | whether STARTTLS is enabled |
-| `SPRING_PROFILES_ACTIVE` | unset | active Spring profile such as `production` |
-
-## Example JDBC URL
-
-```text
-jdbc:mysql://localhost:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-```
-
-Adjust host, port, and database name for your own environment.
-
-## Local Verification Before Deployment
-
-Use the local profile when you want to validate application behavior without preparing MySQL first.
-
-macOS or Linux:
+MySQL 준비 없이 로컬에서 먼저 확인하려면 `local` 프로필을 사용합니다.
 
 ```bash
 ./gradlew bootRun --args="--spring.profiles.active=local"
 ```
 
-Windows PowerShell:
+접속 주소:
 
-```powershell
-.\gradlew.bat bootRun --args="--spring.profiles.active=local"
+```text
+http://127.0.0.1:8080
 ```
 
-Local profile behavior:
+`local` 프로필은 H2 메모리 데이터베이스를 사용하고, SMTP가 없어도 인증/복구 링크를 로그로 확인할 수 있습니다.
 
-- H2 in-memory database
-- MySQL compatibility mode
-- Flyway migrations run on startup
-- Thymeleaf template caching disabled
-- diagnostic verification and recovery links in logs when SMTP is absent
+## 배포 전 확인
 
-For real MySQL-backed integration verification, the repository includes Testcontainers-based tests. Run them explicitly with:
+```bash
+./gradlew test
+./gradlew bootJar
+```
 
-macOS or Linux:
+Docker가 준비되어 있다면 MySQL 통합 테스트도 실행합니다.
 
 ```bash
 ./gradlew mysqlIntegrationTest
 ```
 
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat mysqlIntegrationTest
-```
-
-## Build the Executable Artifact
-
-macOS or Linux:
-
-```bash
-./gradlew test bootJar
-```
-
-Windows PowerShell:
-
-```powershell
-.\gradlew.bat test bootJar
-```
-
-Generated artifact:
+생성되는 JAR:
 
 ```text
 build/libs/daymark.jar
 ```
 
-## JAR Deployment Workflow
+## 필수 환경 변수
 
-### 1. Build the artifact
+기본 프로필은 다음 값이 없으면 시작하지 않습니다.
+
+| 환경 변수 | 설명 |
+| --- | --- |
+| `DATABASE_URL` | MySQL JDBC URL |
+| `DATABASE_USERNAME` | MySQL 사용자 |
+| `DATABASE_PASSWORD` | MySQL 비밀번호 |
+| `DAYMARK_REMEMBER_ME_KEY` | remember-me 서명 키 |
+
+예시 JDBC URL:
+
+```text
+jdbc:mysql://127.0.0.1:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+```
+
+## 주요 선택 환경 변수
+
+| 환경 변수 | 기본값 | 설명 |
+| --- | --- | --- |
+| `PORT` | `8080` | 애플리케이션 포트 |
+| `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | HTTPS 환경에서 보안 쿠키 사용 |
+| `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | 비밀번호 재설정 링크 유효 시간 |
+| `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | 이메일 인증 링크 유효 시간 |
+| `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` | 발신 메일 주소 |
+| `DAYMARK_ALERT_WEBHOOK_URL` | 없음 | 운영 알림 웹훅 |
+| `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` | 주간 운영 요약 로그 |
+| `DAYMARK_LOG_DIR` | `./logs` | 애플리케이션 로그 경로 |
+| `DAYMARK_TOMCAT_BASE_DIR` | `./ops/runtime/tomcat` | Tomcat 접근 로그 경로 |
+
+`production` 프로필에서는 운영 준비 상태 검증이 켜지고, SMTP/웹훅/보안 쿠키/remember-me 키 길이를 더 엄격하게 확인합니다.
+
+## JAR 배포
+
+### 1. JAR 준비
 
 ```bash
 ./gradlew bootJar
 ```
 
-### 2. Copy the JAR to the target server
+### 2. 서버 경로 준비
 
-Example target:
-
-```text
-/opt/daymark/daymark.jar
-```
-
-### 3. Prepare runtime directories
-
-Example:
+예시:
 
 ```bash
 sudo mkdir -p /opt/daymark
@@ -193,30 +98,23 @@ sudo mkdir -p /var/log/daymark/app
 sudo mkdir -p /var/log/daymark/tomcat
 ```
 
-### 4. Create an environment file
+### 3. 환경 파일 작성
 
-Example file:
+예시 경로:
 
 ```text
 /etc/daymark/daymark.env
 ```
 
-Example contents:
+예시 내용:
 
 ```bash
 DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 DATABASE_USERNAME=daymark
 DATABASE_PASSWORD=replace-this
 DAYMARK_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
-DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=30
-DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES=1440
 DAYMARK_MAIL_FROM_ADDRESS=no-reply@example.com
 DAYMARK_ALERT_WEBHOOK_URL=https://example.com/alerts/daymark
-DAYMARK_WEEKLY_SUMMARY_ENABLED=true
-DAYMARK_PRODUCTION_READINESS_ENABLED=true
-DAYMARK_REQUIRE_SMTP=true
-DAYMARK_REQUIRE_ALERT_WEBHOOK=true
-DAYMARK_REQUIRE_SECURE_SESSION_COOKIE=true
 DAYMARK_LOG_DIR=/var/log/daymark/app
 DAYMARK_TOMCAT_BASE_DIR=/var/log/daymark/tomcat
 SPRING_MAIL_HOST=smtp.example.com
@@ -225,12 +123,11 @@ SPRING_MAIL_USERNAME=mailer@example.com
 SPRING_MAIL_PASSWORD=replace-this
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
-PORT=8080
 SERVER_SERVLET_SESSION_COOKIE_SECURE=true
 SPRING_PROFILES_ACTIVE=production
 ```
 
-### 5. Start the application manually once
+### 4. 수동 실행 확인
 
 ```bash
 set -a
@@ -239,32 +136,22 @@ set +a
 java -jar /opt/daymark/daymark.jar
 ```
 
-Use this first run to verify:
+확인할 항목:
 
-- database connectivity
-- Flyway migration success
-- login and registration flow
-- email verification links can be issued and consumed
-- forgot-password requests can issue either verification or reset links as expected
-- morning and evening records can be saved
-- record library loads the selected range
-- Markdown export downloads with expected content
-- PDF export preview opens and browser "Save as PDF" works
-- `/actuator/health/readiness` returns `UP`
+- 데이터베이스 연결
+- Flyway 마이그레이션
+- 회원가입과 로그인
+- 이메일 인증과 비밀번호 복구
+- 아침 계획, 저녁 회고, 주간 리뷰
+- 라이브러리 검색
+- Markdown 다운로드와 PDF 미리보기
+- `/actuator/health/readiness`
 
-## Example `systemd` Service
-
-Example file:
-
-```text
-/etc/systemd/system/daymark.service
-```
-
-Example contents:
+### 5. systemd 예시
 
 ```ini
 [Unit]
-Description=daymark application
+Description=Daymark
 After=network.target
 
 [Service]
@@ -280,7 +167,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Then:
+적용:
 
 ```bash
 sudo systemctl daemon-reload
@@ -289,55 +176,17 @@ sudo systemctl start daymark
 sudo systemctl status daymark
 ```
 
-## Health Endpoints
+## Docker Compose 배포
 
-The application exposes:
-
-- `/actuator/health`
-- `/actuator/health/liveness`
-- `/actuator/health/readiness`
-
-Recommended usage:
-
-- load balancer readiness check -> `/actuator/health/readiness`
-- container or process liveness check -> `/actuator/health/liveness`
-- manual smoke checks -> `/actuator/health`
-
-## Reverse Proxy Recommendation
-
-For internet-facing deployment, place the application behind a reverse proxy such as:
-
-- Nginx
-- Caddy
-- a managed load balancer
-
-Recommended responsibilities of the proxy layer:
-
-- HTTPS termination
-- HTTP to HTTPS redirect
-- forwarding traffic to the application port
-- access logs
-- optional rate limiting or WAF integration
-
-## Docker Compose Workflow
-
-### 1. Copy the example environment file
-
-macOS or Linux:
+### 1. 환경 파일 준비
 
 ```bash
 cp .env.example .env
 ```
 
-Windows PowerShell:
+반드시 예시 비밀번호와 secret을 실제 값으로 바꿉니다.
 
-```powershell
-Copy-Item .env.example .env
-```
-
-### 2. Replace every example secret
-
-Update:
+주요 값:
 
 - `SPRING_PROFILES_ACTIVE`
 - `APP_PORT`
@@ -348,122 +197,70 @@ Update:
 - `DAYMARK_REMEMBER_ME_KEY`
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`
 - `DAYMARK_MAIL_FROM_ADDRESS`
-- `DAYMARK_ALERT_WEBHOOK_URL` when you want webhook alerts
+- `DAYMARK_ALERT_WEBHOOK_URL`
 - `SPRING_MAIL_HOST`
 - `SPRING_MAIL_PORT`
 - `SPRING_MAIL_USERNAME`
 - `SPRING_MAIL_PASSWORD`
-- `DAYMARK_BACKUP_RETENTION_DAYS` when the default backup retention is not enough
-- `DAYMARK_BACKUP_NOTIFY_ON_SUCCESS` when successful backup notifications are required
-- `DAYMARK_BACKUP_VERIFY_TABLES` when schema-critical tables change
 
-### 3. Start the stack
+### 2. 실행
 
 ```bash
 docker compose up -d --build
 ```
 
-### 4. Verify the containers
+### 3. 확인
 
 ```bash
 docker compose ps
 docker compose logs -f app
-```
-
-### 5. Confirm health
-
-The Compose file waits for:
-
-- MySQL health from `mysqladmin ping`
-- application readiness from `/actuator/health/readiness`
-
-Manual check:
-
-```bash
 curl -fsS http://127.0.0.1:${APP_PORT:-8080}/actuator/health/readiness
 ```
 
-### 6. Run an on-demand backup
+### 4. 수동 백업
 
 ```bash
 docker compose --profile ops run --rm backup
 ```
 
-## Operational Notes
+## 상태 확인 엔드포인트
 
-- Flyway manages schema changes.
-- `ddl-auto=validate` keeps the entity model aligned with the migrated schema.
-- The default server port is `8080` unless overridden by `PORT`.
-- Compose exposes the app through `APP_PORT`, defaulting to `8080`.
-- Graceful shutdown is enabled.
-- HTTP session timeout is 30 minutes.
-- Application logs roll under `DAYMARK_LOG_DIR`.
-- Embedded Tomcat access logs roll under `DAYMARK_TOMCAT_BASE_DIR/logs`.
-- Delivery failures in verification or recovery mail can emit webhook alerts through `DAYMARK_ALERT_WEBHOOK_URL`.
-- The production profile logs `WEEKLY_OPERATIONS_SUMMARY` once per week by default.
-- Markdown export is generated directly from the selected library range.
-- PDF export is a print-optimized HTML report intended for browser PDF saving.
+| 경로 | 용도 |
+| --- | --- |
+| `/actuator/health` | 수동 상태 확인 |
+| `/actuator/health/liveness` | 프로세스 생존 확인 |
+| `/actuator/health/readiness` | 트래픽 수신 가능 여부 확인 |
 
-## Backup Considerations
+## 백업 기준
 
-Production backup should cover:
+운영 백업 대상:
 
-- MySQL data
-- application environment secrets stored outside Git
-- generated operational logs when they are needed for audit or support
+- MySQL 데이터
+- Git에 커밋하지 않는 환경 변수와 secret
+- 필요 시 운영 로그
 
-Because day logs live in MySQL now, there is no separate file storage requirement for user-written content or exports.
-
-Repository-provided helpers:
+저장소에는 다음 보조 스크립트가 있습니다.
 
 - `ops/backup/mysql-backup.sh`
 - `ops/backup/mysql-restore.sh`
 - `ops/backup/daymark-backup.service`
 - `ops/backup/daymark-backup.timer`
 
-Recommended production pattern:
+권장 사항:
 
-- run `mysql-backup.sh` from cron or a systemd timer
-- write backups to persistent storage
-- keep checksum files next to backup archives
-- periodically rehearse `mysql-restore.sh` against a non-production database
-- let backup failures emit alert webhooks through `DAYMARK_ALERT_WEBHOOK_URL` when possible
+- 백업 파일과 체크섬을 함께 보관합니다.
+- 복구 절차를 비운영 데이터베이스에서 주기적으로 확인합니다.
+- 백업 실패 알림은 `DAYMARK_ALERT_WEBHOOK_URL`로 연결합니다.
+- 생성된 백업, 로그, PDF, Markdown, 화면 캡처는 저장소에 커밋하지 않습니다.
 
-## Suggested Post-Deploy Smoke Test
+## 운영 전 최종 점검
 
-After deployment, confirm all of the following:
-
-- `/actuator/health/readiness` returns `UP`
-- home page loads after authentication
-- registration creates a new account
-- email verification link flow succeeds
-- verification banner appears for unverified accounts and disappears after verification
-- login failure shows expected generic feedback
-- password reset mail delivery is configured when SMTP values are present
-- password change works for an authenticated account
-- morning plan can be saved
-- blank morning or evening submissions do not create visible records
-- evening reflection can be saved
-- weekly review renders the intended Monday-Sunday range
-- daily preview renders saved content and a clear empty state for blank dates
-- record library searches by date range and keyword
-- record library trend labels clearly show goal-completion rate over time
-- Markdown export downloads selected records
-- PDF export preview opens, uses readable daily cards, and can be saved from Chrome
-- unknown routes render the product 404 page
-- desktop and mobile layouts have no unintended horizontal overflow or awkward control wrapping
-- public auth pages keep header actions aligned away from the brand block
-- password recovery success copy remains generic, concise, and visually stable
-
-## Recommended First Production Hardening Steps
-
-- generate a strong `DAYMARK_REMEMBER_ME_KEY`
-- use a real MySQL password, never an example value
-- place the app behind HTTPS
-- set `SERVER_SERVLET_SESSION_COOKIE_SECURE=true` when TLS is terminated before the app
-- configure real SMTP credentials before exposing password recovery to users
-- configure a real alert webhook before relying on unattended mail delivery
-- restrict direct database exposure
-- enable scheduled MySQL backups
-- watch readiness and liveness endpoints from your hosting platform
-- keep final release screenshots, generated PDFs, and generated Markdown exports outside Git
+- HTTPS 앞단이 준비되어 있는지 확인합니다.
+- `DAYMARK_REMEMBER_ME_KEY`를 충분히 긴 임의 값으로 설정합니다.
+- 실제 MySQL 비밀번호를 사용합니다.
+- 외부에서 MySQL에 직접 접근하지 못하게 제한합니다.
+- SMTP가 실제로 메일을 발송하는지 확인합니다.
+- 이메일 인증과 비밀번호 복구 링크가 한 번만 사용되는지 확인합니다.
+- 아침/저녁 빈 저장이 기록으로 보이지 않는지 확인합니다.
+- 라이브러리 검색과 Markdown/PDF 내보내기가 같은 조건을 따르는지 확인합니다.
+- 알 수 없는 경로가 제품형 404 화면으로 연결되는지 확인합니다.
