@@ -531,7 +531,7 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("aria-label=\"Daymark\"")))
             .andExpect(content().string(containsString("daymark-logo.svg")))
             .andExpect(content().string(containsString("Private Workspace")))
-            .andExpect(content().string(containsString("Local-first")))
+            .andExpect(content().string(not(containsString("Local-first"))))
             .andExpect(content().string(not(containsString("하단 메뉴"))))
             .andExpect(content().string(containsString("Morning Plan")))
             .andExpect(content().string(containsString("Evening Review")))
