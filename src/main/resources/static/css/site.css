@@ -20,6 +20,14 @@
     --emerald: #14966d;
     --emerald-soft: rgba(20, 150, 109, 0.14);
     --amber: #d2861f;
+    --accent-glass-text: #13233c;
+    --accent-glass-muted: #52637f;
+    --accent-glass-border: rgba(92, 132, 190, 0.16);
+    --accent-glass-bg:
+        radial-gradient(circle at 100% 0%, rgba(91, 158, 255, 0.25) 0%, rgba(91, 158, 255, 0) 38%),
+        radial-gradient(circle at 12% 100%, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0) 46%),
+        linear-gradient(145deg, rgba(248, 251, 255, 0.98) 0%, rgba(224, 237, 255, 0.92) 100%);
+    --accent-glass-shadow: 0 22px 58px rgba(33, 107, 255, 0.13), inset 0 0 0 1px rgba(255, 255, 255, 0.56);
     --shadow-soft: 0 18px 45px rgba(20, 38, 68, 0.08);
     --shadow-medium: 0 30px 80px rgba(20, 38, 68, 0.12);
     --shadow-strong: 0 36px 90px rgba(13, 33, 67, 0.18);
@@ -892,8 +900,9 @@ ol {
 }
 
 .hero-story-card-highlight {
-    background: linear-gradient(145deg, rgba(18, 46, 95, 0.92) 0%, rgba(21, 66, 146, 0.9) 100%);
-    box-shadow: 0 24px 56px rgba(16, 46, 102, 0.28);
+    border-color: var(--accent-glass-border);
+    background: var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .story-kicker {
@@ -931,13 +940,17 @@ ol {
 }
 
 .hero-story-card-highlight .story-kicker {
-    color: rgba(255, 255, 255, 0.92);
-    background: rgba(255, 255, 255, 0.12);
+    color: var(--brand-deep);
+    background: var(--brand-soft);
 }
 
 .hero-story-card-highlight strong,
 .hero-story-card-highlight p {
-    color: #f4f8ff;
+    color: var(--accent-glass-text);
+}
+
+.hero-story-card-highlight p {
+    color: var(--accent-glass-muted);
 }
 
 .hero-metric-grid {
@@ -1047,17 +1060,17 @@ ol {
 }
 
 .hero-side-panel-dark {
-    color: #f3f7ff;
+    color: var(--accent-glass-text);
+    border-color: var(--accent-glass-border);
     background:
-        radial-gradient(circle at top right, rgba(61, 181, 255, 0.26) 0%, rgba(61, 181, 255, 0) 24%),
-        linear-gradient(180deg, rgba(17, 32, 61, 0.96) 0%, rgba(10, 24, 47, 0.94) 100%);
-    box-shadow: 0 34px 92px rgba(10, 24, 47, 0.26);
+        var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .hero-side-panel-dark .panel-header h2,
 .hero-side-panel-dark .panel-header p,
 .hero-side-panel-dark .eyebrow {
-    color: #f3f7ff;
+    color: var(--accent-glass-text);
 }
 
 .hero-side-panel-soft {
@@ -1086,26 +1099,26 @@ ol {
 }
 
 .product-window-dark {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(16, 31, 59, 0.18) 100%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow: inset 0 0 0 1px rgba(92, 132, 190, 0.15);
 }
 
 .product-window-dark .window-toolbar {
-    color: rgba(243, 247, 255, 0.82);
-    border-bottom-color: rgba(255, 255, 255, 0.12);
+    color: var(--accent-glass-muted);
+    border-bottom-color: rgba(92, 132, 190, 0.14);
 }
 
 .product-window-dark .window-row {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.74);
 }
 
 .product-window-dark .window-row strong {
-    color: #ffffff;
+    color: var(--accent-glass-text);
 }
 
 .product-window-dark .window-row span,
 .product-window-dark .window-row em {
-    color: rgba(243, 247, 255, 0.74);
+    color: #63738f;
 }
 
 .hero-glance-row {
@@ -1251,19 +1264,22 @@ ol {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background: linear-gradient(180deg, rgba(21, 35, 58, 0.92) 0%, rgba(27, 48, 86, 0.94) 100%);
+    border-color: var(--accent-glass-border);
+    background: var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .philosophy-card .eyebrow,
 .philosophy-card h2,
 .philosophy-card p,
 .philosophy-card .info-pill {
-    color: #f3f7ff;
+    color: var(--accent-glass-text);
 }
 
 .philosophy-card .info-pill {
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    color: var(--brand-deep);
+    background: var(--brand-soft);
+    box-shadow: inset 0 0 0 1px rgba(33, 107, 255, 0.12);
 }
 
 .auth-layout {
@@ -1302,23 +1318,20 @@ ol {
 }
 
 .auth-showcase-rich {
-    color: #f3f7ff;
-    background:
-        radial-gradient(circle at top right, rgba(72, 163, 255, 0.28) 0%, rgba(72, 163, 255, 0) 26%),
-        linear-gradient(180deg, rgba(17, 34, 63, 0.96) 0%, rgba(10, 23, 46, 0.94) 100%);
-    box-shadow: 0 34px 96px rgba(10, 24, 47, 0.24);
+    color: var(--accent-glass-text);
+    border-color: var(--accent-glass-border);
+    background: var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .auth-showcase-emerald {
-    background:
-        radial-gradient(circle at top right, rgba(92, 219, 184, 0.22) 0%, rgba(92, 219, 184, 0) 28%),
-        linear-gradient(180deg, rgba(15, 44, 53, 0.96) 0%, rgba(11, 32, 41, 0.94) 100%);
+    background: var(--accent-glass-bg);
 }
 
 .auth-showcase-copy .eyebrow,
 .auth-showcase-copy .display-title,
 .auth-showcase-copy .lead-copy {
-    color: #f3f7ff;
+    color: var(--accent-glass-text);
 }
 
 .auth-display-title {
@@ -1333,8 +1346,8 @@ ol {
 .auth-floating-card {
     padding: 18px 20px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: inset 0 0 0 1px rgba(92, 132, 190, 0.12);
 }
 
 .auth-floating-card-primary {
@@ -1343,7 +1356,7 @@ ol {
 
 .auth-floating-card span {
     display: block;
-    color: rgba(243, 247, 255, 0.72);
+    color: var(--accent-glass-muted);
     font-size: 0.76rem;
     font-weight: 800;
     letter-spacing: 0;
@@ -1353,7 +1366,7 @@ ol {
 .auth-floating-card strong {
     display: block;
     margin-top: 12px;
-    color: #ffffff;
+    color: var(--accent-glass-text);
     font-size: 0.98rem;
     font-weight: 800;
     line-height: 1.46;
@@ -1361,7 +1374,7 @@ ol {
 
 .auth-floating-card p {
     margin-top: 10px;
-    color: rgba(243, 247, 255, 0.76);
+    color: var(--accent-glass-muted);
     font-size: 0.88rem;
     line-height: 1.56;
 }
@@ -2034,21 +2047,21 @@ ol {
     justify-items: center;
     min-height: 82px;
     border-radius: 24px;
-    color: #f5f8ff;
+    color: var(--accent-glass-text);
+    border: 1px solid var(--accent-glass-border);
     background:
-        radial-gradient(circle at top right, rgba(80, 170, 255, 0.35) 0%, rgba(80, 170, 255, 0) 38%),
-        linear-gradient(145deg, #173d78 0%, #102543 100%);
-    box-shadow: 0 18px 36px rgba(18, 56, 113, 0.18);
+        var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .library-date-mark span {
-    color: rgba(245, 248, 255, 0.72);
+    color: var(--accent-glass-muted);
     font-size: 0.74rem;
     font-weight: 800;
 }
 
 .library-date-mark strong {
-    color: #ffffff;
+    color: var(--accent-glass-text);
     font-size: 1.16rem;
     font-weight: 800;
 }
@@ -2432,12 +2445,11 @@ ol {
 }
 
 .export-summary-card-primary {
-    color: #f7fbff;
-    border-color: rgba(255, 255, 255, 0.26);
+    color: var(--accent-glass-text);
+    border-color: var(--accent-glass-border);
     background:
-        radial-gradient(circle at top right, rgba(80, 170, 255, 0.32) 0%, rgba(80, 170, 255, 0) 40%),
-        linear-gradient(145deg, #173d78 0%, #102543 100%);
-    box-shadow: 0 24px 54px rgba(18, 56, 113, 0.18);
+        var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .export-summary-card span {
@@ -2468,7 +2480,8 @@ ol {
 
 .export-summary-card-primary span,
 .export-summary-card-primary p {
-    opacity: 0.76;
+    color: var(--accent-glass-muted);
+    opacity: 1;
 }
 
 .export-report-insight,
@@ -2535,20 +2548,21 @@ ol {
     justify-items: center;
     min-height: 96px;
     border-radius: 28px;
-    color: #f8fbff;
+    color: var(--accent-glass-text);
+    border: 1px solid var(--accent-glass-border);
     background:
-        radial-gradient(circle at top right, rgba(87, 174, 255, 0.28) 0%, rgba(87, 174, 255, 0) 38%),
-        linear-gradient(145deg, #173d78 0%, #102543 100%);
+        var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .export-entry-date span {
-    color: rgba(248, 251, 255, 0.7);
+    color: var(--accent-glass-muted);
     font-size: 0.78rem;
     font-weight: 800;
 }
 
 .export-entry-date strong {
-    color: #ffffff;
+    color: var(--accent-glass-text);
     font-size: 1.28rem;
     font-weight: 800;
 }
@@ -2698,16 +2712,16 @@ ol {
 .reader-date-card {
     padding: 22px;
     border-radius: 24px;
-    color: #f4f8ff;
+    color: var(--accent-glass-text);
+    border: 1px solid var(--accent-glass-border);
     background:
-        radial-gradient(circle at top right, rgba(87, 174, 255, 0.28) 0%, rgba(87, 174, 255, 0) 30%),
-        linear-gradient(145deg, rgba(18, 46, 95, 0.96) 0%, rgba(13, 32, 66, 0.94) 100%);
-    box-shadow: 0 22px 52px rgba(16, 46, 102, 0.2);
+        var(--accent-glass-bg);
+    box-shadow: var(--accent-glass-shadow);
 }
 
 .reader-date-card span {
     display: block;
-    color: rgba(244, 248, 255, 0.72);
+    color: var(--accent-glass-muted);
     font-size: 0.76rem;
     font-weight: 800;
 }
@@ -2715,7 +2729,7 @@ ol {
 .reader-date-card strong {
     display: block;
     margin-top: 8px;
-    color: #ffffff;
+    color: var(--accent-glass-text);
     font-size: 2rem;
     font-weight: 800;
     letter-spacing: 0;
@@ -2723,7 +2737,7 @@ ol {
 
 .reader-date-card p {
     margin-top: 12px;
-    color: rgba(244, 248, 255, 0.78);
+    color: var(--accent-glass-muted);
     font-size: 0.9rem;
     line-height: 1.56;
 }
@@ -3583,8 +3597,8 @@ ol {
 
     .export-summary-card-primary,
     .export-entry-date {
-        color: #ffffff;
-        background: #173d78;
+        color: #13233c;
+        background: #e6f0ff;
     }
 
     .export-summary-card {
