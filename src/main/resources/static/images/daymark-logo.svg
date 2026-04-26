@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+    <title id="title">Daymark logo</title>
+    <desc id="desc">A rounded blue mark with a folded day page and a precise check mark.</desc>
+    <defs>
+        <linearGradient id="daymark-bg" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#2f7bff" />
+            <stop offset="1" stop-color="#0c4edb" />
+        </linearGradient>
+        <linearGradient id="daymark-page" x1="20" y1="14" x2="45" y2="50" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffffff" />
+            <stop offset="1" stop-color="#dce9ff" />
+        </linearGradient>
+    </defs>
+    <rect width="64" height="64" rx="20" fill="url(#daymark-bg)" />
+    <path
+        d="M22 15.5h14.5L47 26v22.5A4.5 4.5 0 0 1 42.5 53h-21A4.5 4.5 0 0 1 17 48.5v-28a5 5 0 0 1 5-5Z"
+        fill="url(#daymark-page)"
+    />
+    <path d="M36.5 16v8.4a2.1 2.1 0 0 0 2.1 2.1H47" fill="#b8d1ff" opacity=".95" />
+    <path
+        d="m25.5 36.2 5.7 5.7 11.4-14"
+        fill="none"
+        stroke="#0d55df"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="4.2"
+    />
+    <circle cx="23.5" cy="24" r="3" fill="#78a8ff" />
+</svg>

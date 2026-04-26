@@ -568,6 +568,12 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("기록 라이브러리")))
             .andExpect(content().string(containsString("Download MD")))
             .andExpect(content().string(containsString("Preview PDF")));
+
+        mMockMvc.perform(get("/account/password")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("비밀번호 변경")))
+            .andExpect(content().string(containsString("8자 이상 72자 이하")));
     }
 
     @Test
