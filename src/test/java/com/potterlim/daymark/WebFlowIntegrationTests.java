@@ -131,6 +131,34 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void authEmailFormsShouldRenderProductStyledEmailValidation() throws Exception {
+        mMockMvc.perform(get("/register"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("novalidate")));
+
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "tester")
+                .param("emailAddress", "invalid-email")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("올바른 이메일 형식을 입력해주세요.")));
+
+        assertTrue(mUserAccountRepository.findByUserName("tester").isEmpty());
+
+        mMockMvc.perform(get("/forgot-password"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("novalidate")));
+
+        mMockMvc.perform(post("/forgot-password")
+                .with(csrf())
+                .param("emailAddress", "invalid-email"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("올바른 이메일 형식을 입력해주세요.")));
+    }
+
+    @Test
     void loginShouldShowGenericErrorWhenLoginIdentifierDoesNotExist() throws Exception {
         mMockMvc.perform(post("/login")
                 .with(csrf())
@@ -566,7 +594,9 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("읽기 전용")));
+            .andExpect(content().string(containsString("읽기 전용")))
+            .andExpect(content().string(containsString("아침 계획이 없습니다.")))
+            .andExpect(content().string(not(containsString("아침 기록가 없습니다."))));
 
         mMockMvc.perform(get("/daymark/week")
             .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))

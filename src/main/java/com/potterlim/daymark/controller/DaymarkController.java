@@ -47,7 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/daymark")
 public class DaymarkController {
 
-    private static final String EMPTY_MORNING_LOG_HTML = "<p><em>아침 기록가 없습니다.</em></p>";
+    private static final String EMPTY_MORNING_LOG_HTML = "<p><em>아침 계획이 없습니다.</em></p>";
 
     private final IDaymarkService mDaymarkService;
     private final IDaymarkLibraryService mDaymarkLibraryService;

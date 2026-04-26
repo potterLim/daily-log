@@ -6,21 +6,15 @@ import jakarta.validation.constraints.Size;
 
 public final class RegisterRequestDto {
 
-    @NotBlank(message = "아이디를 입력해주세요.")
     private String mUserName = "";
 
-    @NotBlank(message = "이메일을 입력해주세요.")
-    @Email(message = "올바른 이메일 형식을 입력해주세요.")
-    @Size(max = 255, message = "이메일은 255자 이하여야 합니다.")
     private String mEmailAddress = "";
 
-    @NotBlank(message = "비밀번호를 입력해주세요.")
-    @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
     private String mPassword = "";
 
-    @NotBlank(message = "비밀번호 확인을 입력해주세요.")
     private String mConfirmPassword = "";
 
+    @NotBlank(message = "아이디를 입력해주세요.")
     public String getUserName() {
         return mUserName;
     }
@@ -29,6 +23,9 @@ public final class RegisterRequestDto {
         mUserName = userName;
     }
 
+    @NotBlank(message = "이메일을 입력해주세요.")
+    @Email(message = "올바른 이메일 형식을 입력해주세요.")
+    @Size(max = 255, message = "이메일은 255자 이하여야 합니다.")
     public String getEmailAddress() {
         return mEmailAddress;
     }
@@ -37,6 +34,8 @@ public final class RegisterRequestDto {
         mEmailAddress = emailAddress;
     }
 
+    @NotBlank(message = "비밀번호를 입력해주세요.")
+    @Size(min = 8, max = 72, message = "비밀번호는 8자 이상 72자 이하여야 합니다.")
     public String getPassword() {
         return mPassword;
     }
@@ -45,6 +44,7 @@ public final class RegisterRequestDto {
         mPassword = password;
     }
 
+    @NotBlank(message = "비밀번호 확인을 입력해주세요.")
     public String getConfirmPassword() {
         return mConfirmPassword;
     }
