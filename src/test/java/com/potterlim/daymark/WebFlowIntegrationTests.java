@@ -175,7 +175,7 @@ class WebFlowIntegrationTests {
                 .param("loginIdentifier", "")
                 .param("password", ""))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("아이디 또는 이메일을 입력해주세요.")))
+            .andExpect(content().string(containsString("워크스페이스 ID 또는 이메일을 입력해주세요.")))
             .andExpect(content().string(containsString("비밀번호를 입력해주세요.")));
     }
 

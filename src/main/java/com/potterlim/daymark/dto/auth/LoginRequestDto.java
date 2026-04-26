@@ -10,7 +10,7 @@ public final class LoginRequestDto {
 
     private boolean mIsRememberMe;
 
-    @NotBlank(message = "아이디 또는 이메일을 입력해주세요.")
+    @NotBlank(message = "워크스페이스 ID 또는 이메일을 입력해주세요.")
     public String getLoginIdentifier() {
         return mLoginIdentifier;
     }

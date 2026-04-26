@@ -156,7 +156,7 @@ public class AuthController {
         try {
             userAccount = mUserAccountService.registerUserAccount(registerUserAccountCommand);
         } catch (DuplicateUserNameException duplicateUserNameException) {
-            bindingResult.rejectValue("userName", "register.userName", "이미 사용 중인 아이디입니다.");
+            bindingResult.rejectValue("userName", "register.userName", "이미 사용 중인 워크스페이스 ID입니다.");
             return "auth/register";
         } catch (DuplicateEmailException duplicateEmailException) {
             bindingResult.rejectValue("emailAddress", "register.emailAddress", "이미 사용 중인 이메일입니다.");

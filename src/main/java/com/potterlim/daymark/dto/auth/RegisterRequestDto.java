@@ -14,7 +14,7 @@ public final class RegisterRequestDto {
 
     private String mConfirmPassword = "";
 
-    @NotBlank(message = "아이디를 입력해주세요.")
+    @NotBlank(message = "워크스페이스 ID를 입력해주세요.")
     public String getUserName() {
         return mUserName;
     }

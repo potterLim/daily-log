@@ -13,12 +13,12 @@
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
 
             <div class="form-section">
-                <label for="userName" class="form-label field-label">아이디</label>
+                <label for="userName" class="form-label field-label">워크스페이스 ID</label>
                 <input id="userName"
                        th:field="*{userName}"
                        class="form-control form-control-lg"
                        autocomplete="username"
-                       placeholder="사용할 아이디를 입력하세요" />
+                       placeholder="사용할 워크스페이스 ID를 입력하세요" />
                 <div class="text-danger mt-2" th:errors="*{userName}"></div>
             </div>
 
