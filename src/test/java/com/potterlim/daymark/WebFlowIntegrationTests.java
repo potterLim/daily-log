@@ -705,7 +705,7 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("읽기 전용")))
+            .andExpect(content().string(not(containsString("<span class=\"content-badge\">읽기 전용</span>"))))
             .andExpect(content().string(containsString("아침 계획이 없습니다.")))
             .andExpect(content().string(not(containsString("아침 기록가 없습니다."))));
 

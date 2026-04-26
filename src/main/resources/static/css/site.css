@@ -1566,13 +1566,17 @@ ol {
 }
 
 .workspace-header-rich {
-    align-items: stretch;
+    align-items: center;
 }
 
 .workspace-header-copy {
+    display: grid;
+    align-content: center;
+    align-self: stretch;
     flex: 0 0 min(360px, 40%);
     min-width: 260px;
     max-width: 680px;
+    padding-left: clamp(18px, 2.2vw, 34px);
 }
 
 .workspace-meta-stack {
@@ -3270,6 +3274,11 @@ ol {
     .auth-stat-grid,
     .hero-glance-row {
         grid-template-columns: 1fr;
+    }
+
+    .workspace-header-copy {
+        width: 100%;
+        padding-left: 0;
     }
 
     .panel-header p {
