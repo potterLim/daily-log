@@ -3096,7 +3096,7 @@ ol {
 
 .error-state-panel {
     display: grid;
-    gap: 22px;
+    gap: 28px;
     justify-items: center;
     min-height: 360px;
     align-content: center;
@@ -3110,9 +3110,14 @@ ol {
 .error-layout-centered {
     display: grid;
     grid-template-columns: minmax(0, var(--auth-card-width));
+    align-items: center;
     justify-content: center;
     min-height: min(640px, calc(100vh - 230px));
     padding: 36px 0 52px;
+}
+
+.error-state-panel .section-title {
+    margin: 0;
 }
 
 .error-state-panel .section-subtitle {
@@ -3124,7 +3129,6 @@ ol {
     flex-wrap: wrap;
     justify-content: center;
     gap: 12px;
-    margin-top: 8px;
     width: 100%;
 }
 
