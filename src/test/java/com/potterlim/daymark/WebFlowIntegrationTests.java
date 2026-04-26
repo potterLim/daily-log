@@ -745,6 +745,26 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void logoutShouldReturnToPublicHome() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("logout-reviewer", "logout-reviewer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/logout")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/?logout"));
+
+        mMockMvc.perform(get("/").param("logout", ""))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("로그아웃되었습니다.")))
+            .andExpect(content().string(containsString("Sign In")))
+            .andExpect(content().string(containsString("Create Account")))
+            .andExpect(content().string(not(containsString("Sign Out"))));
+    }
+
+    @Test
     void missingProductPageShouldRenderFriendlyNotFoundPage() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("missing-page-reviewer", "missing-page-reviewer@example.com", "pass1234")

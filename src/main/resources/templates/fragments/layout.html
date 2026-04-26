@@ -110,6 +110,9 @@
 <main class="app-main">
     <div class="app-frame">
         <div class="page-flash-stack">
+            <div th:if="${param.logout}" class="message-banner message-banner-success" role="alert">
+                로그아웃되었습니다.
+            </div>
             <div th:if="${emailVerificationSuccessMessage}" class="message-banner message-banner-success" role="alert"
                  th:text="${emailVerificationSuccessMessage}">
                 이메일 인증이 완료되었습니다.

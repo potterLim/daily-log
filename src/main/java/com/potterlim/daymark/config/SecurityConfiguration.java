@@ -67,7 +67,7 @@ public class SecurityConfiguration {
             .rememberMe(rememberMe -> rememberMe.rememberMeServices(rememberMeServices))
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl("/?logout")
                 .deleteCookies("JSESSIONID", rememberMeCookieName))
             .csrf(Customizer.withDefaults());
 
