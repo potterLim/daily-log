@@ -1,29 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
     <title id="title">Daymark logo</title>
-    <desc id="desc">A rounded blue mark with a folded day page and a precise check mark.</desc>
+    <desc id="desc">A rounded blue calendar mark with a warm day dot and a precise check mark.</desc>
     <defs>
-        <linearGradient id="daymark-bg" x1="10" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#2f7bff" />
-            <stop offset="1" stop-color="#0c4edb" />
+        <linearGradient id="daymark-bg" x1="10" y1="5" x2="54" y2="59" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#4a91ff" />
+            <stop offset=".55" stop-color="#1d66f2" />
+            <stop offset="1" stop-color="#0c3a9d" />
         </linearGradient>
-        <linearGradient id="daymark-page" x1="20" y1="14" x2="45" y2="50" gradientUnits="userSpaceOnUse">
+        <linearGradient id="daymark-page" x1="20" y1="13" x2="44" y2="52" gradientUnits="userSpaceOnUse">
             <stop offset="0" stop-color="#ffffff" />
             <stop offset="1" stop-color="#dce9ff" />
         </linearGradient>
     </defs>
-    <rect width="64" height="64" rx="20" fill="url(#daymark-bg)" />
-    <path
-        d="M22 15.5h14.5L47 26v22.5A4.5 4.5 0 0 1 42.5 53h-21A4.5 4.5 0 0 1 17 48.5v-28a5 5 0 0 1 5-5Z"
-        fill="url(#daymark-page)"
-    />
-    <path d="M36.5 16v8.4a2.1 2.1 0 0 0 2.1 2.1H47" fill="#b8d1ff" opacity=".95" />
-    <path
-        d="m25.5 36.2 5.7 5.7 11.4-14"
-        fill="none"
-        stroke="#0d55df"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="4.2"
-    />
-    <circle cx="23.5" cy="24" r="3" fill="#78a8ff" />
+    <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#daymark-bg)" />
+    <path d="M23 14.5h18a4.5 4.5 0 0 1 4.5 4.5v26a4.5 4.5 0 0 1-4.5 4.5H23a4.5 4.5 0 0 1-4.5-4.5V19a4.5 4.5 0 0 1 4.5-4.5Z"
+          fill="url(#daymark-page)" />
+    <path d="M19 25.5h26" fill="none" stroke="#b8d1ff" stroke-width="2.8" />
+    <path d="M25 13v8M39 13v8" fill="none" stroke="#f8fbff" stroke-linecap="round" stroke-width="3.4" />
+    <circle cx="28" cy="35" r="5.3" fill="#ffbf5b" />
+    <path d="m27 37.2 4.4 4.4 8.9-11.2" fill="none" stroke="#0e55db" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.9" />
+    <path d="M12 13.5C16.6 8.7 23.3 6 32 6" fill="none" opacity=".42" stroke="#ffffff" stroke-linecap="round" stroke-width="2.2" />
 </svg>

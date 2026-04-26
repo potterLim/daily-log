@@ -31,7 +31,27 @@
     <div class="app-frame topbar-shell">
         <a class="brand-lockup" th:href="@{/}">
             <span class="brand-symbol">
-                <img th:src="@{/images/daymark-logo.svg}" alt="" width="48" height="48" />
+                <svg viewBox="0 0 64 64" role="img" aria-label="Daymark">
+                    <defs>
+                        <linearGradient id="brand-mark-bg" x1="10" y1="5" x2="54" y2="59" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#4a91ff" />
+                            <stop offset=".55" stop-color="#1d66f2" />
+                            <stop offset="1" stop-color="#0c3a9d" />
+                        </linearGradient>
+                        <linearGradient id="brand-mark-page" x1="20" y1="13" x2="44" y2="52" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#ffffff" />
+                            <stop offset="1" stop-color="#dce9ff" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#brand-mark-bg)" />
+                    <path d="M23 14.5h18a4.5 4.5 0 0 1 4.5 4.5v26a4.5 4.5 0 0 1-4.5 4.5H23a4.5 4.5 0 0 1-4.5-4.5V19a4.5 4.5 0 0 1 4.5-4.5Z"
+                          fill="url(#brand-mark-page)" />
+                    <path d="M19 25.5h26" fill="none" stroke="#b8d1ff" stroke-width="2.8" />
+                    <path d="M25 13v8M39 13v8" fill="none" stroke="#f8fbff" stroke-linecap="round" stroke-width="3.4" />
+                    <circle cx="28" cy="35" r="5.3" fill="#ffbf5b" />
+                    <path d="m27 37.2 4.4 4.4 8.9-11.2" fill="none" stroke="#0e55db" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.9" />
+                    <path d="M12 13.5C16.6 8.7 23.3 6 32 6" fill="none" opacity=".42" stroke="#ffffff" stroke-linecap="round" stroke-width="2.2" />
+                </svg>
             </span>
             <span class="brand-copy">
                 <strong>Daymark</strong>

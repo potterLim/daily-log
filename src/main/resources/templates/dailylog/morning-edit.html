@@ -27,42 +27,30 @@
         <div class="surface-panel editor-main">
             <div class="form-section">
                 <label for="goals" class="form-label field-label">목표</label>
-                <div class="field-guide">
-                    <span>한 줄에 하나씩 적습니다.</span>
-                    <em>예: 출시 전 화면 점검</em>
-                </div>
                 <textarea id="goals"
                           th:field="*{goals}"
                           class="form-control text-area js-autosize"
                           rows="7"
-                          placeholder="오늘 끝내고 싶은 일을 적어주세요"></textarea>
+                          placeholder="한 줄에 하나씩 목표를 적어주세요&#10;예: 출시 전 화면 점검&#10;예: 고객 피드백 정리"></textarea>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
             <div class="form-section">
                 <label for="focus" class="form-label field-label">집중 영역</label>
-                <div class="field-guide">
-                    <span>가장 주의를 써야 할 기준을 남깁니다.</span>
-                    <em>예: 오전에는 문서 정리, 오후에는 화면 확인</em>
-                </div>
                 <textarea id="focus"
                           th:field="*{focus}"
                           class="form-control text-area js-autosize"
                           rows="4"
-                          placeholder="오늘의 집중 기준을 적어주세요"></textarea>
+                          placeholder="오늘 가장 주의를 써야 할 기준을 적어주세요&#10;예: 오전에는 문서 정리, 오후에는 화면 확인"></textarea>
             </div>
 
             <div class="form-section">
                 <label for="challenges" class="form-label field-label">예상 변수</label>
-                <div class="field-guide">
-                    <span>방해 요소와 대응 방법을 함께 적습니다.</span>
-                    <em>예: 회의가 길어지면 핵심 목표부터 처리</em>
-                </div>
                 <textarea id="challenges"
                           th:field="*{challenges}"
                           class="form-control text-area js-autosize"
                           rows="4"
-                          placeholder="예상되는 변수와 대응을 적어주세요"></textarea>
+                          placeholder="방해 요소와 대응 방법을 함께 적어주세요&#10;예: 회의가 길어지면 핵심 목표부터 처리"></textarea>
             </div>
         </div>
 

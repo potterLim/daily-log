@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(
                         "/css/**",
+                        "/images/**",
                         "/js/**",
                         "/favicon.ico",
                         "/login",

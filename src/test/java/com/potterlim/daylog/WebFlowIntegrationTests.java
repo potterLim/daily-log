@@ -528,6 +528,8 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Today")))
             .andExpect(content().string(containsString("Daymark")))
+            .andExpect(content().string(containsString("aria-label=\"Daymark\"")))
+            .andExpect(content().string(containsString("daymark-logo.svg")))
             .andExpect(content().string(containsString("Morning Plan")))
             .andExpect(content().string(containsString("Evening Review")))
             .andExpect(content().string(containsString("View Today")))
@@ -540,6 +542,14 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("New Plan")))
             .andExpect(content().string(containsString("/daily-log/morning/edit?date=" + TEST_CURRENT_DATE)));
+
+        mMockMvc.perform(get("/daily-log/morning/edit")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString()))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("한 줄에 하나씩 목표를 적어주세요")))
+            .andExpect(content().string(containsString("예: 출시 전 화면 점검")))
+            .andExpect(content().string(not(containsString("field-guide"))));
 
         mMockMvc.perform(get("/daily-log/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
@@ -574,6 +584,11 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("비밀번호 변경")))
             .andExpect(content().string(containsString("8자 이상 72자 이하")));
+
+        mMockMvc.perform(get("/images/daymark-logo.svg"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("daymark-bg")))
+            .andExpect(content().string(containsString("rounded blue calendar mark")));
     }
 
     @Test
