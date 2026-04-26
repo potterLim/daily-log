@@ -368,11 +368,11 @@ ol {
 }
 
 .footer-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 15px 18px;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 18px;
     border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: 999px;
     color: var(--text-tertiary);
@@ -419,39 +419,6 @@ ol {
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
-}
-
-.footer-links {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 5px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.56);
-    box-shadow: inset 0 0 0 1px rgba(84, 109, 150, 0.1);
-}
-
-.footer-links a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 0 13px;
-    border-radius: 999px;
-    color: var(--text-secondary);
-    font-size: 0.82rem;
-    font-weight: 800;
-    line-height: 1;
-    white-space: nowrap;
-    transition: color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.footer-links a:hover,
-.footer-links a:focus-visible {
-    color: var(--brand-deep);
-    background: rgba(255, 255, 255, 0.84);
-    box-shadow: inset 0 0 0 1px rgba(33, 107, 255, 0.14);
 }
 
 .footer-meta {
@@ -3508,9 +3475,9 @@ ol {
     }
 
     .footer-shell {
-        align-items: flex-start;
-        grid-template-columns: 1fr;
-        justify-items: stretch;
+        align-items: center;
+        flex-direction: column;
+        gap: 12px;
         padding: 14px;
         border-radius: 24px;
     }
@@ -3518,12 +3485,6 @@ ol {
     .footer-brand,
     .footer-meta {
         justify-content: center;
-    }
-
-    .footer-links {
-        justify-self: center;
-        max-width: 100%;
-        overflow-x: auto;
     }
 
     .workspace-meta-card,

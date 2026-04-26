@@ -149,12 +149,6 @@
                 <span>Private Workspace</span>
             </div>
         </div>
-        <nav class="footer-links" aria-label="하단 메뉴">
-            <a th:href="@{/}">Home</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/daily-log/library}">Records</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/account/password}">Account</a>
-            <a sec:authorize="isAnonymous()" th:href="@{/login}">Sign In</a>
-        </nav>
         <div class="footer-meta">
             <span th:text="${T(java.time.Year).now().getValue()}">2026</span>
             <span>Local-first</span>
