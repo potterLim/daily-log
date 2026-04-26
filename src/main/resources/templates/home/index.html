@@ -10,15 +10,15 @@
 
             <div class="hero-action-row">
                 <a class="btn btn-primary btn-lg"
-                   th:href="@{/daily-log/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   th:href="@{/daymark/morning/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
                     Morning Plan
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
-                   th:href="@{/daily-log/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   th:href="@{/daymark/evening/edit(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
                     Evening Review
                 </a>
                 <a class="btn btn-outline-secondary btn-lg"
-                   th:href="@{/daily-log/preview(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
+                   th:href="@{/daymark/preview(date=${#temporals.format(today, 'yyyy-MM-dd')})}">
                     View Today
                 </a>
             </div>

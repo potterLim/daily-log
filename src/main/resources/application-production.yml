@@ -4,15 +4,15 @@ server:
       cookie:
         secure: ${SERVER_SERVLET_SESSION_COOKIE_SECURE:true}
 
-day-log:
+daymark:
   operations:
     production-readiness:
       enabled: true
       require-smtp: true
       require-alert-webhook: true
       require-secure-session-cookie: true
-      minimum-remember-me-key-length: ${DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
+      minimum-remember-me-key-length: ${DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
     weekly-summary:
       enabled: true
-      cron: ${DAY_LOG_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
-      zone: ${DAY_LOG_WEEKLY_SUMMARY_ZONE:Asia/Seoul}
+      cron: ${DAYMARK_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
+      zone: ${DAYMARK_WEEKLY_SUMMARY_ZONE:Asia/Seoul}

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dayLog
+    name: daymark
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
@@ -27,7 +27,7 @@ server:
       enabled: false
   shutdown: graceful
   tomcat:
-    basedir: ${DAY_LOG_TOMCAT_BASE_DIR:./ops/runtime/tomcat}
+    basedir: ${DAYMARK_TOMCAT_BASE_DIR:./ops/runtime/tomcat}
     accesslog:
       enabled: true
       directory: logs
@@ -57,31 +57,31 @@ management:
       enabled: true
     readinessstate:
       enabled: true
-day-log:
+daymark:
   account:
-    password-reset-token-validity-minutes: ${DAY_LOG_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
-    email-verification-token-validity-minutes: ${DAY_LOG_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES:1440}
+    password-reset-token-validity-minutes: ${DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
+    email-verification-token-validity-minutes: ${DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES:1440}
   mail:
-    from-address: ${DAY_LOG_MAIL_FROM_ADDRESS:no-reply@daylog.local}
+    from-address: ${DAYMARK_MAIL_FROM_ADDRESS:no-reply@daymark.local}
   operations:
-    alert-webhook-url: ${DAY_LOG_ALERT_WEBHOOK_URL:}
+    alert-webhook-url: ${DAYMARK_ALERT_WEBHOOK_URL:}
     production-readiness:
-      enabled: ${DAY_LOG_PRODUCTION_READINESS_ENABLED:false}
-      require-smtp: ${DAY_LOG_REQUIRE_SMTP:false}
-      require-alert-webhook: ${DAY_LOG_REQUIRE_ALERT_WEBHOOK:false}
-      require-secure-session-cookie: ${DAY_LOG_REQUIRE_SECURE_SESSION_COOKIE:false}
-      minimum-remember-me-key-length: ${DAY_LOG_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
+      enabled: ${DAYMARK_PRODUCTION_READINESS_ENABLED:false}
+      require-smtp: ${DAYMARK_REQUIRE_SMTP:false}
+      require-alert-webhook: ${DAYMARK_REQUIRE_ALERT_WEBHOOK:false}
+      require-secure-session-cookie: ${DAYMARK_REQUIRE_SECURE_SESSION_COOKIE:false}
+      minimum-remember-me-key-length: ${DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
     weekly-summary:
-      enabled: ${DAY_LOG_WEEKLY_SUMMARY_ENABLED:false}
-      cron: ${DAY_LOG_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
-      zone: ${DAY_LOG_WEEKLY_SUMMARY_ZONE:Asia/Seoul}
+      enabled: ${DAYMARK_WEEKLY_SUMMARY_ENABLED:false}
+      cron: ${DAYMARK_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
+      zone: ${DAYMARK_WEEKLY_SUMMARY_ZONE:Asia/Seoul}
   security:
-    remember-me-key: ${DAY_LOG_REMEMBER_ME_KEY}
-    remember-me-cookie-name: ${DAY_LOG_REMEMBER_ME_COOKIE_NAME:DAY_LOG_REMEMBER_ME}
-    remember-me-token-validity-seconds: ${DAY_LOG_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
+    remember-me-key: ${DAYMARK_REMEMBER_ME_KEY}
+    remember-me-cookie-name: ${DAYMARK_REMEMBER_ME_COOKIE_NAME:DAYMARK_REMEMBER_ME}
+    remember-me-token-validity-seconds: ${DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
 logging:
   file:
-    path: ${DAY_LOG_LOG_DIR:./logs}
+    path: ${DAYMARK_LOG_DIR:./logs}
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36} - %msg%n'
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36} - %msg%n'

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '주간 리뷰')}">
+<section class="workspace-shell">
+    <div class="surface-panel workspace-hero workspace-hero-analytic">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <h1 class="section-title">주간 리뷰</h1>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">완료</span>
+                    <strong th:text="${weekAchieved} + '건'">0건</strong>
+                </div>
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">목표</span>
+                    <strong th:text="${weekTotal} + '건'">0건</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-grid summary-grid-premium">
+        <div class="surface-panel summary-card summary-card-featured">
+            <span class="summary-label">완료율</span>
+            <strong class="summary-value" th:text="${weekPercent} + '%'">0%</strong>
+            <div class="summary-kpi-row">
+                <span class="info-pill" th:text="'완료 ' + ${weekAchieved} + '건'">완료 0건</span>
+                <span class="info-pill" th:text="'목표 ' + ${weekTotal} + '건'">목표 0건</span>
+            </div>
+        </div>
+        <div class="surface-panel summary-card summary-card-stat">
+            <span class="summary-label">완료된 목표</span>
+            <strong class="summary-value" th:text="${weekAchieved}">0</strong>
+        </div>
+        <div class="surface-panel summary-card summary-card-stat">
+            <span class="summary-label">전체 목표</span>
+            <strong class="summary-value" th:text="${weekTotal}">0</strong>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(weeklyProgressItems)}" class="surface-panel empty-state">
+        <strong>이번 주 기록이 없습니다.</strong>
+        <div class="empty-state-actions">
+            <a class="btn btn-primary btn-sm"
+               th:href="@{/daymark/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
+                New Plan
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(weeklyProgressItems)}" class="progress-card-grid">
+        <article th:each="progressItem : ${weeklyProgressItems}" class="surface-panel progress-card">
+            <div class="progress-card-top">
+                <div>
+                    <h2 th:text="${#temporals.format(progressItem.date, 'yyyy-MM-dd')}">2026-04-01</h2>
+                </div>
+                <div class="progress-percent-badge" th:text="${progressItem.percent} + '%'">0%</div>
+            </div>
+
+            <div class="progress-track-shell">
+                <div class="progress-track">
+                    <div class="progress-bar-fill"
+                         th:style="'width: ' + ${progressItem.percent} + '%;'">
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-card-meta">
+                <span class="progress-pill" th:text="${progressItem.achieved} + ' / ' + ${progressItem.total} + ' 완료'">0 / 0 완료</span>
+                <a th:href="@{/daymark/preview(date=${#temporals.format(progressItem.date, 'yyyy-MM-dd')})}"
+                   class="btn btn-outline-secondary btn-sm">
+                    View Record
+                </a>
+            </div>
+        </article>
+    </div>
+</section>
+</html>

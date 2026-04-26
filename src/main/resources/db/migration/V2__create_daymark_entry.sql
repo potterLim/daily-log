@@ -1,0 +1,20 @@
+create table daymark_entry (
+    id bigint not null auto_increment,
+    user_account_id bigint not null,
+    entry_date date not null,
+    has_morning_entry bit not null,
+    has_evening_entry bit not null,
+    goals_text text not null,
+    focus_text text not null,
+    challenges_text text not null,
+    evening_goals_text text not null,
+    achievements_text text not null,
+    improvements_text text not null,
+    gratitude_text text not null,
+    notes_text text not null,
+    created_at datetime(6) not null,
+    updated_at datetime(6) not null,
+    constraint pk_daymark_entry primary key (id),
+    constraint fk_daymark_entry_user_account foreign key (user_account_id) references user_account (id),
+    constraint uk_daymark_entry_user_account_id_entry_date unique (user_account_id, entry_date)
+);

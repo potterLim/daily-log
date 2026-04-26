@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '아침 계획')}">
+<section class="workspace-shell">
+    <div class="surface-panel workspace-hero workspace-hero-morning">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <h1 class="section-title">아침 계획</h1>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">날짜</span>
+                    <strong th:text="${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">2026-04-24</strong>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">회고</span>
+                    <strong>저녁에 확인</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form th:action="@{/daymark/morning/save}" th:object="${morningFormDto}" method="post" class="editor-grid">
+        <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+        <input type="hidden" th:field="*{date}" />
+
+        <div class="surface-panel editor-main">
+            <div class="form-section">
+                <label for="goals" class="form-label field-label">목표</label>
+                <textarea id="goals"
+                          th:field="*{goals}"
+                          class="form-control text-area js-autosize"
+                          rows="7"
+                          placeholder="한 줄에 하나씩 목표를 적어주세요&#10;예: 출시 전 화면 점검&#10;예: 고객 피드백 정리"></textarea>
+                <div class="text-danger mt-2" th:errors="*{date}"></div>
+            </div>
+
+            <div class="form-section">
+                <label for="focus" class="form-label field-label">집중 영역</label>
+                <textarea id="focus"
+                          th:field="*{focus}"
+                          class="form-control text-area js-autosize"
+                          rows="4"
+                          placeholder="오늘 가장 주의를 써야 할 기준을 적어주세요&#10;예: 오전에는 문서 정리, 오후에는 화면 확인"></textarea>
+            </div>
+
+            <div class="form-section">
+                <label for="challenges" class="form-label field-label">예상 변수</label>
+                <textarea id="challenges"
+                          th:field="*{challenges}"
+                          class="form-control text-area js-autosize"
+                          rows="4"
+                          placeholder="방해 요소와 대응 방법을 함께 적어주세요&#10;예: 회의가 길어지면 핵심 목표부터 처리"></textarea>
+            </div>
+        </div>
+
+        <aside class="editor-side">
+            <div class="surface-panel side-note accent-surface">
+                <div class="panel-header compact">
+                    <div>
+                        <h2>저녁 회고</h2>
+                    </div>
+                </div>
+                <a th:href="@{/daymark/evening/edit(date=${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')})}"
+                   class="btn btn-outline-secondary w-100">
+                    Open Review
+                </a>
+            </div>
+
+            <div class="action-stack">
+                <button type="submit" class="btn btn-primary btn-lg">Save Plan</button>
+                <a th:href="@{/daymark/morning}" class="btn btn-outline-secondary">Morning List</a>
+            </div>
+        </aside>
+    </form>
+</section>
+</html>

@@ -66,22 +66,22 @@
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '아침')} ? ' is-active' : ''"
-               th:href="@{/daily-log/morning}">
+               th:href="@{/daymark/morning}">
                 Morning
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '저녁')} ? ' is-active' : ''"
-               th:href="@{/daily-log/evening}">
+               th:href="@{/daymark/evening}">
                 Evening
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '주간')} ? ' is-active' : ''"
-               th:href="@{/daily-log/week}">
+               th:href="@{/daymark/week}">
                 Week
             </a>
             <a class="nav-chip"
                th:classappend="${#strings.contains(pageTitle, '기록 라이브러리') || #strings.contains(pageTitle, 'PDF')} ? ' is-active' : ''"
-               th:href="@{/daily-log/library}">
+               th:href="@{/daymark/library}">
                 Records
             </a>
         </nav>

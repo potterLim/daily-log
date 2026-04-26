@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '아침 계획')}">
+<section class="workspace-shell">
+    <div class="surface-panel workspace-hero workspace-hero-morning">
+        <div class="workspace-header workspace-header-rich">
+            <div class="workspace-header-copy">
+                <h1 class="section-title">아침 계획</h1>
+            </div>
+            <div class="workspace-meta-stack">
+                <div class="workspace-meta-card">
+                    <span class="workspace-meta-label">이번 주</span>
+                    <strong th:text="${#lists.size(morningDates)} + '건'">0건</strong>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent">
+                    <span class="workspace-meta-label">다음</span>
+                    <strong>저녁 회고 연결</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="message-banner message-banner-success" role="alert" th:text="${message}">
+        저장되었습니다.
+    </div>
+
+    <div class="workspace-grid workspace-grid-two">
+        <div class="surface-panel surface-panel-elevated">
+            <div class="panel-header">
+                <div>
+                    <h2>날짜 선택</h2>
+                </div>
+            </div>
+
+            <form th:action="@{/daymark/morning/edit}" method="get" class="launcher-form">
+                <div class="form-section">
+                    <label class="form-label field-label" for="date">날짜</label>
+                    <input id="date"
+                           type="date"
+                           name="date"
+                           class="form-control form-control-lg"
+                           th:value="${#temporals.format(defaultDate, 'yyyy-MM-dd')}" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Open Plan</button>
+            </form>
+        </div>
+
+        <div class="surface-panel surface-panel-elevated">
+            <div class="panel-header">
+                <div>
+                    <h2>저장된 계획</h2>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(morningDates)}" class="empty-state">
+                <strong>아직 저장된 계획이 없습니다.</strong>
+                <div class="empty-state-actions">
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/daymark/morning/edit(date=${#temporals.format(defaultDate, 'yyyy-MM-dd')})}">
+                        New Plan
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(morningDates)}" class="entry-grid">
+                <a th:each="morningDate : ${morningDates}"
+                   class="entry-card"
+                   th:href="@{/daymark/morning/edit(date=${morningDate})}">
+                    <div class="entry-card-icon">아</div>
+                    <div class="entry-card-body">
+                        <strong th:text="${morningDate}">2026-04-01</strong>
+                    </div>
+                    <span class="entry-card-action">Open</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+</html>

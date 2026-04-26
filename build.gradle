@@ -43,7 +43,7 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     filter {
-        excludeTestsMatching 'com.potterlim.daylog.MySqlIntegrationTests'
+        excludeTestsMatching 'com.potterlim.daymark.MySqlIntegrationTests'
     }
 }
 
@@ -54,11 +54,11 @@ tasks.register('mysqlIntegrationTest', Test) {
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     filter {
-        includeTestsMatching 'com.potterlim.daylog.MySqlIntegrationTests'
+        includeTestsMatching 'com.potterlim.daymark.MySqlIntegrationTests'
     }
     shouldRunAfter tasks.named('test')
 }
 
 bootJar {
-    archiveFileName = 'dayLog.jar'
+    archiveFileName = 'daymark.jar'
 }
