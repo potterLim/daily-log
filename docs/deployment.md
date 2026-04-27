@@ -42,6 +42,7 @@ AWS에 생성할 리소스:
 - Role: `daymark-github-production-deploy`
 - Trust policy: `ops/aws/github-oidc-trust-policy.template.json` 기준
 - Permission policy: `ops/aws/github-deploy-policy.template.json` 기준
+- GitHub environment: `production`, 배포 브랜치는 `main`만 허용
 
 GitHub `production` 환경 변수:
 
