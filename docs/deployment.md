@@ -1,6 +1,6 @@
 # 배포 가이드
 
-Daymark의 초기 AWS 배포 기준은 App Runner, Amazon RDS for MySQL, Amazon SES SMTP, Route 53/ACM, 운영 알림 웹훅입니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
+Daymark의 초기 AWS 배포 기준은 App Runner, Amazon ECR, Amazon RDS for MySQL, Amazon SES SMTP, Route 53/ACM, 운영 알림 웹훅입니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
 
 ## 운영 결정
 
@@ -8,9 +8,10 @@ Daymark의 초기 AWS 배포 기준은 App Runner, Amazon RDS for MySQL, Amazon 
 | --- | --- |
 | 애플리케이션 실행 | AWS App Runner에 Docker 이미지 배포 |
 | 컨테이너 이미지 | Amazon ECR `daymark` 저장소 |
+| 배포 인증 | GitHub Actions OIDC로 AWS 임시 권한 발급 |
 | 운영 DB | Amazon RDS for MySQL |
 | 메일 | Amazon SES SMTP |
-| 발신 주소 | `no-reply@실제도메인` |
+| 발신 주소 | `no-reply@usedaymark.com` |
 | 도메인 인증 | SES 도메인 인증, DKIM, SPF, DMARC 모두 설정 |
 | HTTPS | App Runner custom domain + ACM 인증서 |
 | 쿠키 | 세션 쿠키와 remember-me 쿠키 모두 Secure 강제 |
@@ -23,13 +24,40 @@ App Runner는 2026. 04. 30.부터 신규 고객에게 닫히므로, 사용하려
 
 ### 1. AWS 리전
 
-초기 기준 리전은 서울 리전입니다.
+App Runner는 서울 리전을 지원하지 않으므로 초기 운영 리전은 도쿄 리전입니다. App Runner, ECR, RDS, SES는 같은 리전에 둡니다.
 
 ```text
-ap-northeast-2
+ap-northeast-1
 ```
 
-### 2. RDS MySQL
+Route 53은 글로벌 서비스입니다.
+
+### 2. GitHub Actions OIDC 배포 권한
+
+장기 Access Key는 사용하지 않습니다. AWS IAM에 GitHub OIDC provider와 전용 배포 Role을 만들고, GitHub Actions가 배포 순간에만 임시 권한을 발급받습니다.
+
+AWS에 생성할 리소스:
+
+- OIDC provider: `token.actions.githubusercontent.com`
+- Role: `daymark-github-production-deploy`
+- Trust policy: `ops/aws/github-oidc-trust-policy.template.json` 기준
+- Permission policy: `ops/aws/github-deploy-policy.template.json` 기준
+
+GitHub `production` 환경 변수:
+
+| 변수 | 값 |
+| --- | --- |
+| `AWS_ROLE_TO_ASSUME` | `arn:aws:iam::<AWS_ACCOUNT_ID>:role/daymark-github-production-deploy` |
+
+배포 워크플로:
+
+```text
+.github/workflows/deploy-production.yml
+```
+
+`main` 브랜치 push 또는 수동 실행으로 테스트, JAR 빌드, Docker 이미지 빌드, ECR push가 순서대로 실행됩니다.
+
+### 3. RDS MySQL
 
 권장 기본값:
 
@@ -44,10 +72,10 @@ ap-northeast-2
 JDBC URL 예시:
 
 ```text
-jdbc:mysql://daymark-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/daymark?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+jdbc:mysql://daymark-db.xxxxxxxxxxxx.ap-northeast-1.rds.amazonaws.com:3306/daymark?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 ```
 
-### 3. SES 메일
+### 4. SES 메일
 
 운영 메일 기준:
 
@@ -61,30 +89,26 @@ jdbc:mysql://daymark-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/dayma
 권장 발신 주소:
 
 ```text
-no-reply@실제도메인
+no-reply@usedaymark.com
 ```
 
 권장 SMTP endpoint:
 
 ```text
-email-smtp.ap-northeast-2.amazonaws.com
+email-smtp.ap-northeast-1.amazonaws.com
 ```
 
-### 4. ECR 이미지 푸시
+### 5. ECR 이미지 푸시
 
-AWS CLI와 Docker가 로그인된 상태에서 실행합니다.
+정식 배포는 GitHub Actions가 수행합니다. 로컬에서 직접 push하는 방식은 장애 대응용 보조 경로로만 사용합니다.
 
 ```bash
-AWS_ACCOUNT_ID=123456789012 \
-AWS_REGION=ap-northeast-2 \
-ECR_REPOSITORY_NAME=daymark \
-IMAGE_TAG=$(git rev-parse --short HEAD) \
-./ops/aws/build-and-push-ecr.sh
+git push origin main
 ```
 
-스크립트는 ECR 저장소가 없으면 생성하고, `daymark:<commit>`과 `daymark:latest` 이미지를 푸시합니다.
+워크플로는 `daymark:<commit-sha>`와 `daymark:latest` 이미지를 ECR에 푸시합니다.
 
-### 5. App Runner 서비스 생성
+### 6. App Runner 서비스 생성
 
 App Runner에서 다음 값으로 서비스를 생성합니다.
 
@@ -93,7 +117,7 @@ App Runner에서 다음 값으로 서비스를 생성합니다.
 | Source | Container registry |
 | Provider | Amazon ECR |
 | Image | `daymark:latest` 또는 커밋 태그 |
-| Deployment trigger | Manual 권장 |
+| Deployment trigger | Automatic 권장 |
 | Port | `8080` |
 | Health check path | `/actuator/health/readiness` |
 | CPU/Memory | 초기 `0.25 vCPU / 0.5GB` 또는 `0.5 vCPU / 1GB` |
@@ -102,7 +126,7 @@ App Runner에서 다음 값으로 서비스를 생성합니다.
 
 Spring Boot와 App Runner는 같은 포트 값을 사용해야 합니다. App Runner의 이미지 포트는 `8080`으로 설정하고, `PORT`는 App Runner 예약 환경 변수이므로 직접 추가하지 않습니다.
 
-### 6. App Runner 환경 변수
+### 7. App Runner 환경 변수
 
 콘솔에 입력할 값은 `ops/aws/app-runner-env.example`를 기준으로 준비합니다. 예시 값은 그대로 쓰지 말고 모두 실제 값으로 바꿉니다.
 
@@ -111,7 +135,7 @@ Spring Boot와 App Runner는 같은 포트 값을 사용해야 합니다. App Ru
 | 환경 변수 | 설명 |
 | --- | --- |
 | `SPRING_PROFILES_ACTIVE` | `production` |
-| `DAYMARK_PUBLIC_BASE_URL` | `https://실제서비스도메인` |
+| `DAYMARK_PUBLIC_BASE_URL` | `https://usedaymark.com` |
 | `DATABASE_URL` | RDS MySQL JDBC URL |
 | `DATABASE_USERNAME` | RDS 사용자 |
 | `DATABASE_PASSWORD` | RDS 비밀번호 |
@@ -129,20 +153,20 @@ Spring Boot와 App Runner는 같은 포트 값을 사용해야 합니다. App Ru
 
 `production` 프로필에서는 위 값이 부족하거나 placeholder이면 애플리케이션이 시작되지 않습니다.
 
-### 7. 도메인 연결
+### 8. 도메인 연결
 
 권장 구조:
 
 ```text
-https://daymark.실제도메인
+https://usedaymark.com
 ```
 
 App Runner custom domain을 추가하고 DNS 검증 레코드를 등록합니다. `DAYMARK_PUBLIC_BASE_URL`도 같은 주소로 설정합니다.
 
-### 8. 배포 후 확인
+### 9. 배포 후 확인
 
 ```text
-https://daymark.실제도메인/actuator/health/readiness
+https://usedaymark.com/actuator/health/readiness
 ```
 
 확인 항목:
@@ -154,7 +178,7 @@ https://daymark.실제도메인/actuator/health/readiness
 - 알 수 없는 공개 URL이 로그인 대신 404 화면을 보여주는지 확인합니다.
 - `/daymark/morning` 같은 보호 화면은 로그인으로 이동하는지 확인합니다.
 
-### 9. 운영자 계정 부여
+### 10. 운영자 계정 부여
 
 회원가입으로 계정을 만든 뒤 운영 DB에서 해당 계정을 관리자 권한으로 승격합니다.
 
@@ -167,7 +191,7 @@ where user_name = '운영자_워크스페이스_ID';
 그 계정으로 로그인하면 다음 주소에서 운영 지표를 확인할 수 있습니다.
 
 ```text
-https://daymark.실제도메인/admin/operations
+https://usedaymark.com/admin/operations
 ```
 
 관리자 화면에서는 이번 주 활성 사용자, 작성 사용자, 인증 메일 흐름, 비밀번호 복구, 라이브러리 조회, Markdown/PDF 내보내기 사용량을 확인합니다.
