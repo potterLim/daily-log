@@ -12,13 +12,62 @@ out/
 
 # Runtime files and local artifacts
 logs/
+*.log
+*.pid
+*.tmp
 ops/runtime/
 local-docs/
+/tmp/
+/captures/
+/screenshots/
+/desktop-screenshots/
+/playwright-report/
+/test-results/
+
+# User exports, backups, and data snapshots
+/exports/
+/backups/
+/backup/
+*.bak
+*.backup
+*.dump
+*.sql.gz
+*.tar
+*.tgz
+*.zip
+daymark-records-*.md
+daymark-records-*.pdf
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.mv.db
+*.trace.db
 
 # Environment files
 .env
 .env.*
 !.env.example
+.envrc
+application-secret.yml
+application-secret.yaml
+application-private.yml
+application-private.yaml
+application-local-private.yml
+application-local-private.yaml
+
+# Cloud credentials and private keys
+.aws/
+.gcloud/
+credentials.json
+*service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
 
 # Windows
 Thumbs.db
