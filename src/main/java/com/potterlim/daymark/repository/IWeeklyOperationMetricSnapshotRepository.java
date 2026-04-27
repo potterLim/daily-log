@@ -25,6 +25,18 @@ public interface IWeeklyOperationMetricSnapshotRepository extends JpaRepository<
     @Query("""
         select weeklyOperationMetricSnapshot
         from WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot
+        where weeklyOperationMetricSnapshot.mWeekStartDate >= :startDate
+            and weeklyOperationMetricSnapshot.mWeekStartDate <= :endDate
+        order by weeklyOperationMetricSnapshot.mWeekStartDate desc
+        """)
+    List<WeeklyOperationMetricSnapshot> findWeeklySnapshotsWithinDateRange(
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+        select weeklyOperationMetricSnapshot
+        from WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot
         order by weeklyOperationMetricSnapshot.mWeekStartDate desc
         """)
     List<WeeklyOperationMetricSnapshot> findRecentWeeklySnapshots(Pageable pageable);

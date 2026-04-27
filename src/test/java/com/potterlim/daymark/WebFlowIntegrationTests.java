@@ -982,12 +982,37 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("50.0%")))
             .andExpect(content().string(not(containsString("66.7%"))))
             .andExpect(content().string(containsString("주차별 성장 추이")))
+            .andExpect(content().string(containsString("Base Date")))
+            .andExpect(content().string(containsString("12W")))
             .andExpect(content().string(containsString("trend-line-active")))
             .andExpect(content().string(containsString("trend-line-goal")))
             .andExpect(content().string(containsString("<span>Sign In</span>")))
             .andExpect(content().string(containsString("<strong>2</strong>")))
             .andExpect(content().string(containsString("<span>Records Viewed</span>")))
             .andExpect(content().string(containsString("<strong>1</strong>")));
+    }
+
+    @Test
+    void operationsDashboardShouldAllowTrendPeriodAndDateSelection() throws Exception {
+        UserAccount adminUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("trend-admin", "trend-admin@example.com", "pass1234")
+        );
+        adminUser.grantAdministratorRole();
+        mUserAccountRepository.saveAndFlush(adminUser);
+
+        saveWeeklyOperationsSnapshot(LocalDate.of(2026, 3, 9), 1L, 1L, 40.0);
+        saveWeeklyOperationsSnapshot(LocalDate.of(2026, 3, 23), 3L, 2L, 58.0);
+
+        mMockMvc.perform(get("/admin/operations")
+                .param("date", "2026-04-17")
+                .param("weeks", "4")
+                .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("value=\"2026-04-17\"")))
+            .andExpect(content().string(containsString("4W")))
+            .andExpect(content().string(containsString("03. 23.")))
+            .andExpect(content().string(containsString("04. 13.")))
+            .andExpect(content().string(not(containsString("03. 09."))));
     }
 
     @Test
@@ -1014,14 +1039,23 @@ class WebFlowIntegrationTests {
 
     private void savePreviousWeeklyOperationsSnapshot() {
         LocalDate previousWeekStartDate = TEST_CURRENT_DATE.minusDays(11L);
-        LocalDate previousWeekEndDate = previousWeekStartDate.plusDays(6L);
+        saveWeeklyOperationsSnapshot(previousWeekStartDate, 1L, 1L, 33.3);
+    }
+
+    private void saveWeeklyOperationsSnapshot(
+        LocalDate weekStartDate,
+        long weeklyActiveUsers,
+        long weeklyWritingUsers,
+        double goalCompletionRatePercent
+    ) {
+        LocalDate weekEndDate = weekStartDate.plusDays(6L);
         WeeklyOperationsSummary previousWeeklyOperationsSummary = new WeeklyOperationsSummary(
-            previousWeekStartDate,
-            previousWeekEndDate,
+            weekStartDate,
+            weekEndDate,
             3L,
             1L,
-            1L,
-            1L,
+            weeklyActiveUsers,
+            weeklyWritingUsers,
             2L,
             2L,
             1L,
@@ -1039,13 +1073,13 @@ class WebFlowIntegrationTests {
             0L,
             2.0,
             3.0,
-            33.3
+            goalCompletionRatePercent
         );
         WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot =
-            WeeklyOperationMetricSnapshot.create(previousWeekStartDate, previousWeekEndDate);
+            WeeklyOperationMetricSnapshot.create(weekStartDate, weekEndDate);
         weeklyOperationMetricSnapshot.updateFrom(
             previousWeeklyOperationsSummary,
-            previousWeekEndDate.atTime(9, 0)
+            weekEndDate.atTime(9, 0)
         );
         mWeeklyOperationMetricSnapshotRepository.save(weeklyOperationMetricSnapshot);
     }

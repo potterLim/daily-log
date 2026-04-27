@@ -1,6 +1,7 @@
 package com.potterlim.daymark.service;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.potterlim.daymark.entity.WeeklyOperationMetricSnapshot;
@@ -42,6 +43,26 @@ public class WeeklyOperationMetricSnapshotService {
 
         weeklyOperationMetricSnapshot.updateFrom(weeklyOperationsSummary, LocalDateTime.now(mClock));
         return mWeeklyOperationMetricSnapshotRepository.save(weeklyOperationMetricSnapshot);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeeklyOperationMetricSnapshot> listWeeklySnapshotsWithinDateRange(
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        if (startDate == null) {
+            throw new IllegalArgumentException("startDate must not be null.");
+        }
+
+        if (endDate == null) {
+            throw new IllegalArgumentException("endDate must not be null.");
+        }
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("endDate must not be before startDate.");
+        }
+
+        return mWeeklyOperationMetricSnapshotRepository.findWeeklySnapshotsWithinDateRange(startDate, endDate);
     }
 
     @Transactional(readOnly = true)

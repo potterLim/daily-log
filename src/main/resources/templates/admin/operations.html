@@ -49,10 +49,30 @@
             <div>
                 <h2>주차별 성장 추이</h2>
             </div>
-            <div class="operations-delta-strip" th:if="${operationsTrendViewDto.hasPreviousTrendPoint()}">
-                <span>Active <strong th:text="${operationsTrendViewDto.activeUserDeltaText}">+0</strong></span>
-                <span>Writing <strong th:text="${operationsTrendViewDto.writingUserDeltaText}">+0</strong></span>
-                <span>Goal <strong th:text="${operationsTrendViewDto.goalCompletionDeltaText}">+0.0p</strong></span>
+            <div class="operations-trend-actions">
+                <form class="operations-trend-filter"
+                      method="get"
+                      th:action="@{/admin/operations}">
+                    <label>
+                        <span>Base Date</span>
+                        <input type="date"
+                               name="date"
+                               th:value="${#temporals.format(selectedTrendDate, 'yyyy-MM-dd')}">
+                    </label>
+                    <div class="operations-week-buttons" role="group" aria-label="추이 기간 선택">
+                        <button type="submit"
+                                name="weeks"
+                                th:each="weekOption : ${trendWeekOptions}"
+                                th:value="${weekOption}"
+                                th:classappend="${weekOption == selectedTrendWeekCount} ? ' is-active' : ''"
+                                th:text="${weekOption} + 'W'">12W</button>
+                    </div>
+                </form>
+                <div class="operations-delta-strip" th:if="${operationsTrendViewDto.hasPreviousTrendPoint()}">
+                    <span>Active <strong th:text="${operationsTrendViewDto.activeUserDeltaText}">+0</strong></span>
+                    <span>Writing <strong th:text="${operationsTrendViewDto.writingUserDeltaText}">+0</strong></span>
+                    <span>Goal <strong th:text="${operationsTrendViewDto.goalCompletionDeltaText}">+0.0p</strong></span>
+                </div>
             </div>
         </div>
 

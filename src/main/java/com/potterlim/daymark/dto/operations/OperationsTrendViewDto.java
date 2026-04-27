@@ -10,7 +10,7 @@ import com.potterlim.daymark.service.WeeklyOperationsSummary;
 
 public final class OperationsTrendViewDto {
 
-    private static final int MAXIMUM_TREND_POINT_COUNT = 12;
+    private static final int MAXIMUM_TREND_POINT_COUNT = 24;
 
     private final List<OperationsTrendPointDto> mTrendPoints;
     private final String mActiveUserLinePoints;
