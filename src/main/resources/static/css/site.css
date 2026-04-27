@@ -385,9 +385,9 @@ ol {
 }
 
 .footer-shell {
-    display: flex;
+    display: grid;
     align-items: center;
-    justify-content: space-between;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 20px;
     padding: 16px 18px;
     border: 1px solid rgba(255, 255, 255, 0.72);
@@ -402,6 +402,7 @@ ol {
     display: inline-flex;
     align-items: center;
     gap: 11px;
+    justify-self: start;
     min-width: 0;
 }
 
@@ -438,36 +439,25 @@ ol {
     white-space: nowrap;
 }
 
-.footer-meta {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    min-width: 0;
+.footer-contact {
+    justify-self: center;
+    color: var(--text-tertiary);
     font-size: 0.78rem;
     font-weight: 800;
-    white-space: nowrap;
-}
-
-.footer-meta span + span::before {
-    margin-right: 10px;
-    color: rgba(119, 135, 161, 0.7);
-    content: "•";
-}
-
-.footer-contact {
-    color: var(--text-tertiary);
     text-decoration: none;
-}
-
-.footer-contact::before {
-    margin-right: 10px;
-    color: rgba(119, 135, 161, 0.7);
-    content: "•";
+    white-space: nowrap;
 }
 
 .footer-contact:hover {
     color: var(--text-primary);
+}
+
+.footer-year {
+    justify-self: end;
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
 }
 
 .surface-panel {
@@ -4040,15 +4030,16 @@ ol {
 
     .footer-shell {
         align-items: center;
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 12px;
         padding: 14px;
         border-radius: 24px;
     }
 
     .footer-brand,
-    .footer-meta {
-        justify-content: center;
+    .footer-contact,
+    .footer-year {
+        justify-self: center;
     }
 
     .workspace-meta-card,

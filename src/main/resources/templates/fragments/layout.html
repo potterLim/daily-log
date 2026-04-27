@@ -157,13 +157,11 @@
                 <span>Private Workspace</span>
             </div>
         </div>
-        <div class="footer-meta">
-            <span th:text="${T(java.time.Year).now().getValue()}">2026</span>
-            <a class="footer-contact"
-               th:href="${'mailto:' + supportContactEmailAddress}">
-                Contact: <span th:text="${supportContactEmailAddress}">potterLim0808@gmail.com</span>
-            </a>
-        </div>
+        <a class="footer-contact"
+           th:href="${'mailto:' + supportContactEmailAddress}">
+            Contact: <span th:text="${supportContactEmailAddress}">potterLim0808@gmail.com</span>
+        </a>
+        <span class="footer-year" th:text="${T(java.time.Year).now().getValue()}">2026</span>
     </div>
 </footer>
 
