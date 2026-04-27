@@ -20,6 +20,43 @@ Daymark의 초기 AWS 배포 기준은 App Runner, Amazon ECR, Amazon RDS for My
 
 App Runner는 2026. 04. 30.부터 신규 고객에게 닫히므로, 사용하려면 그 전에 App Runner 서비스를 생성해 둡니다. 기존 고객은 서비스를 계속 사용할 수 있지만, 정식 장기 운영 전에는 ECS Express Mode 이전 가능성을 열어 둡니다.
 
+## 현재 운영 리소스
+
+아래 값은 GitHub에 공개해도 되는 운영 위치 정보입니다. DB 비밀번호, remember-me secret, SMTP 비밀번호, AWS 계정 ID, RDS 엔드포인트는 공개 문서에 남기지 않습니다.
+
+| 항목 | 값 |
+| --- | --- |
+| 운영 리전 | `ap-northeast-1` |
+| 도메인 | `usedaymark.com` |
+| 임시 App Runner URL | `https://xefgmam2t3.ap-northeast-1.awsapprunner.com` |
+| App Runner 서비스 | `daymark-production` |
+| ECR 저장소 | `daymark` |
+| Route 53 Hosted Zone ID | `Z05714131U5V3ES6US84K` |
+| RDS 식별자 | `daymark-production-db` |
+| SSM 파라미터 prefix | `/daymark/production` |
+
+Namecheap에서 `usedaymark.com`의 DNS를 Route 53으로 위임할 때 아래 네임서버를 사용합니다.
+
+```text
+ns-402.awsdns-50.com
+ns-1642.awsdns-13.co.uk
+ns-685.awsdns-21.net
+ns-1110.awsdns-10.org
+```
+
+DNS 위임 전 상태:
+
+- App Runner 서비스는 `RUNNING`입니다.
+- App Runner custom domain은 DNS 검증 대기 상태입니다.
+- SES 도메인 인증, DKIM, MAIL FROM은 DNS 검증 대기 상태입니다.
+
+DNS 위임 후 확인할 항목:
+
+- `usedaymark.com`이 App Runner custom domain으로 연결되는지 확인합니다.
+- App Runner custom domain 인증서 상태가 `ACTIVE`로 바뀌는지 확인합니다.
+- SES identity, DKIM, MAIL FROM 상태가 `SUCCESS`로 바뀌는지 확인합니다.
+- SES sandbox 해제 전에는 검증된 수신자에게만 메일을 보낼 수 있습니다.
+
 ## App Runner 배포
 
 ### 1. AWS 리전
