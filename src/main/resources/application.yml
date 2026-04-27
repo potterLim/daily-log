@@ -23,6 +23,10 @@ server:
   port: ${PORT:8080}
   forward-headers-strategy: framework
   error:
+    include-binding-errors: never
+    include-exception: false
+    include-message: never
+    include-stacktrace: never
     whitelabel:
       enabled: false
   shutdown: graceful

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import com.potterlim.daymark.entity.DaymarkEntry;
 import com.potterlim.daymark.entity.EOperationEventType;
+import com.potterlim.daymark.entity.EUserRole;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
 import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WeeklyOperationsSummaryService {
+
+    private static final EUserRole EXCLUDED_OPERATION_USER_ROLE = EUserRole.ADMIN;
 
     private final IUserAccountRepository mUserAccountRepository;
     private final IDaymarkEntryRepository mDaymarkEntryRepository;
@@ -39,7 +42,11 @@ public class WeeklyOperationsSummaryService {
 
         LocalDateTime weekStartDateTime = weekStartDate.atStartOfDay();
         LocalDateTime weekEndExclusiveDateTime = weekEndDate.plusDays(1L).atStartOfDay();
-        List<DaymarkEntry> weeklyEntries = mDaymarkEntryRepository.findEntriesWithinDateRange(weekStartDate, weekEndDate);
+        List<DaymarkEntry> weeklyEntries = mDaymarkEntryRepository.findEntriesWithinDateRangeExcludingUserRole(
+            weekStartDate,
+            weekEndDate,
+            EXCLUDED_OPERATION_USER_ROLE
+        );
         Set<Long> weeklyWritingUserIds = new HashSet<>();
         long weeklyWritingDays = 0L;
         long weeklyMorningEntries = 0L;
@@ -69,18 +76,21 @@ public class WeeklyOperationsSummaryService {
             completedTrackedGoals += goalCompletionAccumulator.getCompletedGoals();
         }
 
-        Set<Long> weeklyActiveUserIds = new HashSet<>(mOperationUsageEventRepository.findDistinctUserAccountIdsWithin(
-            weekStartDateTime,
-            weekEndExclusiveDateTime
-        ));
+        Set<Long> weeklyActiveUserIds =
+            new HashSet<>(mOperationUsageEventRepository.findDistinctUserAccountIdsWithinExcludingUserRole(
+                weekStartDateTime,
+                weekEndExclusiveDateTime,
+                EXCLUDED_OPERATION_USER_ROLE
+            ));
         weeklyActiveUserIds.addAll(weeklyWritingUserIds);
 
         long weeklyActiveUsers = weeklyActiveUserIds.size();
         long weeklyWritingUsers = weeklyWritingUserIds.size();
-        long totalRegisteredUsers = mUserAccountRepository.count();
-        long newlyRegisteredUsers = mUserAccountRepository.countCreatedWithin(
+        long totalRegisteredUsers = mUserAccountRepository.countExcludingUserRole(EXCLUDED_OPERATION_USER_ROLE);
+        long newlyRegisteredUsers = mUserAccountRepository.countCreatedWithinExcludingUserRole(
             weekStartDateTime,
-            weekEndExclusiveDateTime
+            weekEndExclusiveDateTime,
+            EXCLUDED_OPERATION_USER_ROLE
         );
 
         double averageWritingDaysPerActiveUser = weeklyActiveUsers == 0
@@ -144,10 +154,11 @@ public class WeeklyOperationsSummaryService {
         LocalDateTime weekStartDateTime,
         LocalDateTime weekEndExclusiveDateTime
     ) {
-        return mOperationUsageEventRepository.countByEventTypeWithin(
+        return mOperationUsageEventRepository.countByEventTypeWithinExcludingUserRole(
             eventType,
             weekStartDateTime,
-            weekEndExclusiveDateTime
+            weekEndExclusiveDateTime,
+            EXCLUDED_OPERATION_USER_ROLE
         );
     }
 

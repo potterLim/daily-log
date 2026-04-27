@@ -1,9 +1,15 @@
 package com.potterlim.daymark.config;
 
+import java.io.IOException;
 import com.potterlim.daymark.security.SecurityUserDetailsService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -48,6 +54,7 @@ public class SecurityConfiguration {
                         "/images/**",
                         "/js/**",
                         "/favicon.ico",
+                        "/error",
                         "/login",
                         "/register",
                         "/forgot-password",
@@ -56,7 +63,7 @@ public class SecurityConfiguration {
                     )
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin/operations")
-                    .hasRole("ADMIN")
+                    .authenticated()
                     .requestMatchers(HttpMethod.GET,
                         "/account",
                         "/account/password",
@@ -84,7 +91,9 @@ public class SecurityConfiguration {
                     .anyRequest()
                     .permitAll())
             .exceptionHandling(exceptionHandling ->
-                exceptionHandling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
+                exceptionHandling
+                    .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                    .accessDeniedHandler(SecurityConfiguration::forwardToNotFoundPage))
             .securityContext(securityContext ->
                 securityContext.securityContextRepository(securityContextRepository))
             .headers(headers -> headers
@@ -114,7 +123,8 @@ public class SecurityConfiguration {
 
     @Bean
     public RememberMeServices createRememberMeServices(SecurityUserDetailsService securityUserDetailsService) {
-        DaymarkApplicationProperties.SecurityProperties securityProperties = mDaymarkApplicationProperties.getSecurity();
+        DaymarkApplicationProperties.SecurityProperties securityProperties =
+            mDaymarkApplicationProperties.getSecurity();
         TokenBasedRememberMeServices tokenBasedRememberMeServices =
             new TokenBasedRememberMeServices(securityProperties.getRememberMeKey(), securityUserDetailsService);
 
@@ -134,5 +144,14 @@ public class SecurityConfiguration {
     @Bean
     public PasswordEncoder createPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private static void forwardToNotFoundPage(
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse,
+        AccessDeniedException accessDeniedException
+    ) throws ServletException, IOException {
+        httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+        httpServletRequest.getRequestDispatcher("/error").forward(httpServletRequest, httpServletResponse);
     }
 }

@@ -2,6 +2,7 @@ package com.potterlim.daymark.repository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import com.potterlim.daymark.entity.EUserRole;
 import com.potterlim.daymark.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,11 +35,20 @@ public interface IUserAccountRepository extends JpaRepository<UserAccount, Long>
     @Query("""
         select count(userAccount)
         from UserAccount userAccount
+        where userAccount.mUserRole <> :excludedUserRole
+        """)
+    long countExcludingUserRole(@Param("excludedUserRole") EUserRole excludedUserRole);
+
+    @Query("""
+        select count(userAccount)
+        from UserAccount userAccount
         where userAccount.mCreatedAt >= :startDateTime
             and userAccount.mCreatedAt < :endExclusiveDateTime
+            and userAccount.mUserRole <> :excludedUserRole
         """)
-    long countCreatedWithin(
+    long countCreatedWithinExcludingUserRole(
         @Param("startDateTime") LocalDateTime startDateTime,
-        @Param("endExclusiveDateTime") LocalDateTime endExclusiveDateTime
+        @Param("endExclusiveDateTime") LocalDateTime endExclusiveDateTime,
+        @Param("excludedUserRole") EUserRole excludedUserRole
     );
 }

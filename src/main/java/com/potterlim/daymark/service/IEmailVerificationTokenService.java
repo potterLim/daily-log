@@ -1,6 +1,8 @@
 package com.potterlim.daymark.service;
 
+import java.util.Optional;
 import com.potterlim.daymark.entity.UserAccount;
+import com.potterlim.daymark.entity.UserAccountId;
 
 public interface IEmailVerificationTokenService {
 
@@ -8,5 +10,5 @@ public interface IEmailVerificationTokenService {
 
     boolean isEmailVerificationTokenValid(String rawTokenOrNull);
 
-    boolean verifyEmailAddress(String rawTokenOrNull);
+    Optional<UserAccountId> verifyEmailAddress(String rawTokenOrNull);
 }

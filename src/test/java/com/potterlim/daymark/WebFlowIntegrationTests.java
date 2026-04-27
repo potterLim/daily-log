@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
@@ -18,7 +19,9 @@ import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository
 import com.potterlim.daymark.service.IAuthenticationMailService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
+import com.potterlim.daymark.service.OperationUsageEventService;
 import com.potterlim.daymark.support.EDaymarkSectionType;
+import jakarta.servlet.RequestDispatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +83,9 @@ class WebFlowIntegrationTests {
 
     @Autowired
     private IOperationUsageEventRepository mOperationUsageEventRepository;
+
+    @Autowired
+    private OperationUsageEventService mOperationUsageEventService;
 
     @Autowired
     private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
@@ -839,6 +845,40 @@ class WebFlowIntegrationTests {
     }
 
     @Test
+    void malformedProductRequestsShouldRenderNotFoundPage() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("malformed-user", "malformed-user@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(get("/daymark/morning/edit")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
+            .andExpect(content().string(not(containsString("timestamp"))));
+
+        mMockMvc.perform(get("/daymark/morning/edit")
+                .param("date", "not-a-date")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
+            .andExpect(content().string(not(containsString("MethodArgumentTypeMismatchException"))));
+    }
+
+    @Test
+    void errorEndpointShouldRenderNotFoundPageWithoutDiagnosticDetails() throws Exception {
+        mMockMvc.perform(get("/error")
+                .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 500)
+                .requestAttr(
+                    RequestDispatcher.ERROR_EXCEPTION,
+                    new IllegalStateException("internal-secret")
+                ))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
+            .andExpect(content().string(not(containsString("internal-secret"))))
+            .andExpect(content().string(not(containsString("IllegalStateException"))));
+    }
+
+    @Test
     void protectedProductPagesShouldStillRequireLogin() throws Exception {
         mMockMvc.perform(get("/daymark/morning"))
             .andExpect(status().is3xxRedirection())
@@ -849,13 +889,98 @@ class WebFlowIntegrationTests {
     void operationsDashboardShouldRequireAdministratorRole() throws Exception {
         mMockMvc.perform(get("/admin/operations")
                 .with(SecurityMockMvcRequestPostProcessors.user("regular-user").roles("USER")))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")));
 
         mMockMvc.perform(get("/admin/operations")
                 .with(SecurityMockMvcRequestPostProcessors.user("operations-admin").roles("ADMIN")))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("운영 지표")))
             .andExpect(content().string(containsString("저장된 주간 스냅샷")));
+    }
+
+    @Test
+    void operationsDashboardShouldExcludeAdministratorActivity() throws Exception {
+        UserAccount firstUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("metrics-user-1", "metrics-user-1@example.com", "pass1234")
+        );
+        UserAccount secondUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("metrics-user-2", "metrics-user-2@example.com", "pass1234")
+        );
+        UserAccount adminUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("metrics-admin", "metrics-admin@example.com", "pass1234")
+        );
+        adminUser.grantAdministratorRole();
+        mUserAccountRepository.saveAndFlush(adminUser);
+
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            firstUser.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "사용자 목표 1"
+        );
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            firstUser.getUserAccountId(),
+            EDaymarkSectionType.EVENING_GOALS,
+            "- [x] 사용자 목표 1"
+        );
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            secondUser.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "사용자 목표 2"
+        );
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            secondUser.getUserAccountId(),
+            EDaymarkSectionType.EVENING_GOALS,
+            "- [ ] 사용자 목표 2"
+        );
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            adminUser.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "관리자 목표"
+        );
+        mDaymarkService.writeSection(
+            TEST_CURRENT_DATE,
+            adminUser.getUserAccountId(),
+            EDaymarkSectionType.EVENING_GOALS,
+            "- [x] 관리자 목표"
+        );
+
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.SIGN_IN_SUCCEEDED,
+            firstUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.SIGN_IN_SUCCEEDED,
+            secondUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.SIGN_IN_SUCCEEDED,
+            adminUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.RECORD_LIBRARY_VIEWED,
+            firstUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.RECORD_LIBRARY_VIEWED,
+            adminUser.getUserAccountId()
+        );
+
+        mMockMvc.perform(get("/admin/operations")
+                .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("작성 2명")))
+            .andExpect(content().string(containsString("50.0%")))
+            .andExpect(content().string(not(containsString("66.7%"))))
+            .andExpect(content().string(containsString("<span>Sign In</span>")))
+            .andExpect(content().string(containsString("<strong>2</strong>")))
+            .andExpect(content().string(containsString("<span>Records Viewed</span>")))
+            .andExpect(content().string(containsString("<strong>1</strong>")));
     }
 
     @Test

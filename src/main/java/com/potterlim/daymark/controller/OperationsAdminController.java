@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import com.potterlim.daymark.service.WeeklyOperationMetricSnapshotService;
 import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.service.WeeklyOperationsSummaryService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/admin/operations")
 public class OperationsAdminController {
+
+    private static final String ADMINISTRATOR_ROLE_AUTHORITY = "ROLE_ADMIN";
 
     private final WeeklyOperationsSummaryService mWeeklyOperationsSummaryService;
     private final WeeklyOperationMetricSnapshotService mWeeklyOperationMetricSnapshotService;
@@ -30,7 +35,16 @@ public class OperationsAdminController {
     }
 
     @GetMapping
-    public String showOperationsDashboard(Model model) {
+    public String showOperationsDashboard(
+        Authentication authenticationOrNull,
+        HttpServletResponse httpServletResponse,
+        Model model
+    ) {
+        if (!hasAdministratorRole(authenticationOrNull)) {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return "error/404";
+        }
+
         LocalDate currentDate = LocalDate.now(mClock);
         LocalDate currentWeekStartDate = resolveWeekStartDate(currentDate);
         WeeklyOperationsSummary currentWeeklySummary =
@@ -45,6 +59,17 @@ public class OperationsAdminController {
     }
 
     private static LocalDate resolveWeekStartDate(LocalDate referenceDate) {
-        return referenceDate.minusDays(referenceDate.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
+        return referenceDate.minusDays(
+            referenceDate.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue()
+        );
+    }
+
+    private static boolean hasAdministratorRole(Authentication authenticationOrNull) {
+        return authenticationOrNull != null
+            && authenticationOrNull.getAuthorities()
+                .stream()
+                .anyMatch(
+                    grantedAuthority -> ADMINISTRATOR_ROLE_AUTHORITY.equals(grantedAuthority.getAuthority())
+                );
     }
 }

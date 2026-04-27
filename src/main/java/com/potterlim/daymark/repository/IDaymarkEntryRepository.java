@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import com.potterlim.daymark.entity.DaymarkEntry;
+import com.potterlim.daymark.entity.EUserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -52,10 +53,12 @@ public interface IDaymarkEntryRepository extends JpaRepository<DaymarkEntry, Lon
         from DaymarkEntry daymarkEntry
         join fetch daymarkEntry.mUserAccount
         where daymarkEntry.mEntryDate between :startDate and :endDate
+            and daymarkEntry.mUserAccount.mUserRole <> :excludedUserRole
         order by daymarkEntry.mEntryDate asc
         """)
-    List<DaymarkEntry> findEntriesWithinDateRange(
+    List<DaymarkEntry> findEntriesWithinDateRangeExcludingUserRole(
         @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate
+        @Param("endDate") LocalDate endDate,
+        @Param("excludedUserRole") EUserRole excludedUserRole
     );
 }

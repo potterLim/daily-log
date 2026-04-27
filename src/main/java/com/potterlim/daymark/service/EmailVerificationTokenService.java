@@ -2,8 +2,10 @@ package com.potterlim.daymark.service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import com.potterlim.daymark.config.DaymarkApplicationProperties;
 import com.potterlim.daymark.entity.UserAccount;
+import com.potterlim.daymark.entity.UserAccountId;
 import com.potterlim.daymark.entity.UserEmailVerificationToken;
 import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
 import org.springframework.stereotype.Service;
@@ -61,28 +63,36 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
             return false;
         }
 
-        return mUserEmailVerificationTokenRepository.findByTokenHash(AuthenticationTokenSupport.hashToken(rawTokenOrNull))
+        return mUserEmailVerificationTokenRepository.findByTokenHash(
+                AuthenticationTokenSupport.hashToken(rawTokenOrNull)
+            )
             .filter(userEmailVerificationToken -> userEmailVerificationToken.isAvailableAt(LocalDateTime.now()))
             .isPresent();
     }
 
     @Override
     @Transactional
-    public boolean verifyEmailAddress(String rawTokenOrNull) {
+    public Optional<UserAccountId> verifyEmailAddress(String rawTokenOrNull) {
         if (rawTokenOrNull == null || rawTokenOrNull.isBlank()) {
-            return false;
+            return Optional.empty();
         }
 
         LocalDateTime consumedAt = LocalDateTime.now();
 
-        return mUserEmailVerificationTokenRepository.findByTokenHashForUpdate(AuthenticationTokenSupport.hashToken(rawTokenOrNull))
-            .filter(userEmailVerificationToken -> userEmailVerificationToken.isAvailableAt(consumedAt))
-            .map(userEmailVerificationToken -> {
-                UserAccount userAccount = userEmailVerificationToken.getUserAccount();
-                userEmailVerificationToken.markConsumedAt(consumedAt);
-                userAccount.markEmailAddressVerified(consumedAt);
-                return true;
-            })
-            .orElse(false);
+        Optional<UserEmailVerificationToken> userEmailVerificationTokenOrEmpty =
+            mUserEmailVerificationTokenRepository.findByTokenHashForUpdate(
+                AuthenticationTokenSupport.hashToken(rawTokenOrNull)
+            )
+                .filter(userEmailVerificationToken -> userEmailVerificationToken.isAvailableAt(consumedAt));
+
+        if (userEmailVerificationTokenOrEmpty.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UserEmailVerificationToken userEmailVerificationToken = userEmailVerificationTokenOrEmpty.get();
+        UserAccount userAccount = userEmailVerificationToken.getUserAccount();
+        userEmailVerificationToken.markConsumedAt(consumedAt);
+        userAccount.markEmailAddressVerified(consumedAt);
+        return Optional.of(userAccount.getUserAccountId());
     }
 }

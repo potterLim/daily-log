@@ -87,6 +87,11 @@ class WeeklyOperationsSummaryServiceTests {
         UserAccount thirdUser = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("summary-user-3", "summary-user-3@example.com", "pass1234")
         );
+        UserAccount adminUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("summary-admin", "summary-admin@example.com", "pass1234")
+        );
+        adminUser.grantAdministratorRole();
+        mUserAccountRepository.saveAndFlush(adminUser);
 
         mDaymarkService.writeSection(
             weekStartDate,
@@ -113,9 +118,24 @@ class WeeklyOperationsSummaryServiceTests {
             "- [x] 목표 3"
         );
         mDaymarkEntryRepository.save(DaymarkEntry.create(thirdUser, weekStartDate.plusDays(5L)));
-        mOperationUsageEventService.recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, firstUser.getUserAccountId());
-        mOperationUsageEventService.recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, firstUser.getUserAccountId());
-        mOperationUsageEventService.recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, firstUser.getUserAccountId());
+        mDaymarkService.writeSection(
+            weekStartDate.plusDays(1L),
+            adminUser.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "관리자 점검"
+        );
+        mDaymarkService.writeSection(
+            weekStartDate.plusDays(1L),
+            adminUser.getUserAccountId(),
+            EDaymarkSectionType.EVENING_GOALS,
+            "- [x] 관리자 점검"
+        );
+        recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, firstUser);
+        recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, firstUser);
+        recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, firstUser);
+        recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, adminUser);
+        recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, adminUser);
+        recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, adminUser);
         mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
         mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED);
 
@@ -142,5 +162,9 @@ class WeeklyOperationsSummaryServiceTests {
         mWeeklyOperationMetricSnapshotService.saveWeeklySnapshot(weeklyOperationsSummary);
 
         assertEquals(1L, mWeeklyOperationMetricSnapshotRepository.count());
+    }
+
+    private void recordUserEvent(EOperationEventType operationEventType, UserAccount userAccount) {
+        mOperationUsageEventService.recordUserEvent(operationEventType, userAccount.getUserAccountId());
     }
 }

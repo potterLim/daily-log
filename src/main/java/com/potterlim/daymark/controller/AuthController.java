@@ -1,5 +1,6 @@
 package com.potterlim.daymark.controller;
 
+import java.util.Optional;
 import com.potterlim.daymark.dto.auth.ForgotPasswordRequestDto;
 import com.potterlim.daymark.dto.auth.LoginRequestDto;
 import com.potterlim.daymark.dto.auth.RegisterRequestDto;
@@ -125,7 +126,7 @@ public class AuthController {
             }
         } catch (AuthenticationException authenticationException) {
             mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
-            mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
+            recordFailedSignInEvent(normalizedLoginIdentifier);
             model.addAttribute("loginErrorMessage", "로그인 정보가 올바르지 않습니다.");
             return "auth/login";
         }
@@ -156,7 +157,11 @@ public class AuthController {
         RedirectAttributes redirectAttributes
     ) {
         if (!registerRequestDto.hasMatchingPassword()) {
-            bindingResult.rejectValue("confirmPassword", "register.confirmPassword", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            bindingResult.rejectValue(
+                "confirmPassword",
+                "register.confirmPassword",
+                "비밀번호와 비밀번호 확인이 일치하지 않습니다."
+            );
         }
 
         if (bindingResult.hasErrors()) {
@@ -175,14 +180,25 @@ public class AuthController {
         try {
             userAccount = mUserAccountService.registerUserAccount(registerUserAccountCommand);
         } catch (DuplicateUserNameException duplicateUserNameException) {
-            bindingResult.rejectValue("userName", "register.userName", "이미 사용 중인 워크스페이스 ID입니다.");
+            bindingResult.rejectValue(
+                "userName",
+                "register.userName",
+                "이미 사용 중인 워크스페이스 ID입니다."
+            );
             return "auth/register";
         } catch (DuplicateEmailException duplicateEmailException) {
-            bindingResult.rejectValue("emailAddress", "register.emailAddress", "이미 사용 중인 이메일입니다.");
+            bindingResult.rejectValue(
+                "emailAddress",
+                "register.emailAddress",
+                "이미 사용 중인 이메일입니다."
+            );
             return "auth/register";
         }
 
-        mOperationUsageEventService.recordUserEvent(EOperationEventType.USER_REGISTERED, userAccount.getUserAccountId());
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.USER_REGISTERED,
+            userAccount.getUserAccountId()
+        );
         boolean wasVerificationMailSent =
             mAuthenticationMailWorkflowService.sendEmailVerificationInstructions(userAccount, httpServletRequest);
 
@@ -201,7 +217,7 @@ public class AuthController {
         } else {
             redirectAttributes.addFlashAttribute(
                 "emailVerificationWarningMessage",
-                "가입은 완료되었지만 인증 메일 전송에 문제가 있어 계정에서 다시 요청해 주세요."
+                "가입은 완료되었습니다. 인증 메일은 계정에서 다시 요청해 주세요."
             );
         }
 
@@ -228,9 +244,18 @@ public class AuthController {
             return "auth/forgot-password";
         }
 
-        mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED);
-        mUserAccountService.findUserAccountByEmailAddress(forgotPasswordRequestDto.getEmailAddress())
-            .ifPresent(userAccount -> mAuthenticationMailWorkflowService.sendRecoveryInstructions(userAccount, httpServletRequest));
+        Optional<UserAccount> userAccountOrEmpty =
+            mUserAccountService.findUserAccountByEmailAddress(forgotPasswordRequestDto.getEmailAddress());
+        userAccountOrEmpty.ifPresentOrElse(
+            userAccount -> {
+                mOperationUsageEventService.recordUserEvent(
+                    EOperationEventType.PASSWORD_RESET_REQUESTED,
+                    userAccount.getUserAccountId()
+                );
+                mAuthenticationMailWorkflowService.sendRecoveryInstructions(userAccount, httpServletRequest);
+            },
+            () -> mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED)
+        );
 
         redirectAttributes.addFlashAttribute(
             "forgotPasswordSuccessMessage",
@@ -240,7 +265,10 @@ public class AuthController {
     }
 
     @GetMapping("/reset-password")
-    public String showResetPasswordPage(@RequestParam(name = "token", required = false) String tokenOrNull, Model model) {
+    public String showResetPasswordPage(
+        @RequestParam(name = "token", required = false) String tokenOrNull,
+        Model model
+    ) {
         boolean isPasswordResetTokenValid = mPasswordResetTokenService.isPasswordResetTokenValid(tokenOrNull);
 
         if (!model.containsAttribute("resetPasswordRequestDto")) {
@@ -253,7 +281,10 @@ public class AuthController {
 
         model.addAttribute("isPasswordResetTokenValid", isPasswordResetTokenValid);
         if (!isPasswordResetTokenValid) {
-            model.addAttribute("passwordResetErrorMessage", "재설정 링크가 유효하지 않거나 이미 만료되었습니다.");
+            model.addAttribute(
+                "passwordResetErrorMessage",
+                "재설정 링크가 유효하지 않거나 이미 만료되었습니다."
+            );
         }
 
         return "auth/reset-password";
@@ -265,12 +296,16 @@ public class AuthController {
         Authentication authenticationOrNull,
         RedirectAttributes redirectAttributes
     ) {
-        boolean wasEmailVerified = mEmailVerificationTokenService.verifyEmailAddress(tokenOrNull);
-        if (wasEmailVerified) {
-            mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.EMAIL_VERIFIED);
+        Optional<UserAccountId> verifiedUserAccountIdOrEmpty =
+            mEmailVerificationTokenService.verifyEmailAddress(tokenOrNull);
+        if (verifiedUserAccountIdOrEmpty.isPresent()) {
+            mOperationUsageEventService.recordUserEvent(
+                EOperationEventType.EMAIL_VERIFIED,
+                verifiedUserAccountIdOrEmpty.get()
+            );
             redirectAttributes.addFlashAttribute(
                 "emailVerificationSuccessMessage",
-                "이메일 소유 확인이 완료되었습니다. 이제 복구 메일도 정상적으로 받을 수 있습니다."
+                "이메일 확인이 완료되었습니다. 복구 메일을 받을 수 있습니다."
             );
         } else {
             redirectAttributes.addFlashAttribute(
@@ -289,7 +324,11 @@ public class AuthController {
         Model model
     ) {
         if (!resetPasswordRequestDto.hasMatchingPassword()) {
-            bindingResult.rejectValue("confirmPassword", "reset.confirmPassword", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            bindingResult.rejectValue(
+                "confirmPassword",
+                "reset.confirmPassword",
+                "비밀번호와 비밀번호 확인이 일치하지 않습니다."
+            );
         }
 
         if (bindingResult.hasErrors()) {
@@ -304,7 +343,10 @@ public class AuthController {
             mPasswordResetTokenService.consumePasswordResetToken(resetPasswordRequestDto.getToken()).orElse(null);
         if (userAccountIdOrNull == null) {
             model.addAttribute("isPasswordResetTokenValid", false);
-            model.addAttribute("passwordResetErrorMessage", "재설정 링크가 유효하지 않거나 이미 만료되었습니다.");
+            model.addAttribute(
+                "passwordResetErrorMessage",
+                "재설정 링크가 유효하지 않거나 이미 만료되었습니다."
+            );
             return "auth/reset-password";
         }
 
@@ -369,6 +411,17 @@ public class AuthController {
         }
 
         mOperationUsageEventService.recordAnonymousEvent(eventType);
+    }
+
+    private void recordFailedSignInEvent(String loginIdentifier) {
+        mUserAccountService.findUserAccountByLoginIdentifier(loginIdentifier)
+            .ifPresentOrElse(
+                userAccount -> mOperationUsageEventService.recordUserEvent(
+                    EOperationEventType.SIGN_IN_FAILED,
+                    userAccount.getUserAccountId()
+                ),
+                () -> mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED)
+            );
     }
 
 }
