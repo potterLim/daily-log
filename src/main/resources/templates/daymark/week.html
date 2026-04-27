@@ -6,13 +6,15 @@
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
                 <h1 class="section-title">주간 리뷰</h1>
-                <p class="section-subtitle" th:text="${rangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</p>
-                <a th:href="@{/daymark/week}"
-                   th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
-                   th:classappend="${weekOffset == 0 ? ' is-active' : ''}"
-                   class="week-current-link">
-                    Current
-                </a>
+                <div class="week-range-row">
+                    <p class="section-subtitle" th:text="${rangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</p>
+                    <a th:href="@{/daymark/week}"
+                       th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
+                       th:classappend="${weekOffset == 0 ? ' is-active' : ''}"
+                       class="week-current-link">
+                        Current
+                    </a>
+                </div>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">

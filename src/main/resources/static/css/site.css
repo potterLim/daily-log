@@ -3267,23 +3267,34 @@ ol {
     line-height: 1.25;
 }
 
+.week-range-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.week-range-row .section-subtitle {
+    margin-top: 0;
+}
+
 .week-current-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     justify-self: start;
     width: fit-content;
-    min-height: 34px;
-    margin-top: 14px;
-    padding: 8px 16px;
+    min-height: 30px;
+    padding: 6px 13px;
     border-radius: 999px;
     color: var(--brand-deep);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 800;
     background: rgba(255, 255, 255, 0.72);
     box-shadow:
         inset 0 0 0 1px rgba(33, 107, 255, 0.16),
-        0 12px 28px rgba(33, 107, 255, 0.07);
+        0 8px 18px rgba(33, 107, 255, 0.06);
 }
 
 .week-current-link.is-active {
