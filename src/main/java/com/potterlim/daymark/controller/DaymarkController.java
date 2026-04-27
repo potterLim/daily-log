@@ -136,30 +136,20 @@ public class DaymarkController {
 
     @GetMapping("/evening")
     public String showEveningDateList(
-        @RequestParam(name = "week", defaultValue = "0") int weekOffset,
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
         LocalDate currentDate = LocalDate.now(mClock);
-        LocalDate referenceDate = currentDate.plusDays((long) weekOffset * 7L);
-        LocalDate startDate = resolveWeekStartDate(referenceDate);
         UserAccountId userAccountId = userAccount.getUserAccountId();
         mOperationUsageEventService.recordUserEvent(EOperationEventType.EVENING_REVIEW_VIEWED, userAccountId);
 
-        List<LocalDate> eveningDates = mDaymarkService.listWeek(referenceDate, userAccountId)
+        List<LocalDate> eveningDates = mDaymarkService.listWeek(currentDate, userAccountId)
             .stream()
             .filter(daymarkDayStatusDto -> daymarkDayStatusDto.hasMorningEntry() || daymarkDayStatusDto.hasEveningEntry())
             .map(DaymarkDayStatusDto::getDate)
             .toList();
 
         model.addAttribute("eveningDates", eveningDates);
-        model.addAttribute("weekOffset", weekOffset);
-        model.addAttribute("previousWeekOffset", weekOffset - 1);
-        model.addAttribute("nextWeekOffset", weekOffset + 1);
-        model.addAttribute("rangeLabel", buildWeekRangeLabel(startDate));
-        model.addAttribute("currentWeekRangeLabel", buildWeekRangeLabel(resolveWeekStartDate(currentDate)));
-        model.addAttribute("previousWeekRangeLabel", buildWeekRangeLabel(startDate.minusDays(7L)));
-        model.addAttribute("nextWeekRangeLabel", buildWeekRangeLabel(startDate.plusDays(7L)));
         model.addAttribute("defaultDate", currentDate);
         return "daymark/evening";
     }

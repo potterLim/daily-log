@@ -571,19 +571,22 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void eveningPageShouldRenderTheSameMondayToSundayRangeItQueries() throws Exception {
+    void eveningPageShouldRenderDirectDateSelectionWithoutWeekNavigation() throws Exception {
         UserAccount userAccount = mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("range-reviewer", "range-reviewer@example.com", "pass1234")
+            new RegisterUserAccountCommand("evening-reviewer", "evening-reviewer@example.com", "pass1234")
         );
 
         mMockMvc.perform(get("/daymark/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("2026. 04. 20. ~ 2026. 04. 26.")))
-            .andExpect(content().string(containsString("Current")))
+            .andExpect(content().string(containsString("저녁 회고")))
+            .andExpect(content().string(containsString("날짜 선택")))
             .andExpect(content().string(containsString("Open Review")))
             .andExpect(content().string(containsString("/daymark/evening/edit?date=" + TEST_CURRENT_DATE)))
-            .andExpect(content().string(not(containsString("2026. 04. 21. ~ 2026. 04. 27."))));
+            .andExpect(content().string(not(containsString("주 이동"))))
+            .andExpect(content().string(not(containsString("Prev"))))
+            .andExpect(content().string(not(containsString("Current"))))
+            .andExpect(content().string(not(containsString("Next"))));
     }
 
     @Test
@@ -740,11 +743,9 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("저녁 회고")))
-            .andExpect(content().string(containsString("Prev")))
-            .andExpect(content().string(containsString("Current")))
-            .andExpect(content().string(containsString("Next")))
             .andExpect(content().string(containsString("Open Review")))
-            .andExpect(content().string(containsString("New Review")));
+            .andExpect(content().string(containsString("New Review")))
+            .andExpect(content().string(not(containsString("주 이동"))));
 
         mMockMvc.perform(get("/daymark/evening/edit")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
