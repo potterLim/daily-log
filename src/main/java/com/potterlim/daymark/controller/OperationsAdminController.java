@@ -3,6 +3,9 @@ package com.potterlim.daymark.controller;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
+import com.potterlim.daymark.dto.operations.OperationsTrendViewDto;
+import com.potterlim.daymark.entity.WeeklyOperationMetricSnapshot;
 import com.potterlim.daymark.service.WeeklyOperationMetricSnapshotService;
 import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.service.WeeklyOperationsSummaryService;
@@ -49,11 +52,14 @@ public class OperationsAdminController {
         LocalDate currentWeekStartDate = resolveWeekStartDate(currentDate);
         WeeklyOperationsSummary currentWeeklySummary =
             mWeeklyOperationsSummaryService.buildWeeklySummary(currentWeekStartDate, currentDate);
+        List<WeeklyOperationMetricSnapshot> recentWeeklySnapshots =
+            mWeeklyOperationMetricSnapshotService.listRecentWeeklySnapshots();
 
         model.addAttribute("currentWeeklySummary", currentWeeklySummary);
+        model.addAttribute("recentWeeklySnapshots", recentWeeklySnapshots);
         model.addAttribute(
-            "recentWeeklySnapshots",
-            mWeeklyOperationMetricSnapshotService.listRecentWeeklySnapshots()
+            "operationsTrendViewDto",
+            OperationsTrendViewDto.create(recentWeeklySnapshots, currentWeeklySummary)
         );
         return "admin/operations";
     }

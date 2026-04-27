@@ -2081,6 +2081,235 @@ ol {
     border-radius: 0 16px 16px 0;
 }
 
+.operations-trend-panel {
+    gap: 24px;
+    overflow: hidden;
+}
+
+.operations-trend-header {
+    align-items: flex-start;
+}
+
+.operations-delta-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.operations-delta-strip span {
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: var(--text-tertiary);
+    font-size: 0.76rem;
+    font-weight: 800;
+    line-height: 34px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.12);
+}
+
+.operations-delta-strip strong {
+    margin-left: 4px;
+    color: var(--brand-deep);
+}
+
+.operations-trend-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.84fr);
+    gap: 18px;
+}
+
+.operations-chart-card {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid rgba(108, 123, 146, 0.13);
+    border-radius: 24px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(247, 250, 255, 0.62)),
+        rgba(255, 255, 255, 0.74);
+}
+
+.operations-chart-card-soft {
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 249, 236, 0.62)),
+        rgba(255, 255, 255, 0.74);
+}
+
+.operations-chart-head,
+.operations-chart-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.operations-chart-head > span {
+    color: var(--text-strong);
+    font-size: 0.86rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.operations-chart-legend {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.operations-chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.operations-chart-legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+}
+
+.legend-active {
+    background: #2563eb;
+}
+
+.legend-writing {
+    background: #0f9f6e;
+}
+
+.legend-new {
+    background: #f59e0b;
+}
+
+.legend-goal {
+    background: #ef7f45;
+}
+
+.operations-line-chart {
+    width: 100%;
+    min-height: 190px;
+}
+
+.operations-line-chart line {
+    stroke: rgba(108, 123, 146, 0.16);
+    stroke-width: 1;
+}
+
+.trend-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 4.2;
+}
+
+.trend-line-active {
+    stroke: #2563eb;
+}
+
+.trend-line-writing {
+    stroke: #0f9f6e;
+}
+
+.trend-line-new {
+    stroke: #f59e0b;
+    stroke-dasharray: 6 8;
+}
+
+.trend-line-goal {
+    stroke: #ef7f45;
+}
+
+.trend-dot {
+    fill: #ffffff;
+    stroke-width: 3;
+}
+
+.trend-dot-active {
+    stroke: #2563eb;
+}
+
+.trend-dot-writing {
+    stroke: #0f9f6e;
+}
+
+.trend-dot-goal {
+    stroke: #ef7f45;
+}
+
+.operations-chart-axis {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.operations-bar-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    gap: 10px;
+    padding: 14px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.1);
+}
+
+.operations-bar-week {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    min-width: 0;
+}
+
+.operations-bar-stack {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    height: 74px;
+    padding: 10px 8px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.operations-bar {
+    width: 10px;
+    min-height: 0;
+    border-radius: 999px;
+}
+
+.operations-bar-active {
+    background: linear-gradient(180deg, #73a7ff, #2563eb);
+}
+
+.operations-bar-writing {
+    background: linear-gradient(180deg, #72ddb6, #0f9f6e);
+}
+
+.operations-bar-engagement {
+    background: linear-gradient(180deg, #ffd58a, #f59e0b);
+}
+
+.operations-bar-week strong {
+    color: var(--text-strong);
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.operations-bar-week > span {
+    color: var(--text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
 .progress-card {
     display: grid;
     gap: 20px;
@@ -3363,6 +3592,7 @@ ol {
     .hero-grid,
     .auth-layout,
     .operations-grid,
+    .operations-trend-grid,
     .workspace-grid-two,
     .reflection-layout,
     .reader-grid,

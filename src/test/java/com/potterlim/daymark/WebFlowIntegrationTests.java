@@ -10,6 +10,7 @@ import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
+import com.potterlim.daymark.entity.WeeklyOperationMetricSnapshot;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
 import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
@@ -20,6 +21,7 @@ import com.potterlim.daymark.service.IAuthenticationMailService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
 import com.potterlim.daymark.service.OperationUsageEventService;
+import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.support.EDaymarkSectionType;
 import jakarta.servlet.RequestDispatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -901,6 +903,8 @@ class WebFlowIntegrationTests {
 
     @Test
     void operationsDashboardShouldExcludeAdministratorActivity() throws Exception {
+        savePreviousWeeklyOperationsSnapshot();
+
         UserAccount firstUser = mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("metrics-user-1", "metrics-user-1@example.com", "pass1234")
         );
@@ -977,6 +981,9 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("작성 2명")))
             .andExpect(content().string(containsString("50.0%")))
             .andExpect(content().string(not(containsString("66.7%"))))
+            .andExpect(content().string(containsString("주차별 성장 추이")))
+            .andExpect(content().string(containsString("trend-line-active")))
+            .andExpect(content().string(containsString("trend-line-goal")))
             .andExpect(content().string(containsString("<span>Sign In</span>")))
             .andExpect(content().string(containsString("<strong>2</strong>")))
             .andExpect(content().string(containsString("<span>Records Viewed</span>")))
@@ -1003,5 +1010,43 @@ class WebFlowIntegrationTests {
         }
 
         throw new IllegalStateException("Expected query parameter was not found.");
+    }
+
+    private void savePreviousWeeklyOperationsSnapshot() {
+        LocalDate previousWeekStartDate = TEST_CURRENT_DATE.minusDays(11L);
+        LocalDate previousWeekEndDate = previousWeekStartDate.plusDays(6L);
+        WeeklyOperationsSummary previousWeeklyOperationsSummary = new WeeklyOperationsSummary(
+            previousWeekStartDate,
+            previousWeekEndDate,
+            3L,
+            1L,
+            1L,
+            1L,
+            2L,
+            2L,
+            1L,
+            2L,
+            1L,
+            1L,
+            0L,
+            1L,
+            1L,
+            1L,
+            0L,
+            0L,
+            1L,
+            0L,
+            0L,
+            2.0,
+            3.0,
+            33.3
+        );
+        WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot =
+            WeeklyOperationMetricSnapshot.create(previousWeekStartDate, previousWeekEndDate);
+        weeklyOperationMetricSnapshot.updateFrom(
+            previousWeeklyOperationsSummary,
+            previousWeekEndDate.atTime(9, 0)
+        );
+        mWeeklyOperationMetricSnapshotRepository.save(weeklyOperationMetricSnapshot);
     }
 }

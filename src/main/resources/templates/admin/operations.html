@@ -44,6 +44,103 @@
         </div>
     </div>
 
+    <section class="surface-panel operations-panel operations-trend-panel">
+        <div class="operations-panel-header operations-trend-header">
+            <div>
+                <h2>주차별 성장 추이</h2>
+            </div>
+            <div class="operations-delta-strip" th:if="${operationsTrendViewDto.hasPreviousTrendPoint()}">
+                <span>Active <strong th:text="${operationsTrendViewDto.activeUserDeltaText}">+0</strong></span>
+                <span>Writing <strong th:text="${operationsTrendViewDto.writingUserDeltaText}">+0</strong></span>
+                <span>Goal <strong th:text="${operationsTrendViewDto.goalCompletionDeltaText}">+0.0p</strong></span>
+            </div>
+        </div>
+
+        <div class="operations-trend-grid">
+            <div class="operations-chart-card">
+                <div class="operations-chart-head">
+                    <span>Growth</span>
+                    <div class="operations-chart-legend">
+                        <span><i class="legend-active"></i>Active</span>
+                        <span><i class="legend-writing"></i>Writing</span>
+                        <span><i class="legend-new"></i>New</span>
+                    </div>
+                </div>
+                <svg class="operations-line-chart"
+                     viewBox="0 0 680 220"
+                     role="img"
+                     aria-label="주차별 사용자 성장 추이">
+                    <line x1="28" y1="188" x2="652" y2="188"></line>
+                    <line x1="28" y1="103" x2="652" y2="103"></line>
+                    <polyline class="trend-line trend-line-active"
+                              th:attr="points=${operationsTrendViewDto.activeUserLinePoints}"></polyline>
+                    <polyline class="trend-line trend-line-writing"
+                              th:attr="points=${operationsTrendViewDto.writingUserLinePoints}"></polyline>
+                    <polyline class="trend-line trend-line-new"
+                              th:attr="points=${operationsTrendViewDto.newUserLinePoints}"></polyline>
+                    <g th:each="trendPoint : ${operationsTrendViewDto.trendPoints}">
+                        <circle class="trend-dot trend-dot-active"
+                                r="4.6"
+                                th:attr="cx=${trendPoint.xAxisCoordinate}, cy=${trendPoint.activeUserYAxisCoordinate}">
+                        </circle>
+                        <circle class="trend-dot trend-dot-writing"
+                                r="4.2"
+                                th:attr="cx=${trendPoint.xAxisCoordinate}, cy=${trendPoint.writingUserYAxisCoordinate}">
+                        </circle>
+                    </g>
+                </svg>
+                <div class="operations-chart-axis">
+                    <span th:each="trendPoint : ${operationsTrendViewDto.trendPoints}"
+                          th:text="${#temporals.format(trendPoint.weekStartDate, 'MM. dd.')}">04. 01.</span>
+                </div>
+            </div>
+
+            <div class="operations-chart-card operations-chart-card-soft">
+                <div class="operations-chart-head">
+                    <span>Quality</span>
+                    <div class="operations-chart-legend">
+                        <span><i class="legend-goal"></i>Goal Rate</span>
+                    </div>
+                </div>
+                <svg class="operations-line-chart"
+                     viewBox="0 0 680 220"
+                     role="img"
+                     aria-label="주차별 목표 완료율 추이">
+                    <line x1="28" y1="188" x2="652" y2="188"></line>
+                    <line x1="28" y1="103" x2="652" y2="103"></line>
+                    <polyline class="trend-line trend-line-goal"
+                              th:attr="points=${operationsTrendViewDto.goalCompletionLinePoints}"></polyline>
+                    <g th:each="trendPoint : ${operationsTrendViewDto.trendPoints}">
+                        <circle class="trend-dot trend-dot-goal"
+                                r="4.8"
+                                th:attr="cx=${trendPoint.xAxisCoordinate}, cy=${trendPoint.goalCompletionYAxisCoordinate}">
+                        </circle>
+                    </g>
+                </svg>
+                <div class="operations-chart-axis">
+                    <span th:each="trendPoint : ${operationsTrendViewDto.trendPoints}"
+                          th:text="${#numbers.formatDecimal(trendPoint.goalCompletionRatePercent, 1, 0)} + '%'">80%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="operations-bar-timeline">
+            <div class="operations-bar-week"
+                 th:each="trendPoint : ${operationsTrendViewDto.trendPoints}">
+                <div class="operations-bar-stack">
+                    <span class="operations-bar operations-bar-active"
+                          th:style="'height: ' + ${trendPoint.activeUserBarPercent} + '%'"></span>
+                    <span class="operations-bar operations-bar-writing"
+                          th:style="'height: ' + ${trendPoint.writingUserBarPercent} + '%'"></span>
+                    <span class="operations-bar operations-bar-engagement"
+                          th:style="'height: ' + ${trendPoint.engagementBarPercent} + '%'"></span>
+                </div>
+                <strong th:text="${#temporals.format(trendPoint.weekStartDate, 'MM. dd.')}">04. 01.</strong>
+                <span th:text="${trendPoint.weeklyActiveUsers} + ' / ' + ${trendPoint.weeklyWritingUsers}">0 / 0</span>
+            </div>
+        </div>
+    </section>
+
     <div class="operations-grid">
         <section class="surface-panel operations-panel">
             <div class="operations-panel-header">
