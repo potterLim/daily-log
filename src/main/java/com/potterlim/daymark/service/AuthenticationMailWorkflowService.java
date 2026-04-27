@@ -1,6 +1,7 @@
 package com.potterlim.daymark.service;
 
 import com.potterlim.daymark.config.DaymarkApplicationProperties;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public class AuthenticationMailWorkflowService {
     private final IEmailVerificationTokenService mEmailVerificationTokenService;
     private final IAuthenticationMailService mAuthenticationMailService;
     private final IAlertNotificationService mAlertNotificationService;
+    private final OperationUsageEventService mOperationUsageEventService;
     private final DaymarkApplicationProperties mDaymarkApplicationProperties;
 
     public AuthenticationMailWorkflowService(
@@ -25,12 +27,14 @@ public class AuthenticationMailWorkflowService {
         IEmailVerificationTokenService emailVerificationTokenService,
         IAuthenticationMailService authenticationMailService,
         IAlertNotificationService alertNotificationService,
+        OperationUsageEventService operationUsageEventService,
         DaymarkApplicationProperties daymarkApplicationProperties
     ) {
         mPasswordResetTokenService = passwordResetTokenService;
         mEmailVerificationTokenService = emailVerificationTokenService;
         mAuthenticationMailService = authenticationMailService;
         mAlertNotificationService = alertNotificationService;
+        mOperationUsageEventService = operationUsageEventService;
         mDaymarkApplicationProperties = daymarkApplicationProperties;
     }
 
@@ -53,8 +57,16 @@ public class AuthenticationMailWorkflowService {
             );
 
             mAuthenticationMailService.sendPasswordResetMail(userAccount, resetPasswordUrl);
+            mOperationUsageEventService.recordUserEvent(
+                EOperationEventType.PASSWORD_RESET_MAIL_SENT,
+                userAccount.getUserAccountId()
+            );
             return true;
         } catch (RuntimeException runtimeException) {
+            mOperationUsageEventService.recordUserEvent(
+                EOperationEventType.PASSWORD_RESET_MAIL_FAILED,
+                userAccount.getUserAccountId()
+            );
             reportMailDeliveryFailure("password-reset-mail-failed", userAccount, runtimeException);
             return false;
         }
@@ -75,8 +87,16 @@ public class AuthenticationMailWorkflowService {
             );
 
             mAuthenticationMailService.sendEmailVerificationMail(userAccount, verificationUrl);
+            mOperationUsageEventService.recordUserEvent(
+                EOperationEventType.EMAIL_VERIFICATION_MAIL_SENT,
+                userAccount.getUserAccountId()
+            );
             return true;
         } catch (RuntimeException runtimeException) {
+            mOperationUsageEventService.recordUserEvent(
+                EOperationEventType.EMAIL_VERIFICATION_MAIL_FAILED,
+                userAccount.getUserAccountId()
+            );
             reportMailDeliveryFailure("email-verification-mail-failed", userAccount, runtimeException);
             return false;
         }

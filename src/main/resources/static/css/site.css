@@ -1968,6 +1968,115 @@ ol {
     transform: translateX(2px);
 }
 
+.operations-summary-grid {
+    grid-template-columns: 1.4fr repeat(2, minmax(0, 1fr));
+}
+
+.operations-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.operations-panel {
+    display: grid;
+    gap: 20px;
+}
+
+.operations-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.operations-panel-header h2 {
+    margin: 0;
+    color: var(--text-strong);
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.operations-metric-list {
+    display: grid;
+    gap: 10px;
+}
+
+.operations-metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid rgba(108, 123, 146, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.62);
+}
+
+.operations-metric-row span {
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.operations-metric-row strong {
+    color: var(--text-strong);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.operations-empty {
+    padding: 26px;
+    border-radius: 18px;
+    color: var(--text-secondary);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.62);
+}
+
+.operations-table-wrap {
+    overflow-x: auto;
+}
+
+.operations-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.operations-table th,
+.operations-table td {
+    padding: 14px 16px;
+    white-space: nowrap;
+}
+
+.operations-table th {
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.operations-table td {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(108, 123, 146, 0.12);
+    border-bottom: 1px solid rgba(108, 123, 146, 0.12);
+}
+
+.operations-table td:first-child {
+    border-left: 1px solid rgba(108, 123, 146, 0.12);
+    border-radius: 16px 0 0 16px;
+    color: var(--text-strong);
+}
+
+.operations-table td:last-child {
+    border-right: 1px solid rgba(108, 123, 146, 0.12);
+    border-radius: 0 16px 16px 0;
+}
+
 .progress-card {
     display: grid;
     gap: 20px;
@@ -3214,6 +3323,7 @@ ol {
 @media (max-width: 1180px) {
     .hero-grid,
     .auth-layout,
+    .operations-grid,
     .workspace-grid-two,
     .reflection-layout,
     .reader-grid,
@@ -3308,6 +3418,7 @@ ol {
     .hero-metric-grid,
     .feature-grid,
     .summary-grid,
+    .operations-summary-grid,
     .export-report-summary,
     .library-filter-grid,
     .helper-stack-tight,

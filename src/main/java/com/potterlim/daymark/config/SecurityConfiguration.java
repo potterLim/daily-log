@@ -55,6 +55,8 @@ public class SecurityConfiguration {
                         "/verify-email"
                     )
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/admin/operations")
+                    .hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET,
                         "/account",
                         "/account/password",

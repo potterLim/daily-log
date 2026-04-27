@@ -2,12 +2,15 @@ package com.potterlim.daymark.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import com.potterlim.daymark.entity.DaymarkEntry;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
+import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.support.EDaymarkSectionType;
 import org.springframework.stereotype.Service;
@@ -18,21 +21,26 @@ public class WeeklyOperationsSummaryService {
 
     private final IUserAccountRepository mUserAccountRepository;
     private final IDaymarkEntryRepository mDaymarkEntryRepository;
+    private final IOperationUsageEventRepository mOperationUsageEventRepository;
 
     public WeeklyOperationsSummaryService(
         IUserAccountRepository userAccountRepository,
-        IDaymarkEntryRepository daymarkEntryRepository
+        IDaymarkEntryRepository daymarkEntryRepository,
+        IOperationUsageEventRepository operationUsageEventRepository
     ) {
         mUserAccountRepository = userAccountRepository;
         mDaymarkEntryRepository = daymarkEntryRepository;
+        mOperationUsageEventRepository = operationUsageEventRepository;
     }
 
     @Transactional(readOnly = true)
     public WeeklyOperationsSummary buildWeeklySummary(LocalDate weekStartDate, LocalDate weekEndDate) {
         validateWeekRange(weekStartDate, weekEndDate);
 
+        LocalDateTime weekStartDateTime = weekStartDate.atStartOfDay();
+        LocalDateTime weekEndExclusiveDateTime = weekEndDate.plusDays(1L).atStartOfDay();
         List<DaymarkEntry> weeklyEntries = mDaymarkEntryRepository.findEntriesWithinDateRange(weekStartDate, weekEndDate);
-        Set<Long> weeklyActiveUserIds = new HashSet<>();
+        Set<Long> weeklyWritingUserIds = new HashSet<>();
         long weeklyWritingDays = 0L;
         long weeklyMorningEntries = 0L;
         long weeklyEveningEntries = 0L;
@@ -44,7 +52,7 @@ public class WeeklyOperationsSummaryService {
                 continue;
             }
 
-            weeklyActiveUserIds.add(daymarkEntry.getUserAccountId().getValue());
+            weeklyWritingUserIds.add(daymarkEntry.getUserAccountId().getValue());
             weeklyWritingDays += 1L;
 
             if (daymarkEntry.hasMorningEntry()) {
@@ -61,11 +69,18 @@ public class WeeklyOperationsSummaryService {
             completedTrackedGoals += goalCompletionAccumulator.getCompletedGoals();
         }
 
+        Set<Long> weeklyActiveUserIds = new HashSet<>(mOperationUsageEventRepository.findDistinctUserAccountIdsWithin(
+            weekStartDateTime,
+            weekEndExclusiveDateTime
+        ));
+        weeklyActiveUserIds.addAll(weeklyWritingUserIds);
+
         long weeklyActiveUsers = weeklyActiveUserIds.size();
+        long weeklyWritingUsers = weeklyWritingUserIds.size();
         long totalRegisteredUsers = mUserAccountRepository.count();
         long newlyRegisteredUsers = mUserAccountRepository.countCreatedWithin(
-            weekStartDate.atStartOfDay(),
-            weekEndDate.plusDays(1L).atStartOfDay()
+            weekStartDateTime,
+            weekEndExclusiveDateTime
         );
 
         double averageWritingDaysPerActiveUser = weeklyActiveUsers == 0
@@ -84,9 +99,22 @@ public class WeeklyOperationsSummaryService {
             totalRegisteredUsers,
             newlyRegisteredUsers,
             weeklyActiveUsers,
+            weeklyWritingUsers,
             weeklyWritingDays,
             weeklyMorningEntries,
             weeklyEveningEntries,
+            countEvent(EOperationEventType.SIGN_IN_SUCCEEDED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.SIGN_IN_FAILED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.EMAIL_VERIFICATION_MAIL_SENT, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.EMAIL_VERIFICATION_MAIL_FAILED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.EMAIL_VERIFIED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.PASSWORD_RESET_REQUESTED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.PASSWORD_RESET_MAIL_SENT, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.PASSWORD_RESET_MAIL_FAILED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.PASSWORD_RESET_COMPLETED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.MARKDOWN_EXPORTED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.PDF_EXPORT_VIEWED, weekStartDateTime, weekEndExclusiveDateTime),
             averageWritingDaysPerActiveUser,
             averageEntryCompletionsPerActiveUser,
             goalCompletionRatePercent
@@ -109,6 +137,18 @@ public class WeeklyOperationsSummaryService {
         if (weekEndDate.isBefore(weekStartDate)) {
             throw new IllegalArgumentException("weekEndDate must not be before weekStartDate.");
         }
+    }
+
+    private long countEvent(
+        EOperationEventType eventType,
+        LocalDateTime weekStartDateTime,
+        LocalDateTime weekEndExclusiveDateTime
+    ) {
+        return mOperationUsageEventRepository.countByEventTypeWithin(
+            eventType,
+            weekStartDateTime,
+            weekEndExclusiveDateTime
+        );
     }
 
     private static GoalCompletionAccumulator analyzeGoalCompletion(String eveningGoalsText) {

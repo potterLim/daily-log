@@ -21,10 +21,12 @@ import com.potterlim.daymark.dto.daymark.EveningFormDto;
 import com.potterlim.daymark.dto.daymark.EveningGoalItemDto;
 import com.potterlim.daymark.dto.daymark.MorningFormDto;
 import com.potterlim.daymark.dto.daymark.WeeklyProgressItemDto;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
 import com.potterlim.daymark.service.IDaymarkLibraryService;
 import com.potterlim.daymark.service.IDaymarkService;
+import com.potterlim.daymark.service.OperationUsageEventService;
 import com.potterlim.daymark.support.EDaymarkSectionType;
 import com.potterlim.daymark.support.SimpleMarkdownRenderer;
 import jakarta.validation.Valid;
@@ -54,17 +56,20 @@ public class DaymarkController {
     private final IDaymarkService mDaymarkService;
     private final IDaymarkLibraryService mDaymarkLibraryService;
     private final SimpleMarkdownRenderer mSimpleMarkdownRenderer;
+    private final OperationUsageEventService mOperationUsageEventService;
     private final Clock mClock;
 
     public DaymarkController(
         IDaymarkService daymarkService,
         IDaymarkLibraryService daymarkLibraryService,
         SimpleMarkdownRenderer simpleMarkdownRenderer,
+        OperationUsageEventService operationUsageEventService,
         Clock clock
     ) {
         mDaymarkService = daymarkService;
         mDaymarkLibraryService = daymarkLibraryService;
         mSimpleMarkdownRenderer = simpleMarkdownRenderer;
+        mOperationUsageEventService = operationUsageEventService;
         mClock = clock;
     }
 
@@ -72,6 +77,7 @@ public class DaymarkController {
     public String showMorningDateList(@AuthenticationPrincipal UserAccount userAccount, Model model) {
         LocalDate currentDate = LocalDate.now(mClock);
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.MORNING_PLAN_VIEWED, userAccountId);
         List<LocalDate> morningDates = mDaymarkService.listWeek(currentDate, userAccountId)
             .stream()
             .filter(DaymarkDayStatusDto::hasMorningEntry)
@@ -90,6 +96,7 @@ public class DaymarkController {
         Model model
     ) {
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.MORNING_PLAN_VIEWED, userAccountId);
         MorningFormDto morningFormDto = new MorningFormDto();
         morningFormDto.setDate(date);
         morningFormDto.setGoals(mDaymarkService.readSection(date, userAccountId, EDaymarkSectionType.GOALS));
@@ -123,6 +130,7 @@ public class DaymarkController {
         );
 
         redirectAttributes.addFlashAttribute("message", "아침 계획이 저장되었습니다.");
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.MORNING_PLAN_SAVED, userAccountId);
         return "redirect:/daymark/morning";
     }
 
@@ -135,6 +143,7 @@ public class DaymarkController {
         LocalDate referenceDate = LocalDate.now(mClock).plusDays((long) weekOffset * 7L);
         LocalDate startDate = resolveWeekStartDate(referenceDate);
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.EVENING_REVIEW_VIEWED, userAccountId);
 
         List<LocalDate> eveningDates = mDaymarkService.listWeek(referenceDate, userAccountId)
             .stream()
@@ -160,6 +169,7 @@ public class DaymarkController {
         Model model
     ) {
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.EVENING_REVIEW_VIEWED, userAccountId);
         model.addAttribute("morningEntryHtml", buildMorningLogHtmlForDate(date, userAccountId));
         model.addAttribute("eveningFormDto", buildEveningFormDto(date, userAccountId));
         return "daymark/evening-edit";
@@ -214,12 +224,14 @@ public class DaymarkController {
         );
 
         redirectAttributes.addFlashAttribute("message", "저녁 회고가 저장되었습니다.");
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.EVENING_REVIEW_SAVED, userAccountId);
         return "redirect:/daymark/evening";
     }
 
     @GetMapping("/week")
     public String showWeekPage(@AuthenticationPrincipal UserAccount userAccount, Model model) {
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.WEEKLY_REVIEW_VIEWED, userAccountId);
         List<WeeklyProgressItemDto> weeklyProgressItems = new ArrayList<>();
         int weekAchieved = 0;
         int weekTotal = 0;
@@ -279,6 +291,7 @@ public class DaymarkController {
         DaymarkLibraryViewDto libraryViewDto =
             mDaymarkLibraryService.searchLibrary(searchCriteria, userAccount.getUserAccountId());
 
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, userAccount.getUserAccountId());
         model.addAttribute("libraryViewDto", libraryViewDto);
         return "daymark/library";
     }
@@ -303,6 +316,7 @@ public class DaymarkController {
             searchCriteria,
             userAccount.getUserAccountId()
         );
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, userAccount.getUserAccountId());
         ContentDisposition contentDisposition = ContentDisposition.attachment()
             .filename(buildLibraryExportFileName(searchCriteria, "md"), StandardCharsets.UTF_8)
             .build();
@@ -333,6 +347,7 @@ public class DaymarkController {
         DaymarkLibraryViewDto libraryViewDto =
             mDaymarkLibraryService.searchLibrary(searchCriteria, userAccount.getUserAccountId());
 
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.PDF_EXPORT_VIEWED, userAccount.getUserAccountId());
         model.addAttribute("libraryViewDto", libraryViewDto);
         model.addAttribute("exportItemHtmlByDate", buildExportItemHtmlByDate(libraryViewDto.getItems()));
         model.addAttribute("exportFileName", buildLibraryExportFileName(searchCriteria, "pdf"));
@@ -346,6 +361,7 @@ public class DaymarkController {
         Model model
     ) {
         UserAccountId userAccountId = userAccount.getUserAccountId();
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.RECORD_PREVIEW_VIEWED, userAccountId);
         String markdownText = mDaymarkService.readEntryMarkdownContent(date, userAccountId);
         boolean hasPreviewContent = !markdownText.isBlank();
 

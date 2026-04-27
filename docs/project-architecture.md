@@ -92,6 +92,7 @@ src/main/resources
 | Markdown 내보내기 | `/daymark/library/export/markdown` | 선택한 기록 다운로드 |
 | PDF 미리보기 | `/daymark/library/export/pdf` | 브라우저 PDF 저장용 보고서 |
 | 기록 보기 | `/daymark/preview` | 날짜별 저장 기록 조회 |
+| 운영 지표 | `/admin/operations` | 관리자 전용 사용/인증/내보내기 지표 |
 | 상태 확인 | `/actuator/health/**` | 런타임 상태 확인 |
 
 ## 데이터 모델
@@ -102,6 +103,8 @@ src/main/resources
 - `user_email_verification_token`: 이메일 인증용 1회성 토큰
 - `user_password_reset_token`: 비밀번호 재설정용 1회성 토큰
 - `daymark_entry`: 사용자와 날짜 기준의 하루 기록
+- `operation_usage_event`: 로그인, 인증 메일, 기록 저장, 라이브러리 조회, 내보내기 이벤트
+- `weekly_operation_metric_snapshot`: 주간 운영 지표 스냅샷
 
 `daymark_entry`는 하루 기록을 하나의 Markdown 문자열로 저장하지 않습니다. 목표, 집중 영역, 예상 변수, 저녁 체크리스트, 성과, 개선점, 감사, 메모를 섹션별 텍스트로 저장합니다.
 
@@ -122,7 +125,9 @@ src/main/resources
 | `AuthenticationMailWorkflowService` | 인증/복구 메일 흐름과 실패 알림 연결 |
 | `DaymarkService` | 날짜별 기록 읽기, 쓰기, 주간 상태 계산 |
 | `DaymarkLibraryService` | 장기 기록 검색, 타임라인, 추세, 캘린더, Markdown 내보내기 |
+| `OperationUsageEventService` | 운영 이벤트 저장 |
 | `WeeklyOperationsSummaryService` | 운영용 주간 지표 계산 |
+| `WeeklyOperationMetricSnapshotService` | 주간 운영 지표 저장과 조회 |
 
 ## 주요 요청 흐름
 
@@ -167,6 +172,7 @@ src/main/resources
 
 - 정적 파일, 인증 화면, 이메일 인증, 상태 확인, 알 수 없는 공개 URL의 404 화면은 로그인 없이 접근할 수 있습니다.
 - 제품 기능의 실제 라우트는 로그인 후 접근할 수 있습니다.
+- 운영 지표 화면은 `ADMIN` 권한 계정만 접근할 수 있습니다.
 - 비밀번호는 BCrypt로 저장합니다.
 - 인증/재설정 토큰은 원문이 아니라 해시로 저장합니다.
 - 로그인 실패와 비밀번호 찾기 응답은 일반화합니다.

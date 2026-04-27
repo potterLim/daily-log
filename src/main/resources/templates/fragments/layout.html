@@ -83,6 +83,12 @@
                th:href="@{/daymark/library}">
                 Records
             </a>
+            <a sec:authorize="hasRole('ADMIN')"
+               class="nav-chip"
+               th:classappend="${#strings.contains(pageTitle, '운영')} ? ' is-active' : ''"
+               th:href="@{/admin/operations}">
+                Operations
+            </a>
         </nav>
 
         <div class="topbar-actions">

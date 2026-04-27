@@ -3,13 +3,18 @@ package com.potterlim.daymark;
 import java.time.LocalDate;
 import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.entity.DaymarkEntry;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
+import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
 import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
+import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
+import com.potterlim.daymark.service.OperationUsageEventService;
+import com.potterlim.daymark.service.WeeklyOperationMetricSnapshotService;
 import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.service.WeeklyOperationsSummaryService;
 import com.potterlim.daymark.support.EDaymarkSectionType;
@@ -38,6 +43,12 @@ class WeeklyOperationsSummaryServiceTests {
     private IDaymarkEntryRepository mDaymarkEntryRepository;
 
     @Autowired
+    private OperationUsageEventService mOperationUsageEventService;
+
+    @Autowired
+    private WeeklyOperationMetricSnapshotService mWeeklyOperationMetricSnapshotService;
+
+    @Autowired
     private IUserPasswordResetTokenRepository mUserPasswordResetTokenRepository;
 
     @Autowired
@@ -46,8 +57,16 @@ class WeeklyOperationsSummaryServiceTests {
     @Autowired
     private IUserAccountRepository mUserAccountRepository;
 
+    @Autowired
+    private IOperationUsageEventRepository mOperationUsageEventRepository;
+
+    @Autowired
+    private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
+
     @BeforeEach
     void setUpTestEnvironment() {
+        mWeeklyOperationMetricSnapshotRepository.deleteAll();
+        mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
         mUserPasswordResetTokenRepository.deleteAll();
         mUserEmailVerificationTokenRepository.deleteAll();
@@ -94,6 +113,11 @@ class WeeklyOperationsSummaryServiceTests {
             "- [x] 목표 3"
         );
         mDaymarkEntryRepository.save(DaymarkEntry.create(thirdUser, weekStartDate.plusDays(5L)));
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, firstUser.getUserAccountId());
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, firstUser.getUserAccountId());
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, firstUser.getUserAccountId());
+        mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
+        mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED);
 
         WeeklyOperationsSummary weeklyOperationsSummary =
             mWeeklyOperationsSummaryService.buildWeeklySummary(weekStartDate, weekEndDate);
@@ -101,11 +125,22 @@ class WeeklyOperationsSummaryServiceTests {
         assertEquals(3L, weeklyOperationsSummary.getTotalRegisteredUsers());
         assertEquals(3L, weeklyOperationsSummary.getNewlyRegisteredUsers());
         assertEquals(2L, weeklyOperationsSummary.getWeeklyActiveUsers());
+        assertEquals(2L, weeklyOperationsSummary.getWeeklyWritingUsers());
         assertEquals(3L, weeklyOperationsSummary.getWeeklyWritingDays());
         assertEquals(2L, weeklyOperationsSummary.getWeeklyMorningEntries());
         assertEquals(2L, weeklyOperationsSummary.getWeeklyEveningEntries());
+        assertEquals(1L, weeklyOperationsSummary.getSignInSucceededCount());
+        assertEquals(1L, weeklyOperationsSummary.getSignInFailedCount());
+        assertEquals(1L, weeklyOperationsSummary.getPasswordResetRequestedCount());
+        assertEquals(1L, weeklyOperationsSummary.getRecordLibraryViewedCount());
+        assertEquals(1L, weeklyOperationsSummary.getMarkdownExportedCount());
+        assertEquals(0L, weeklyOperationsSummary.getPdfExportViewedCount());
         assertEquals(1.5, weeklyOperationsSummary.getAverageWritingDaysPerActiveUser(), 0.0001);
         assertEquals(2.0, weeklyOperationsSummary.getAverageEntryCompletionsPerActiveUser(), 0.0001);
         assertEquals(66.66666666666667, weeklyOperationsSummary.getGoalCompletionRatePercent(), 0.0001);
+
+        mWeeklyOperationMetricSnapshotService.saveWeeklySnapshot(weeklyOperationsSummary);
+
+        assertEquals(1L, mWeeklyOperationMetricSnapshotRepository.count());
     }
 }

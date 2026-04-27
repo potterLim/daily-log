@@ -20,13 +20,16 @@ public class WeeklyOperationsSummaryScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(WeeklyOperationsSummaryScheduler.class);
 
     private final WeeklyOperationsSummaryService mWeeklyOperationsSummaryService;
+    private final WeeklyOperationMetricSnapshotService mWeeklyOperationMetricSnapshotService;
     private final IAlertNotificationService mAlertNotificationService;
 
     public WeeklyOperationsSummaryScheduler(
         WeeklyOperationsSummaryService weeklyOperationsSummaryService,
+        WeeklyOperationMetricSnapshotService weeklyOperationMetricSnapshotService,
         IAlertNotificationService alertNotificationService
     ) {
         mWeeklyOperationsSummaryService = weeklyOperationsSummaryService;
+        mWeeklyOperationMetricSnapshotService = weeklyOperationMetricSnapshotService;
         mAlertNotificationService = alertNotificationService;
     }
 
@@ -42,18 +45,37 @@ public class WeeklyOperationsSummaryScheduler {
         try {
             WeeklyOperationsSummary weeklyOperationsSummary =
                 mWeeklyOperationsSummaryService.buildWeeklySummary(previousWeekStartDate, previousWeekEndDate);
+            mWeeklyOperationMetricSnapshotService.saveWeeklySnapshot(weeklyOperationsSummary);
             LOGGER.info(
                 "WEEKLY_OPERATIONS_SUMMARY weekStart={} weekEnd={} totalRegisteredUsers={} newlyRegisteredUsers={} "
-                    + "weeklyActiveUsers={} weeklyWritingDays={} weeklyMorningEntries={} weeklyEveningEntries={} "
-                    + "averageWritingDaysPerActiveUser={} averageEntryCompletionsPerActiveUser={} goalCompletionRatePercent={}",
+                    + "weeklyActiveUsers={} weeklyWritingUsers={} weeklyWritingDays={} weeklyMorningEntries={} "
+                    + "weeklyEveningEntries={} signInSucceededCount={} signInFailedCount={} "
+                    + "emailVerificationMailSentCount={} emailVerificationMailFailedCount={} emailVerifiedCount={} "
+                    + "passwordResetRequestedCount={} passwordResetMailSentCount={} passwordResetMailFailedCount={} "
+                    + "passwordResetCompletedCount={} recordLibraryViewedCount={} markdownExportedCount={} "
+                    + "pdfExportViewedCount={} averageWritingDaysPerActiveUser={} "
+                    + "averageEntryCompletionsPerActiveUser={} goalCompletionRatePercent={}",
                 weeklyOperationsSummary.getWeekStartDate(),
                 weeklyOperationsSummary.getWeekEndDate(),
                 weeklyOperationsSummary.getTotalRegisteredUsers(),
                 weeklyOperationsSummary.getNewlyRegisteredUsers(),
                 weeklyOperationsSummary.getWeeklyActiveUsers(),
+                weeklyOperationsSummary.getWeeklyWritingUsers(),
                 weeklyOperationsSummary.getWeeklyWritingDays(),
                 weeklyOperationsSummary.getWeeklyMorningEntries(),
                 weeklyOperationsSummary.getWeeklyEveningEntries(),
+                weeklyOperationsSummary.getSignInSucceededCount(),
+                weeklyOperationsSummary.getSignInFailedCount(),
+                weeklyOperationsSummary.getEmailVerificationMailSentCount(),
+                weeklyOperationsSummary.getEmailVerificationMailFailedCount(),
+                weeklyOperationsSummary.getEmailVerifiedCount(),
+                weeklyOperationsSummary.getPasswordResetRequestedCount(),
+                weeklyOperationsSummary.getPasswordResetMailSentCount(),
+                weeklyOperationsSummary.getPasswordResetMailFailedCount(),
+                weeklyOperationsSummary.getPasswordResetCompletedCount(),
+                weeklyOperationsSummary.getRecordLibraryViewedCount(),
+                weeklyOperationsSummary.getMarkdownExportedCount(),
+                weeklyOperationsSummary.getPdfExportViewedCount(),
                 formatMetric(weeklyOperationsSummary.getAverageWritingDaysPerActiveUser()),
                 formatMetric(weeklyOperationsSummary.getAverageEntryCompletionsPerActiveUser()),
                 formatMetric(weeklyOperationsSummary.getGoalCompletionRatePercent())

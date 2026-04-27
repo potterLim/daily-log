@@ -5,6 +5,7 @@ import com.potterlim.daymark.dto.auth.LoginRequestDto;
 import com.potterlim.daymark.dto.auth.RegisterRequestDto;
 import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.dto.auth.ResetPasswordRequestDto;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
 import com.potterlim.daymark.service.AuthenticationMailWorkflowService;
@@ -13,6 +14,7 @@ import com.potterlim.daymark.service.DuplicateUserNameException;
 import com.potterlim.daymark.service.IEmailVerificationTokenService;
 import com.potterlim.daymark.service.IPasswordResetTokenService;
 import com.potterlim.daymark.service.IUserAccountService;
+import com.potterlim.daymark.service.OperationUsageEventService;
 import com.potterlim.daymark.support.LoginRedirectSupport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,6 +47,7 @@ public class AuthController {
     private final AuthenticationManager mAuthenticationManager;
     private final SecurityContextRepository mSecurityContextRepository;
     private final RememberMeServices mRememberMeServices;
+    private final OperationUsageEventService mOperationUsageEventService;
 
     public AuthController(
         IUserAccountService userAccountService,
@@ -53,7 +56,8 @@ public class AuthController {
         AuthenticationMailWorkflowService authenticationMailWorkflowService,
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
-        RememberMeServices rememberMeServices
+        RememberMeServices rememberMeServices,
+        OperationUsageEventService operationUsageEventService
     ) {
         mUserAccountService = userAccountService;
         mPasswordResetTokenService = passwordResetTokenService;
@@ -62,6 +66,7 @@ public class AuthController {
         mAuthenticationManager = authenticationManager;
         mSecurityContextRepository = securityContextRepository;
         mRememberMeServices = rememberMeServices;
+        mOperationUsageEventService = operationUsageEventService;
     }
 
     @GetMapping("/login")
@@ -100,17 +105,18 @@ public class AuthController {
         }
 
         String normalizedLoginIdentifier = loginRequestDto.getLoginIdentifier().trim();
+        Authentication authentication;
 
         try {
             if (loginRequestDto.isRememberMe()) {
-                authenticateUserWithRememberMe(
+                authentication = authenticateUserWithRememberMe(
                     normalizedLoginIdentifier,
                     loginRequestDto.getPassword(),
                     httpServletRequest,
                     httpServletResponse
                 );
             } else {
-                authenticateUser(
+                authentication = authenticateUser(
                     normalizedLoginIdentifier,
                     loginRequestDto.getPassword(),
                     httpServletRequest,
@@ -119,10 +125,12 @@ public class AuthController {
             }
         } catch (AuthenticationException authenticationException) {
             mRememberMeServices.loginFail(httpServletRequest, httpServletResponse);
+            mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
             model.addAttribute("loginErrorMessage", "로그인 정보가 올바르지 않습니다.");
             return "auth/login";
         }
 
+        recordAuthenticatedUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, authentication);
         return "redirect:" + loginRedirectPath;
     }
 
@@ -174,6 +182,7 @@ public class AuthController {
             return "auth/register";
         }
 
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.USER_REGISTERED, userAccount.getUserAccountId());
         boolean wasVerificationMailSent =
             mAuthenticationMailWorkflowService.sendEmailVerificationInstructions(userAccount, httpServletRequest);
 
@@ -219,6 +228,7 @@ public class AuthController {
             return "auth/forgot-password";
         }
 
+        mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED);
         mUserAccountService.findUserAccountByEmailAddress(forgotPasswordRequestDto.getEmailAddress())
             .ifPresent(userAccount -> mAuthenticationMailWorkflowService.sendRecoveryInstructions(userAccount, httpServletRequest));
 
@@ -257,6 +267,7 @@ public class AuthController {
     ) {
         boolean wasEmailVerified = mEmailVerificationTokenService.verifyEmailAddress(tokenOrNull);
         if (wasEmailVerified) {
+            mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.EMAIL_VERIFIED);
             redirectAttributes.addFlashAttribute(
                 "emailVerificationSuccessMessage",
                 "이메일 소유 확인이 완료되었습니다. 이제 복구 메일도 정상적으로 받을 수 있습니다."
@@ -298,6 +309,7 @@ public class AuthController {
         }
 
         mUserAccountService.resetPassword(userAccountIdOrNull, resetPasswordRequestDto.getPassword());
+        mOperationUsageEventService.recordUserEvent(EOperationEventType.PASSWORD_RESET_COMPLETED, userAccountIdOrNull);
         return "redirect:/login?passwordResetSuccess";
     }
 
@@ -307,7 +319,7 @@ public class AuthController {
             && !(authenticationOrNull instanceof AnonymousAuthenticationToken);
     }
 
-    private void authenticateUserWithRememberMe(
+    private Authentication authenticateUserWithRememberMe(
         String userName,
         String rawPassword,
         HttpServletRequest httpServletRequest,
@@ -321,6 +333,7 @@ public class AuthController {
         );
 
         mRememberMeServices.loginSuccess(httpServletRequest, httpServletResponse, authentication);
+        return authentication;
     }
 
     /**
@@ -347,6 +360,15 @@ public class AuthController {
         SecurityContextHolder.setContext(securityContext);
         mSecurityContextRepository.saveContext(securityContext, httpServletRequest, httpServletResponse);
         return authentication;
+    }
+
+    private void recordAuthenticatedUserEvent(EOperationEventType eventType, Authentication authentication) {
+        if (authentication.getPrincipal() instanceof UserAccount userAccount) {
+            mOperationUsageEventService.recordUserEvent(eventType, userAccount.getUserAccountId());
+            return;
+        }
+
+        mOperationUsageEventService.recordAnonymousEvent(eventType);
     }
 
 }

@@ -86,6 +86,14 @@ public class UserAccount implements UserDetails {
         return mEmailVerifiedAt != null;
     }
 
+    public boolean isAdministrator() {
+        return mUserRole == EUserRole.ADMIN;
+    }
+
+    public void grantAdministratorRole() {
+        mUserRole = EUserRole.ADMIN;
+    }
+
     public void markEmailAddressVerified(LocalDateTime verifiedAt) {
         if (verifiedAt == null) {
             throw new IllegalArgumentException("verifiedAt must not be null.");

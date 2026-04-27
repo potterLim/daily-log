@@ -154,6 +154,24 @@ https://daymark.실제도메인/actuator/health/readiness
 - 알 수 없는 공개 URL이 로그인 대신 404 화면을 보여주는지 확인합니다.
 - `/daymark/morning` 같은 보호 화면은 로그인으로 이동하는지 확인합니다.
 
+### 9. 운영자 계정 부여
+
+회원가입으로 계정을 만든 뒤 운영 DB에서 해당 계정을 관리자 권한으로 승격합니다.
+
+```sql
+update user_account
+set user_role = 'ADMIN'
+where user_name = '운영자_워크스페이스_ID';
+```
+
+그 계정으로 로그인하면 다음 주소에서 운영 지표를 확인할 수 있습니다.
+
+```text
+https://daymark.실제도메인/admin/operations
+```
+
+관리자 화면에서는 이번 주 활성 사용자, 작성 사용자, 인증 메일 흐름, 비밀번호 복구, 라이브러리 조회, Markdown/PDF 내보내기 사용량을 확인합니다.
+
 ## 백업과 복구 리허설
 
 운영 기준:
@@ -420,7 +438,26 @@ docker compose --profile ops run --rm backup
 - 백업 파일과 체크섬을 함께 보관합니다.
 - 복구 절차를 비운영 데이터베이스에서 주기적으로 확인합니다.
 - 백업 실패 알림은 `DAYMARK_ALERT_WEBHOOK_URL`로 연결합니다.
+- 운영 지표 원천 데이터는 `operation_usage_event`, 주간 보관본은 `weekly_operation_metric_snapshot`에 저장합니다.
 - 생성된 백업, 로그, PDF, Markdown, 화면 캡처는 저장소에 커밋하지 않습니다.
+
+## 공개 저장소 기준
+
+퍼블릭 저장소에 포함해도 되는 것:
+
+- 운영 지표 코드
+- 관리자 화면 코드
+- DB 마이그레이션
+- 예시 환경 변수 파일
+- 배포 절차 문서
+
+퍼블릭 저장소에 포함하면 안 되는 것:
+
+- 실제 운영 DB 데이터
+- 실제 `.env`
+- AWS/SES/RDS credential
+- 실제 webhook URL
+- 운영 로그와 백업 파일
 
 ## 운영 전 최종 점검
 

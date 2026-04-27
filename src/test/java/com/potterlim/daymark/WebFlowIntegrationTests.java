@@ -10,9 +10,11 @@ import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
+import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
 import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
+import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.service.IAuthenticationMailService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
@@ -76,6 +78,12 @@ class WebFlowIntegrationTests {
     @Autowired
     private IUserEmailVerificationTokenRepository mUserEmailVerificationTokenRepository;
 
+    @Autowired
+    private IOperationUsageEventRepository mOperationUsageEventRepository;
+
+    @Autowired
+    private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
+
     @MockitoBean
     private IAuthenticationMailService mAuthenticationMailService;
 
@@ -88,6 +96,8 @@ class WebFlowIntegrationTests {
         when(mClock.instant()).thenReturn(testInstant);
         when(mClock.getZone()).thenReturn(TEST_ZONE_ID);
 
+        mWeeklyOperationMetricSnapshotRepository.deleteAll();
+        mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
         mUserPasswordResetTokenRepository.deleteAll();
         mUserEmailVerificationTokenRepository.deleteAll();
@@ -791,6 +801,19 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daymark/morning"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("http://localhost/login"));
+    }
+
+    @Test
+    void operationsDashboardShouldRequireAdministratorRole() throws Exception {
+        mMockMvc.perform(get("/admin/operations")
+                .with(SecurityMockMvcRequestPostProcessors.user("regular-user").roles("USER")))
+            .andExpect(status().isForbidden());
+
+        mMockMvc.perform(get("/admin/operations")
+                .with(SecurityMockMvcRequestPostProcessors.user("operations-admin").roles("ADMIN")))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("운영 지표")))
+            .andExpect(content().string(containsString("저장된 주간 스냅샷")));
     }
 
     @Test

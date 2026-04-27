@@ -6,9 +6,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
+import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
 import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
+import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.service.IAuthenticationMailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +71,12 @@ class MySqlIntegrationTests {
     private IUserEmailVerificationTokenRepository mUserEmailVerificationTokenRepository;
 
     @Autowired
+    private IOperationUsageEventRepository mOperationUsageEventRepository;
+
+    @Autowired
+    private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
+
+    @Autowired
     private IDaymarkEntryRepository mDaymarkEntryRepository;
 
     @MockitoBean
@@ -76,6 +84,8 @@ class MySqlIntegrationTests {
 
     @BeforeEach
     void setUpTestEnvironment() {
+        mWeeklyOperationMetricSnapshotRepository.deleteAll();
+        mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
         mUserPasswordResetTokenRepository.deleteAll();
         mUserEmailVerificationTokenRepository.deleteAll();

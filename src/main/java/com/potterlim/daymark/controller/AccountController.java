@@ -1,10 +1,12 @@
 package com.potterlim.daymark.controller;
 
 import com.potterlim.daymark.dto.auth.ChangePasswordRequestDto;
+import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.service.AuthenticationMailWorkflowService;
 import com.potterlim.daymark.service.IUserAccountService;
 import com.potterlim.daymark.service.InvalidCurrentPasswordException;
+import com.potterlim.daymark.service.OperationUsageEventService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,13 +23,16 @@ public class AccountController {
 
     private final IUserAccountService mUserAccountService;
     private final AuthenticationMailWorkflowService mAuthenticationMailWorkflowService;
+    private final OperationUsageEventService mOperationUsageEventService;
 
     public AccountController(
         IUserAccountService userAccountService,
-        AuthenticationMailWorkflowService authenticationMailWorkflowService
+        AuthenticationMailWorkflowService authenticationMailWorkflowService,
+        OperationUsageEventService operationUsageEventService
     ) {
         mUserAccountService = userAccountService;
         mAuthenticationMailWorkflowService = authenticationMailWorkflowService;
+        mOperationUsageEventService = operationUsageEventService;
     }
 
     @GetMapping("/account")
@@ -97,6 +102,10 @@ public class AccountController {
 
         boolean wasVerificationMailSent =
             mAuthenticationMailWorkflowService.sendEmailVerificationInstructions(currentUserAccount, httpServletRequest);
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.EMAIL_VERIFICATION_RESEND_REQUESTED,
+            currentUserAccount.getUserAccountId()
+        );
         if (wasVerificationMailSent) {
             redirectAttributes.addFlashAttribute(
                 "emailVerificationSuccessMessage",
