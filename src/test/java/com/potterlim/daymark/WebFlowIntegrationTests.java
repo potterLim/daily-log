@@ -580,7 +580,38 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("2026. 04. 20. ~ 2026. 04. 26.")))
+            .andExpect(content().string(containsString("Current")))
+            .andExpect(content().string(containsString("Open Review")))
+            .andExpect(content().string(containsString("/daymark/evening/edit?date=" + TEST_CURRENT_DATE)))
             .andExpect(content().string(not(containsString("2026. 04. 21. ~ 2026. 04. 27."))));
+    }
+
+    @Test
+    void weekPageShouldNavigateBetweenWeeks() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("week-reviewer", "week-reviewer@example.com", "pass1234")
+        );
+        LocalDate previousWeekDate = LocalDate.of(2026, 4, 13);
+
+        mDaymarkService.writeSection(
+            previousWeekDate,
+            userAccount.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "- 이전 주 목표"
+        );
+
+        mMockMvc.perform(get("/daymark/week")
+                .param("week", "-1")
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("2026. 04. 13. ~ 2026. 04. 19.")))
+            .andExpect(content().string(containsString("2026. 04. 13.")))
+            .andExpect(content().string(containsString("Prev")))
+            .andExpect(content().string(containsString("Current")))
+            .andExpect(content().string(containsString("Next")))
+            .andExpect(content().string(containsString("/daymark/week?week=-2")))
+            .andExpect(content().string(containsString("/daymark/week")))
+            .andExpect(content().string(containsString("/daymark/week?week=0")));
     }
 
     @Test
@@ -710,8 +741,10 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("저녁 회고")))
             .andExpect(content().string(containsString("Prev")))
+            .andExpect(content().string(containsString("Current")))
             .andExpect(content().string(containsString("Next")))
-            .andExpect(content().string(containsString("New Plan")));
+            .andExpect(content().string(containsString("Open Review")))
+            .andExpect(content().string(containsString("New Review")));
 
         mMockMvc.perform(get("/daymark/evening/edit")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
@@ -726,6 +759,9 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("주간 리뷰")))
             .andExpect(content().string(containsString("완료율")))
+            .andExpect(content().string(containsString("Prev")))
+            .andExpect(content().string(containsString("Current")))
+            .andExpect(content().string(containsString("Next")))
             .andExpect(content().string(containsString("New Plan")));
 
         mMockMvc.perform(get("/daymark/library")

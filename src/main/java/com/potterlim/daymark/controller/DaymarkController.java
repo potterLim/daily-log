@@ -140,7 +140,8 @@ public class DaymarkController {
         @AuthenticationPrincipal UserAccount userAccount,
         Model model
     ) {
-        LocalDate referenceDate = LocalDate.now(mClock).plusDays((long) weekOffset * 7L);
+        LocalDate currentDate = LocalDate.now(mClock);
+        LocalDate referenceDate = currentDate.plusDays((long) weekOffset * 7L);
         LocalDate startDate = resolveWeekStartDate(referenceDate);
         UserAccountId userAccountId = userAccount.getUserAccountId();
         mOperationUsageEventService.recordUserEvent(EOperationEventType.EVENING_REVIEW_VIEWED, userAccountId);
@@ -156,9 +157,10 @@ public class DaymarkController {
         model.addAttribute("previousWeekOffset", weekOffset - 1);
         model.addAttribute("nextWeekOffset", weekOffset + 1);
         model.addAttribute("rangeLabel", buildWeekRangeLabel(startDate));
+        model.addAttribute("currentWeekRangeLabel", buildWeekRangeLabel(resolveWeekStartDate(currentDate)));
         model.addAttribute("previousWeekRangeLabel", buildWeekRangeLabel(startDate.minusDays(7L)));
         model.addAttribute("nextWeekRangeLabel", buildWeekRangeLabel(startDate.plusDays(7L)));
-        model.addAttribute("defaultDate", LocalDate.now(mClock));
+        model.addAttribute("defaultDate", currentDate);
         return "daymark/evening";
     }
 
@@ -229,14 +231,21 @@ public class DaymarkController {
     }
 
     @GetMapping("/week")
-    public String showWeekPage(@AuthenticationPrincipal UserAccount userAccount, Model model) {
+    public String showWeekPage(
+        @RequestParam(name = "week", defaultValue = "0") int weekOffset,
+        @AuthenticationPrincipal UserAccount userAccount,
+        Model model
+    ) {
+        LocalDate currentDate = LocalDate.now(mClock);
+        LocalDate referenceDate = currentDate.plusDays((long) weekOffset * 7L);
+        LocalDate startDate = resolveWeekStartDate(referenceDate);
         UserAccountId userAccountId = userAccount.getUserAccountId();
         mOperationUsageEventService.recordUserEvent(EOperationEventType.WEEKLY_REVIEW_VIEWED, userAccountId);
         List<WeeklyProgressItemDto> weeklyProgressItems = new ArrayList<>();
         int weekAchieved = 0;
         int weekTotal = 0;
 
-        for (DaymarkDayStatusDto daymarkDayStatusDto : mDaymarkService.listWeek(LocalDate.now(mClock), userAccountId)) {
+        for (DaymarkDayStatusDto daymarkDayStatusDto : mDaymarkService.listWeek(referenceDate, userAccountId)) {
             List<String> goals = splitNonBlankLines(
                 mDaymarkService.readSection(daymarkDayStatusDto.getDate(), userAccountId, EDaymarkSectionType.GOALS)
             );
@@ -267,7 +276,14 @@ public class DaymarkController {
         model.addAttribute("weekAchieved", weekAchieved);
         model.addAttribute("weekTotal", weekTotal);
         model.addAttribute("weekPercent", weekPercent);
-        model.addAttribute("defaultDate", LocalDate.now(mClock));
+        model.addAttribute("weekOffset", weekOffset);
+        model.addAttribute("previousWeekOffset", weekOffset - 1);
+        model.addAttribute("nextWeekOffset", weekOffset + 1);
+        model.addAttribute("rangeLabel", buildWeekRangeLabel(startDate));
+        model.addAttribute("currentWeekRangeLabel", buildWeekRangeLabel(resolveWeekStartDate(currentDate)));
+        model.addAttribute("previousWeekRangeLabel", buildWeekRangeLabel(startDate.minusDays(7L)));
+        model.addAttribute("nextWeekRangeLabel", buildWeekRangeLabel(startDate.plusDays(7L)));
+        model.addAttribute("defaultDate", currentDate);
         return "daymark/week";
     }
 

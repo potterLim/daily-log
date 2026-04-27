@@ -6,6 +6,7 @@
         <div class="workspace-header workspace-header-rich">
             <div class="workspace-header-copy">
                 <h1 class="section-title">주간 리뷰</h1>
+                <p class="section-subtitle" th:text="${rangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</p>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -15,6 +16,29 @@
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">목표</span>
                     <strong th:text="${weekTotal} + '건'">0건</strong>
+                </div>
+                <div class="workspace-meta-card workspace-meta-card-accent workspace-meta-card-wide">
+                    <span class="workspace-meta-label">주 이동</span>
+                    <div class="week-nav-pair week-nav-trio">
+                        <a th:href="@{/daymark/week(week=${previousWeekOffset})}"
+                           th:attr="aria-label=|이전 주 ${previousWeekRangeLabel}|"
+                           class="week-nav-card">
+                            <strong>Prev</strong>
+                            <span>이전 주</span>
+                        </a>
+                        <a th:href="@{/daymark/week}"
+                           th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
+                           class="week-nav-card week-nav-card-current">
+                            <strong>Current</strong>
+                            <span>현재 주</span>
+                        </a>
+                        <a th:href="@{/daymark/week(week=${nextWeekOffset})}"
+                           th:attr="aria-label=|다음 주 ${nextWeekRangeLabel}|"
+                           class="week-nav-card">
+                            <strong>Next</strong>
+                            <span>다음 주</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
