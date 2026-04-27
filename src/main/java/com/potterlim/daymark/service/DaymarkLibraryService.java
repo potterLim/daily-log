@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class DaymarkLibraryService implements IDaymarkLibraryService {
     private static final int MAX_GOAL_PREVIEW_COUNT = 3;
     private static final int MAX_CONTENT_BLOCK_LINE_COUNT = 2;
     private static final int TREND_ITEM_LIMIT = 14;
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd.");
 
     private final IDaymarkEntryRepository mDaymarkEntryRepository;
     private final Clock mClock;
@@ -103,9 +105,9 @@ public class DaymarkLibraryService implements IDaymarkLibraryService {
         StringBuilder markdownBuilder = new StringBuilder();
         markdownBuilder.append("# Daymark 기록 라이브러리\r\n\r\n");
         markdownBuilder.append("- 기간: ")
-            .append(searchCriteria.getStartDate())
+            .append(formatDisplayDate(searchCriteria.getStartDate()))
             .append(" ~ ")
-            .append(searchCriteria.getEndDate())
+            .append(formatDisplayDate(searchCriteria.getEndDate()))
             .append("\r\n");
 
         if (searchCriteria.hasKeyword()) {
@@ -121,7 +123,7 @@ public class DaymarkLibraryService implements IDaymarkLibraryService {
 
         for (DaymarkLibraryItemDto libraryItem : matchingItemsAscending) {
             markdownBuilder.append("\r\n\r\n---\r\n\r\n");
-            markdownBuilder.append("## ").append(libraryItem.getDate()).append("\r\n\r\n");
+            markdownBuilder.append("## ").append(formatDisplayDate(libraryItem.getDate())).append("\r\n\r\n");
             markdownBuilder.append("- 흐름: ").append(libraryItem.getFlowLabel()).append("\r\n");
             markdownBuilder.append("- 완료율: ")
                 .append(libraryItem.getCompletionPercent())
@@ -236,6 +238,7 @@ public class DaymarkLibraryService implements IDaymarkLibraryService {
         String normalizedKeyword = keywordOrNull.toLowerCase(Locale.ROOT);
         String searchableText = new StringJoiner(" ")
             .add(libraryItem.getDate().toString())
+            .add(formatDisplayDate(libraryItem.getDate()))
             .add(libraryItem.getFlowLabel())
             .add(libraryItem.getExcerpt())
             .add(libraryItem.getMarkdownText())
@@ -407,5 +410,9 @@ public class DaymarkLibraryService implements IDaymarkLibraryService {
         }
 
         return contentLines;
+    }
+
+    private static String formatDisplayDate(LocalDate date) {
+        return DISPLAY_DATE_FORMATTER.format(date);
     }
 }

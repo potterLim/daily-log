@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -48,6 +49,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class DaymarkController {
 
     private static final String EMPTY_MORNING_LOG_HTML = "<p><em>아침 계획이 없습니다.</em></p>";
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd.");
 
     private final IDaymarkService mDaymarkService;
     private final IDaymarkLibraryService mDaymarkLibraryService;
@@ -70,10 +72,10 @@ public class DaymarkController {
     public String showMorningDateList(@AuthenticationPrincipal UserAccount userAccount, Model model) {
         LocalDate currentDate = LocalDate.now(mClock);
         UserAccountId userAccountId = userAccount.getUserAccountId();
-        List<String> morningDates = mDaymarkService.listWeek(currentDate, userAccountId)
+        List<LocalDate> morningDates = mDaymarkService.listWeek(currentDate, userAccountId)
             .stream()
             .filter(DaymarkDayStatusDto::hasMorningEntry)
-            .map(daymarkDayStatusDto -> daymarkDayStatusDto.getDate().toString())
+            .map(DaymarkDayStatusDto::getDate)
             .toList();
 
         model.addAttribute("morningDates", morningDates);
@@ -132,20 +134,19 @@ public class DaymarkController {
     ) {
         LocalDate referenceDate = LocalDate.now(mClock).plusDays((long) weekOffset * 7L);
         LocalDate startDate = resolveWeekStartDate(referenceDate);
-        LocalDate endDate = startDate.plusDays(6L);
         UserAccountId userAccountId = userAccount.getUserAccountId();
 
-        List<String> eveningDates = mDaymarkService.listWeek(referenceDate, userAccountId)
+        List<LocalDate> eveningDates = mDaymarkService.listWeek(referenceDate, userAccountId)
             .stream()
             .filter(daymarkDayStatusDto -> daymarkDayStatusDto.hasMorningEntry() || daymarkDayStatusDto.hasEveningEntry())
-            .map(daymarkDayStatusDto -> daymarkDayStatusDto.getDate().toString())
+            .map(DaymarkDayStatusDto::getDate)
             .toList();
 
         model.addAttribute("eveningDates", eveningDates);
         model.addAttribute("weekOffset", weekOffset);
         model.addAttribute("previousWeekOffset", weekOffset - 1);
         model.addAttribute("nextWeekOffset", weekOffset + 1);
-        model.addAttribute("rangeLabel", startDate + " ~ " + endDate);
+        model.addAttribute("rangeLabel", buildWeekRangeLabel(startDate));
         model.addAttribute("previousWeekRangeLabel", buildWeekRangeLabel(startDate.minusDays(7L)));
         model.addAttribute("nextWeekRangeLabel", buildWeekRangeLabel(startDate.plusDays(7L)));
         model.addAttribute("defaultDate", LocalDate.now(mClock));
@@ -538,7 +539,11 @@ public class DaymarkController {
     }
 
     private static String buildWeekRangeLabel(LocalDate startDate) {
-        return startDate + " ~ " + startDate.plusDays(6L);
+        return formatDisplayDate(startDate) + " ~ " + formatDisplayDate(startDate.plusDays(6L));
+    }
+
+    private static String formatDisplayDate(LocalDate date) {
+        return DISPLAY_DATE_FORMATTER.format(date);
     }
 
     private static List<String> splitNonBlankLines(String textOrNull) {

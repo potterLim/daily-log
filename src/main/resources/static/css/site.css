@@ -1585,6 +1585,12 @@ ol {
     min-width: 0;
 }
 
+.workspace-meta-stack-single {
+    grid-template-columns: minmax(0, 1fr);
+    justify-self: end;
+    width: min(100%, 360px);
+}
+
 .workspace-meta-card {
     display: grid;
     align-content: center;
@@ -2085,7 +2091,7 @@ ol {
 
 .library-timeline-card {
     display: grid;
-    grid-template-columns: 82px minmax(0, 1fr);
+    grid-template-columns: 138px minmax(0, 1fr);
     align-items: start;
     gap: 18px;
     padding: 18px;
@@ -2123,8 +2129,9 @@ ol {
 
 .library-date-mark strong {
     color: var(--text-strong);
-    font-size: 1.16rem;
+    font-size: 0.92rem;
     font-weight: 800;
+    white-space: nowrap;
 }
 
 .library-timeline-body {
@@ -2593,7 +2600,7 @@ ol {
 
 .export-entry-card {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: 148px minmax(0, 1fr);
     gap: 22px;
     padding: 22px;
     border-radius: 30px;
@@ -2602,6 +2609,7 @@ ol {
 
 .export-entry-date {
     display: grid;
+    align-self: start;
     align-content: center;
     justify-items: center;
     min-height: 96px;
@@ -2620,8 +2628,9 @@ ol {
 
 .export-entry-date strong {
     color: var(--accent-glass-text);
-    font-size: 1.28rem;
+    font-size: 0.94rem;
     font-weight: 800;
+    white-space: nowrap;
 }
 
 .export-entry-main {
@@ -3275,6 +3284,11 @@ ol {
         grid-template-columns: 1fr;
     }
 
+    .workspace-meta-stack-single {
+        justify-self: stretch;
+        width: 100%;
+    }
+
     .workspace-header {
         grid-template-columns: 1fr;
     }
@@ -3681,7 +3695,7 @@ ol {
     }
 
     .export-entry-card {
-        grid-template-columns: 74px minmax(0, 1fr);
+        grid-template-columns: 118px minmax(0, 1fr);
         gap: 16px;
         padding: 16px;
         border-radius: 20px;

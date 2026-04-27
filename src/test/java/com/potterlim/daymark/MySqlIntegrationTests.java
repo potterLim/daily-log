@@ -2,6 +2,7 @@ package com.potterlim.daymark;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicReference;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
@@ -45,6 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "logging.file.path=./build/test-logs/mysql-integration"
 })
 class MySqlIntegrationTests {
+
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy. MM. dd.");
 
     @Container
     @ServiceConnection
@@ -163,7 +166,7 @@ class MySqlIntegrationTests {
         mMockMvc.perform(get("/daymark/morning")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString(morningDate.toString())));
+            .andExpect(content().string(containsString(DISPLAY_DATE_FORMATTER.format(morningDate))));
 
         assertEquals(1, mDaymarkEntryRepository.count());
     }

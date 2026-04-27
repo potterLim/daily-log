@@ -7,14 +7,10 @@
             <div class="workspace-header-copy">
                 <h1 class="section-title">아침 계획</h1>
             </div>
-            <div class="workspace-meta-stack">
+            <div class="workspace-meta-stack workspace-meta-stack-single">
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">이번 주</span>
                     <strong th:text="${#lists.size(morningDates)} + '건'">0건</strong>
-                </div>
-                <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">다음</span>
-                    <strong>저녁 회고 연결</strong>
                 </div>
             </div>
         </div>
@@ -65,10 +61,10 @@
             <div th:if="${!#lists.isEmpty(morningDates)}" class="entry-grid">
                 <a th:each="morningDate : ${morningDates}"
                    class="entry-card"
-                   th:href="@{/daymark/morning/edit(date=${morningDate})}">
+                   th:href="@{/daymark/morning/edit(date=${#temporals.format(morningDate, 'yyyy-MM-dd')})}">
                     <div class="entry-card-icon">아</div>
                     <div class="entry-card-body">
-                        <strong th:text="${morningDate}">2026-04-01</strong>
+                        <strong th:text="${#temporals.format(morningDate, 'yyyy. MM. dd.')}">2026. 04. 01.</strong>
                     </div>
                     <span class="entry-card-action">Open</span>
                 </a>

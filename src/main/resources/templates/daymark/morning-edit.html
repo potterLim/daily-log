@@ -7,14 +7,10 @@
             <div class="workspace-header-copy">
                 <h1 class="section-title">아침 계획</h1>
             </div>
-            <div class="workspace-meta-stack">
+            <div class="workspace-meta-stack workspace-meta-stack-single">
                 <div class="workspace-meta-card">
                     <span class="workspace-meta-label">날짜</span>
-                    <strong th:text="${#temporals.format(morningFormDto.date, 'yyyy-MM-dd')}">2026-04-24</strong>
-                </div>
-                <div class="workspace-meta-card workspace-meta-card-accent">
-                    <span class="workspace-meta-label">회고</span>
-                    <strong>저녁에 확인</strong>
+                    <strong th:text="${#temporals.format(morningFormDto.date, 'yyyy. MM. dd.')}">2026. 04. 24.</strong>
                 </div>
             </div>
         </div>

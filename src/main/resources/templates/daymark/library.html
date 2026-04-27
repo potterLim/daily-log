@@ -80,13 +80,13 @@
                 <article th:each="libraryItem : ${libraryViewDto.items}" class="library-timeline-card">
                     <div class="library-date-mark">
                         <span th:text="${libraryItem.dayLabel}">금</span>
-                        <strong th:text="${#temporals.format(libraryItem.date, 'MM.dd')}">04.24</strong>
+                        <strong th:text="${#temporals.format(libraryItem.date, 'yyyy. MM. dd.')}">2026. 04. 24.</strong>
                     </div>
                     <div class="library-timeline-body">
                         <div class="library-timeline-top">
                             <div>
                                 <span class="content-badge" th:text="${libraryItem.flowLabel}">계획과 회고</span>
-                                <h3 th:text="${#temporals.format(libraryItem.date, 'yyyy년 M월 d일')}">2026년 4월 24일</h3>
+                                <h3 th:text="${#temporals.format(libraryItem.date, 'yyyy. MM. dd.')}">2026. 04. 24.</h3>
                             </div>
                             <div class="progress-percent-badge progress-percent-badge-sm"
                                  th:text="${libraryItem.completionPercent} + '%'">
@@ -170,7 +170,7 @@
                         <span class="library-trend-fill"
                               th:style="|height: ${trendItem.trendHeightPercent}%;|">
                         </span>
-                        <small th:text="${#temporals.format(trendItem.date, 'M.d')}">4.24</small>
+                        <small th:text="${#temporals.format(trendItem.date, 'MM. dd.')}">04. 24.</small>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@
             <div class="surface-panel library-calendar-panel">
                 <div class="panel-header compact">
                     <div>
-                        <h2 th:text="${#temporals.format(libraryViewDto.calendarMonthDate, 'yyyy년 M월')}">2026년 4월</h2>
+                        <h2 th:text="${#temporals.format(libraryViewDto.calendarMonthDate, 'yyyy. MM.')}">2026. 04.</h2>
                     </div>
                 </div>
                 <div class="library-calendar-weekdays" aria-hidden="true">

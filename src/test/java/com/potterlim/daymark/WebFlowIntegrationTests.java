@@ -530,7 +530,7 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("저장됨")))
+            .andExpect(content().string(containsString("2026. 04. 24.")))
             .andExpect(content().string(not(containsString("읽기 전용"))))
             .andExpect(content().string(containsString("오늘의 목표")))
             .andExpect(content().string(containsString("운동하기")))
@@ -557,7 +557,7 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daymark/morning")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString(morningDate.toString())));
+            .andExpect(content().string(containsString("2026. 04. 24.")));
     }
 
     @Test
@@ -569,8 +569,8 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/daymark/evening")
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("2026-04-20 ~ 2026-04-26")))
-            .andExpect(content().string(not(containsString("2026-04-21 ~ 2026-04-27"))));
+            .andExpect(content().string(containsString("2026. 04. 20. ~ 2026. 04. 26.")))
+            .andExpect(content().string(not(containsString("2026. 04. 21. ~ 2026. 04. 27."))));
     }
 
     @Test
