@@ -23,7 +23,7 @@ daymark:
     production-readiness:
       enabled: true
       require-smtp: true
-      require-alert-webhook: true
+      require-alert-webhook: ${DAYMARK_REQUIRE_ALERT_WEBHOOK:false}
       require-secure-session-cookie: true
       minimum-remember-me-key-length: ${DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}
     weekly-summary:
