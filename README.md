@@ -69,12 +69,13 @@ build/libs/daymark.jar
 
 | 환경 변수 | 설명 |
 | --- | --- |
+| `DAYMARK_PUBLIC_BASE_URL` | 인증/복구 링크에 사용할 공개 HTTPS 주소 |
 | `DATABASE_URL` | MySQL JDBC URL |
 | `DATABASE_USERNAME` | MySQL 사용자 |
 | `DATABASE_PASSWORD` | MySQL 비밀번호 |
 | `DAYMARK_REMEMBER_ME_KEY` | remember-me 서명 키 |
 
-운영 환경에서는 HTTPS 뒤에서 실행하고, 세션 쿠키 보안 설정과 SMTP 설정을 함께 준비하는 것을 권장합니다.
+운영 환경에서는 App Runner 같은 HTTPS 앞단 뒤에서 실행하고, 세션 쿠키/remember-me 쿠키 보안 설정과 SES SMTP 설정을 함께 준비합니다.
 
 주요 선택 설정:
 
@@ -82,12 +83,13 @@ build/libs/daymark.jar
 | --- | --- |
 | `PORT` | `8080` |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
+| `DAYMARK_REMEMBER_ME_COOKIE_SECURE` | `false` |
 | `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` |
 | `DAYMARK_ALERT_WEBHOOK_URL` | 없음 |
 | `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` |
 | `DAYMARK_LOG_DIR` | `./logs` |
 
-전체 배포 설정은 [배포 문서](docs/deployment.md)를 확인하세요.
+AWS App Runner 배포 설정은 [배포 문서](docs/deployment.md)를 확인하세요.
 
 ## 저장 구조
 

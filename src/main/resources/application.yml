@@ -58,6 +58,7 @@ management:
     readinessstate:
       enabled: true
 daymark:
+  public-base-url: ${DAYMARK_PUBLIC_BASE_URL:}
   account:
     password-reset-token-validity-minutes: ${DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
     email-verification-token-validity-minutes: ${DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES:1440}
@@ -78,6 +79,7 @@ daymark:
   security:
     remember-me-key: ${DAYMARK_REMEMBER_ME_KEY}
     remember-me-cookie-name: ${DAYMARK_REMEMBER_ME_COOKIE_NAME:DAYMARK_REMEMBER_ME}
+    remember-me-cookie-secure: ${DAYMARK_REMEMBER_ME_COOKIE_SECURE:false}
     remember-me-token-validity-seconds: ${DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
 logging:
   file:

@@ -1,15 +1,178 @@
 # 배포 가이드
 
-Daymark는 실행 가능한 JAR 또는 Docker Compose로 배포할 수 있습니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
+Daymark의 초기 AWS 배포 기준은 App Runner, Amazon RDS for MySQL, Amazon SES SMTP, Route 53/ACM, 운영 알림 웹훅입니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
+
+## 운영 결정
+
+| 항목 | 결정 |
+| --- | --- |
+| 애플리케이션 실행 | AWS App Runner에 Docker 이미지 배포 |
+| 컨테이너 이미지 | Amazon ECR `daymark` 저장소 |
+| 운영 DB | Amazon RDS for MySQL |
+| 메일 | Amazon SES SMTP |
+| 발신 주소 | `no-reply@실제도메인` |
+| 도메인 인증 | SES 도메인 인증, DKIM, SPF, DMARC 모두 설정 |
+| HTTPS | App Runner custom domain + ACM 인증서 |
+| 쿠키 | 세션 쿠키와 remember-me 쿠키 모두 Secure 강제 |
+| 알림 | `DAYMARK_ALERT_WEBHOOK_URL`로 운영 실패 알림 전송 |
+| 알 수 없는 공개 URL | 로그인으로 보내지 않고 제품형 404 표시 |
+
+App Runner는 2026. 04. 30.부터 신규 고객에게 닫히므로, 사용하려면 그 전에 App Runner 서비스를 생성해 둡니다. 기존 고객은 서비스를 계속 사용할 수 있지만, 정식 장기 운영 전에는 ECS Express Mode 이전 가능성을 열어 둡니다.
+
+## App Runner 배포
+
+### 1. AWS 리전
+
+초기 기준 리전은 서울 리전입니다.
+
+```text
+ap-northeast-2
+```
+
+### 2. RDS MySQL
+
+권장 기본값:
+
+- 엔진: MySQL 8.0
+- 퍼블릭 접근: 비활성화
+- 보안 그룹: App Runner VPC Connector에서 오는 트래픽만 허용
+- 데이터베이스 이름: `daymark`
+- 사용자: `daymark`
+- 백업 보존: 7일 이상
+- 삭제 방지: 운영 공개 후 활성화
+
+JDBC URL 예시:
+
+```text
+jdbc:mysql://daymark-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/daymark?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+```
+
+### 3. SES 메일
+
+운영 메일 기준:
+
+- SES 도메인 identity 생성
+- DKIM DNS 레코드 등록
+- SPF/custom MAIL FROM 설정
+- DMARC TXT 레코드 등록
+- SES sandbox 해제 요청
+- SMTP credentials 생성
+
+권장 발신 주소:
+
+```text
+no-reply@실제도메인
+```
+
+권장 SMTP endpoint:
+
+```text
+email-smtp.ap-northeast-2.amazonaws.com
+```
+
+### 4. ECR 이미지 푸시
+
+AWS CLI와 Docker가 로그인된 상태에서 실행합니다.
+
+```bash
+AWS_ACCOUNT_ID=123456789012 \
+AWS_REGION=ap-northeast-2 \
+ECR_REPOSITORY_NAME=daymark \
+IMAGE_TAG=$(git rev-parse --short HEAD) \
+./ops/aws/build-and-push-ecr.sh
+```
+
+스크립트는 ECR 저장소가 없으면 생성하고, `daymark:<commit>`과 `daymark:latest` 이미지를 푸시합니다.
+
+### 5. App Runner 서비스 생성
+
+App Runner에서 다음 값으로 서비스를 생성합니다.
+
+| 항목 | 값 |
+| --- | --- |
+| Source | Container registry |
+| Provider | Amazon ECR |
+| Image | `daymark:latest` 또는 커밋 태그 |
+| Deployment trigger | Manual 권장 |
+| Port | `8080` |
+| Health check path | `/actuator/health/readiness` |
+| CPU/Memory | 초기 `0.25 vCPU / 0.5GB` 또는 `0.5 vCPU / 1GB` |
+| Auto scaling | 최소 1, 최대 2부터 시작 |
+| Network | RDS 접근용 VPC Connector 연결 |
+
+Spring Boot와 App Runner는 같은 포트 값을 사용해야 합니다. App Runner의 이미지 포트는 `8080`으로 설정하고, `PORT`는 App Runner 예약 환경 변수이므로 직접 추가하지 않습니다.
+
+### 6. App Runner 환경 변수
+
+콘솔에 입력할 값은 `ops/aws/app-runner-env.example`를 기준으로 준비합니다. 예시 값은 그대로 쓰지 말고 모두 실제 값으로 바꿉니다.
+
+필수 값:
+
+| 환경 변수 | 설명 |
+| --- | --- |
+| `SPRING_PROFILES_ACTIVE` | `production` |
+| `DAYMARK_PUBLIC_BASE_URL` | `https://실제서비스도메인` |
+| `DATABASE_URL` | RDS MySQL JDBC URL |
+| `DATABASE_USERNAME` | RDS 사용자 |
+| `DATABASE_PASSWORD` | RDS 비밀번호 |
+| `DAYMARK_REMEMBER_ME_KEY` | 64자 이상 임의 secret 권장 |
+| `DAYMARK_REMEMBER_ME_COOKIE_SECURE` | `true` |
+| `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `true` |
+| `DAYMARK_MAIL_FROM_ADDRESS` | SES에서 인증한 발신 주소 |
+| `SPRING_MAIL_HOST` | SES SMTP endpoint |
+| `SPRING_MAIL_PORT` | `587` |
+| `SPRING_MAIL_USERNAME` | SES SMTP 사용자 |
+| `SPRING_MAIL_PASSWORD` | SES SMTP 비밀번호 |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | `true` |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | `true` |
+| `DAYMARK_ALERT_WEBHOOK_URL` | 운영 알림 HTTPS webhook |
+
+`production` 프로필에서는 위 값이 부족하거나 placeholder이면 애플리케이션이 시작되지 않습니다.
+
+### 7. 도메인 연결
+
+권장 구조:
+
+```text
+https://daymark.실제도메인
+```
+
+App Runner custom domain을 추가하고 DNS 검증 레코드를 등록합니다. `DAYMARK_PUBLIC_BASE_URL`도 같은 주소로 설정합니다.
+
+### 8. 배포 후 확인
+
+```text
+https://daymark.실제도메인/actuator/health/readiness
+```
+
+확인 항목:
+
+- App Runner health check가 통과하는지 확인합니다.
+- 회원가입 후 인증 메일이 실제로 도착하는지 확인합니다.
+- 비밀번호 재설정 메일이 실제로 도착하는지 확인합니다.
+- 인증/재설정 링크가 `DAYMARK_PUBLIC_BASE_URL` 도메인으로 생성되는지 확인합니다.
+- 알 수 없는 공개 URL이 로그인 대신 404 화면을 보여주는지 확인합니다.
+- `/daymark/morning` 같은 보호 화면은 로그인으로 이동하는지 확인합니다.
+
+## 백업과 복구 리허설
+
+운영 기준:
+
+- RDS 자동 백업 보존 기간은 최소 7일로 시작합니다.
+- 공개 전 수동 스냅샷을 1회 생성합니다.
+- 월 1회 비운영 RDS로 스냅샷 복구를 리허설합니다.
+- 복구 후 `/actuator/health/readiness`, 로그인, 기록 조회를 확인합니다.
+- 백업/복구 실패는 `DAYMARK_ALERT_WEBHOOK_URL`로 알림을 보냅니다.
 
 ## 배포 방식
 
 | 방식 | 적합한 경우 |
 | --- | --- |
+| App Runner | AWS 초기 베타 배포 |
 | JAR 배포 | VM, VPS, 클라우드 서버에서 직접 운영할 때 |
 | Docker Compose | 애플리케이션과 MySQL을 함께 컨테이너로 관리할 때 |
 
-운영 환경에서는 Nginx, Caddy, 로드 밸런서 같은 앞단에서 HTTPS를 종료하는 구성을 권장합니다.
+App Runner 외의 운영 환경에서는 Nginx, Caddy, 로드 밸런서 같은 앞단에서 HTTPS를 종료하는 구성을 권장합니다.
 
 ## 로컬 확인
 
@@ -52,6 +215,7 @@ build/libs/daymark.jar
 
 | 환경 변수 | 설명 |
 | --- | --- |
+| `DAYMARK_PUBLIC_BASE_URL` | 인증/복구 링크에 사용할 공개 HTTPS 주소 |
 | `DATABASE_URL` | MySQL JDBC URL |
 | `DATABASE_USERNAME` | MySQL 사용자 |
 | `DATABASE_PASSWORD` | MySQL 비밀번호 |
@@ -69,6 +233,7 @@ jdbc:mysql://127.0.0.1:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&se
 | --- | --- | --- |
 | `PORT` | `8080` | 애플리케이션 포트 |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` | HTTPS 환경에서 보안 쿠키 사용 |
+| `DAYMARK_REMEMBER_ME_COOKIE_SECURE` | `false` | HTTPS 환경에서 remember-me 보안 쿠키 사용 |
 | `DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES` | `30` | 비밀번호 재설정 링크 유효 시간 |
 | `DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES` | `1440` | 이메일 인증 링크 유효 시간 |
 | `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` | 발신 메일 주소 |
@@ -112,6 +277,7 @@ sudo mkdir -p /var/log/daymark/tomcat
 DATABASE_URL=jdbc:mysql://127.0.0.1:3306/daymark?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 DATABASE_USERNAME=daymark
 DATABASE_PASSWORD=replace-this
+DAYMARK_PUBLIC_BASE_URL=https://daymark.example.com
 DAYMARK_REMEMBER_ME_KEY=replace-this-with-a-long-random-secret
 DAYMARK_MAIL_FROM_ADDRESS=no-reply@example.com
 DAYMARK_ALERT_WEBHOOK_URL=https://example.com/alerts/daymark
@@ -124,6 +290,7 @@ SPRING_MAIL_PASSWORD=replace-this
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
 SERVER_SERVLET_SESSION_COOKIE_SECURE=true
+DAYMARK_REMEMBER_ME_COOKIE_SECURE=true
 SPRING_PROFILES_ACTIVE=production
 ```
 
@@ -194,8 +361,10 @@ cp .env.example .env
 - `MYSQL_USER`
 - `MYSQL_PASSWORD`
 - `MYSQL_ROOT_PASSWORD`
+- `DAYMARK_PUBLIC_BASE_URL`
 - `DAYMARK_REMEMBER_ME_KEY`
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`
+- `DAYMARK_REMEMBER_ME_COOKIE_SECURE`
 - `DAYMARK_MAIL_FROM_ADDRESS`
 - `DAYMARK_ALERT_WEBHOOK_URL`
 - `SPRING_MAIL_HOST`

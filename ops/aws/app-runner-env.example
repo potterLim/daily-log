@@ -1,0 +1,23 @@
+SPRING_PROFILES_ACTIVE=production
+
+DAYMARK_PUBLIC_BASE_URL=https://daymark.example.com
+DAYMARK_REMEMBER_ME_KEY=replace-with-a-random-64-character-secret
+DAYMARK_REMEMBER_ME_COOKIE_SECURE=true
+SERVER_SERVLET_SESSION_COOKIE_SECURE=true
+
+DATABASE_URL=jdbc:mysql://daymark-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/daymark?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DATABASE_USERNAME=daymark
+DATABASE_PASSWORD=replace-with-rds-password
+
+DAYMARK_MAIL_FROM_ADDRESS=no-reply@daymark.example.com
+SPRING_MAIL_HOST=email-smtp.ap-northeast-2.amazonaws.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=replace-with-ses-smtp-user
+SPRING_MAIL_PASSWORD=replace-with-ses-smtp-password
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+
+DAYMARK_ALERT_WEBHOOK_URL=https://hooks.example.com/daymark-alerts
+DAYMARK_WEEKLY_SUMMARY_ENABLED=true
+DAYMARK_WEEKLY_SUMMARY_CRON=0 0 9 * * MON
+DAYMARK_WEEKLY_SUMMARY_ZONE=Asia/Seoul

@@ -772,12 +772,25 @@ class WebFlowIntegrationTests {
             new RegisterUserAccountCommand("missing-page-reviewer", "missing-page-reviewer@example.com", "pass1234")
         );
 
+        mMockMvc.perform(get("/missing-public-page"))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
+            .andExpect(content().string(containsString("Home")))
+            .andExpect(content().string(not(containsString("Library"))));
+
         mMockMvc.perform(get("/missing-product-page")
             .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isNotFound())
             .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
             .andExpect(content().string(containsString("Home")))
             .andExpect(content().string(not(containsString("Library"))));
+    }
+
+    @Test
+    void protectedProductPagesShouldStillRequireLogin() throws Exception {
+        mMockMvc.perform(get("/daymark/morning"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/login"));
     }
 
     @Test

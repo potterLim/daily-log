@@ -13,6 +13,7 @@ public class DaymarkApplicationProperties {
     private final MailProperties mMail = new MailProperties();
     private final OperationsProperties mOperations = new OperationsProperties();
     private final SecurityProperties mSecurity = new SecurityProperties();
+    private String mPublicBaseUrl = "";
 
     public AccountProperties getAccount() {
         return mAccount;
@@ -28,6 +29,14 @@ public class DaymarkApplicationProperties {
 
     public SecurityProperties getSecurity() {
         return mSecurity;
+    }
+
+    public String getPublicBaseUrl() {
+        return mPublicBaseUrl;
+    }
+
+    public void setPublicBaseUrl(String publicBaseUrl) {
+        mPublicBaseUrl = publicBaseUrl;
     }
 
     public static final class AccountProperties {
@@ -180,6 +189,7 @@ public class DaymarkApplicationProperties {
         private String mRememberMeKey;
         @NotBlank
         private String mRememberMeCookieName = "DAYMARK_REMEMBER_ME";
+        private boolean mIsRememberMeCookieSecure;
         @Positive
         private int mRememberMeTokenValiditySeconds = 1_209_600;
 
@@ -197,6 +207,14 @@ public class DaymarkApplicationProperties {
 
         public void setRememberMeCookieName(String rememberMeCookieName) {
             mRememberMeCookieName = rememberMeCookieName;
+        }
+
+        public boolean isRememberMeCookieSecure() {
+            return mIsRememberMeCookieSecure;
+        }
+
+        public void setRememberMeCookieSecure(boolean rememberMeCookieSecure) {
+            mIsRememberMeCookieSecure = rememberMeCookieSecure;
         }
 
         public int getRememberMeTokenValiditySeconds() {

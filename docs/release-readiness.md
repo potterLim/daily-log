@@ -132,6 +132,22 @@ git diff --check
 - 키워드 검색이 저장된 섹션 내용까지 찾는지 확인합니다.
 - 알 수 없는 경로가 제품형 404 화면으로 연결되는지 확인합니다.
 
+## AWS 운영 점검
+
+App Runner 배포 전 다음 항목을 확정합니다.
+
+- App Runner 서비스가 2026. 04. 30. 전에 생성되어 있는지 확인합니다.
+- RDS MySQL은 외부 공개 접근을 끄고 App Runner VPC Connector 보안 그룹만 허용합니다.
+- RDS 자동 백업 보존 기간을 7일 이상으로 설정합니다.
+- 공개 전 RDS 수동 스냅샷을 생성합니다.
+- SES 도메인 인증, DKIM, SPF, DMARC 레코드를 모두 등록합니다.
+- SES sandbox 해제와 실제 수신함 테스트를 완료합니다.
+- `DAYMARK_PUBLIC_BASE_URL`은 실제 HTTPS 도메인으로 설정합니다.
+- `DAYMARK_REMEMBER_ME_KEY`는 64자 이상 임의 secret으로 설정합니다.
+- `SERVER_SERVLET_SESSION_COOKIE_SECURE`와 `DAYMARK_REMEMBER_ME_COOKIE_SECURE`는 `true`로 설정합니다.
+- `DAYMARK_ALERT_WEBHOOK_URL`은 실제 HTTPS webhook으로 설정합니다.
+- App Runner health check는 `/actuator/health/readiness`로 설정합니다.
+
 ## 내보내기 점검
 
 ### Markdown

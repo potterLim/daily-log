@@ -1,3 +1,16 @@
+spring:
+  mail:
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}
+
 server:
   servlet:
     session:
@@ -5,6 +18,7 @@ server:
         secure: ${SERVER_SERVLET_SESSION_COOKIE_SECURE:true}
 
 daymark:
+  public-base-url: ${DAYMARK_PUBLIC_BASE_URL:}
   operations:
     production-readiness:
       enabled: true
@@ -16,3 +30,5 @@ daymark:
       enabled: true
       cron: ${DAYMARK_WEEKLY_SUMMARY_CRON:0 0 9 * * MON}
       zone: ${DAYMARK_WEEKLY_SUMMARY_ZONE:Asia/Seoul}
+  security:
+    remember-me-cookie-secure: ${DAYMARK_REMEMBER_ME_COOKIE_SECURE:true}

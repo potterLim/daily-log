@@ -3,6 +3,7 @@ package com.potterlim.daymark.config;
 import com.potterlim.daymark.security.SecurityUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -54,8 +55,32 @@ public class SecurityConfiguration {
                         "/verify-email"
                     )
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET,
+                        "/account",
+                        "/account/password",
+                        "/daymark/morning",
+                        "/daymark/morning/edit",
+                        "/daymark/evening",
+                        "/daymark/evening/edit",
+                        "/daymark/week",
+                        "/daymark/library",
+                        "/daymark/library/export/markdown",
+                        "/daymark/library/export/pdf",
+                        "/daymark/preview"
+                    )
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST,
+                        "/account/password",
+                        "/account/email-verification/resend",
+                        "/daymark/morning/save",
+                        "/daymark/evening/save",
+                        "/logout"
+                    )
+                    .authenticated()
+                    .requestMatchers("/actuator/**")
+                    .denyAll()
                     .anyRequest()
-                    .authenticated())
+                    .permitAll())
             .exceptionHandling(exceptionHandling ->
                 exceptionHandling.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
             .securityContext(securityContext ->
@@ -93,6 +118,7 @@ public class SecurityConfiguration {
 
         tokenBasedRememberMeServices.setParameter("rememberMe");
         tokenBasedRememberMeServices.setCookieName(securityProperties.getRememberMeCookieName());
+        tokenBasedRememberMeServices.setUseSecureCookie(securityProperties.isRememberMeCookieSecure());
         tokenBasedRememberMeServices.setTokenValiditySeconds(securityProperties.getRememberMeTokenValiditySeconds());
 
         return tokenBasedRememberMeServices;

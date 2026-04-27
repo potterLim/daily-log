@@ -1,11 +1,13 @@
 package com.potterlim.daymark.service;
 
+import com.potterlim.daymark.config.DaymarkApplicationProperties;
 import com.potterlim.daymark.entity.UserAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class AuthenticationMailWorkflowService {
@@ -16,17 +18,20 @@ public class AuthenticationMailWorkflowService {
     private final IEmailVerificationTokenService mEmailVerificationTokenService;
     private final IAuthenticationMailService mAuthenticationMailService;
     private final IAlertNotificationService mAlertNotificationService;
+    private final DaymarkApplicationProperties mDaymarkApplicationProperties;
 
     public AuthenticationMailWorkflowService(
         IPasswordResetTokenService passwordResetTokenService,
         IEmailVerificationTokenService emailVerificationTokenService,
         IAuthenticationMailService authenticationMailService,
-        IAlertNotificationService alertNotificationService
+        IAlertNotificationService alertNotificationService,
+        DaymarkApplicationProperties daymarkApplicationProperties
     ) {
         mPasswordResetTokenService = passwordResetTokenService;
         mEmailVerificationTokenService = emailVerificationTokenService;
         mAuthenticationMailService = authenticationMailService;
         mAlertNotificationService = alertNotificationService;
+        mDaymarkApplicationProperties = daymarkApplicationProperties;
     }
 
     public boolean sendRecoveryInstructions(UserAccount userAccount, HttpServletRequest httpServletRequest) {
@@ -77,12 +82,22 @@ public class AuthenticationMailWorkflowService {
         }
     }
 
-    private static String buildAbsoluteUrl(
+    private String buildAbsoluteUrl(
         HttpServletRequest httpServletRequest,
         String path,
         String queryParameterName,
         String queryParameterValue
     ) {
+        String publicBaseUrl = mDaymarkApplicationProperties.getPublicBaseUrl();
+        if (publicBaseUrl != null && !publicBaseUrl.isBlank()) {
+            return UriComponentsBuilder.fromUriString(publicBaseUrl.strip())
+                .replacePath(path)
+                .replaceQuery(null)
+                .queryParam(queryParameterName, queryParameterValue)
+                .build()
+                .toUriString();
+        }
+
         return ServletUriComponentsBuilder.fromRequestUri(httpServletRequest)
             .replacePath(httpServletRequest.getContextPath() + path)
             .replaceQuery(null)

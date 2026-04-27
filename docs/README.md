@@ -13,7 +13,7 @@
 | 문서 | 내용 |
 | --- | --- |
 | [프로젝트 구조](project-architecture.md) | 코드 구조, 주요 패키지, 데이터 저장 방식, 핵심 요청 흐름 |
-| [배포 가이드](deployment.md) | 로컬 실행, JAR 배포, Docker Compose, 환경 변수, 백업 |
+| [배포 가이드](deployment.md) | App Runner 배포, RDS, SES, 환경 변수, 백업 |
 | [출시 점검표](release-readiness.md) | 출시 전 자동 테스트, 화면 점검, 내보내기 검증, 최종 체크리스트 |
 
 ## 관리 원칙
