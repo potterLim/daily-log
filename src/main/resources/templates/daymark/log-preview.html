@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '로그 미리보기')}">
+      th:replace="~{fragments/layout :: layout(~{::section}, '기록 보기')}">
 <section class="workspace-shell reader-shell">
     <div class="surface-panel workspace-hero workspace-hero-reader">
         <div class="workspace-header workspace-header-rich">
@@ -14,7 +14,7 @@
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent">
                     <span class="workspace-meta-label">상태</span>
-                    <strong th:text="${hasPreviewContent} ? '읽기 전용' : '기록 없음'">읽기 전용</strong>
+                    <strong th:text="${hasPreviewContent} ? '저장됨' : '기록 없음'">저장됨</strong>
                 </div>
             </div>
         </div>

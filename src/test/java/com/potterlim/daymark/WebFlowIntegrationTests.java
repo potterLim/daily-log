@@ -530,6 +530,8 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
                 .param("date", TEST_CURRENT_DATE.toString()))
             .andExpect(status().isOk())
+            .andExpect(content().string(containsString("저장됨")))
+            .andExpect(content().string(not(containsString("읽기 전용"))))
             .andExpect(content().string(containsString("오늘의 목표")))
             .andExpect(content().string(containsString("운동하기")))
             .andExpect(content().string(not(containsString("집중 영역"))))

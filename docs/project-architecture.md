@@ -91,7 +91,7 @@ src/main/resources
 | 라이브러리 | `/daymark/library` | 날짜 범위와 키워드 기반 기록 탐색 |
 | Markdown 내보내기 | `/daymark/library/export/markdown` | 선택한 기록 다운로드 |
 | PDF 미리보기 | `/daymark/library/export/pdf` | 브라우저 PDF 저장용 보고서 |
-| 기록 보기 | `/daymark/preview` | 날짜별 읽기 전용 기록 |
+| 기록 보기 | `/daymark/preview` | 날짜별 저장 기록 조회 |
 | 상태 확인 | `/actuator/health/**` | 런타임 상태 확인 |
 
 ## 데이터 모델
