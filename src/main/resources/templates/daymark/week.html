@@ -7,6 +7,12 @@
             <div class="workspace-header-copy">
                 <h1 class="section-title">주간 리뷰</h1>
                 <p class="section-subtitle" th:text="${rangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</p>
+                <a th:href="@{/daymark/week}"
+                   th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
+                   th:classappend="${weekOffset == 0 ? ' is-active' : ''}"
+                   class="week-current-link">
+                    Current
+                </a>
             </div>
             <div class="workspace-meta-stack">
                 <div class="workspace-meta-card">
@@ -19,18 +25,12 @@
                 </div>
                 <div class="workspace-meta-card workspace-meta-card-accent workspace-meta-card-wide">
                     <span class="workspace-meta-label">주 이동</span>
-                    <div class="week-nav-pair week-nav-trio">
+                    <div class="week-nav-pair">
                         <a th:href="@{/daymark/week(week=${previousWeekOffset})}"
                            th:attr="aria-label=|이전 주 ${previousWeekRangeLabel}|"
                            class="week-nav-card">
                             <strong>Prev</strong>
                             <span th:text="${previousWeekRangeLabel}">2026. 04. 13. ~ 2026. 04. 19.</span>
-                        </a>
-                        <a th:href="@{/daymark/week}"
-                           th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
-                           class="week-nav-card week-nav-card-current">
-                            <strong>Current</strong>
-                            <span th:text="${currentWeekRangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</span>
                         </a>
                         <a th:href="@{/daymark/week(week=${nextWeekOffset})}"
                            th:attr="aria-label=|다음 주 ${nextWeekRangeLabel}|"
