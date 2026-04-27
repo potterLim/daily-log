@@ -612,6 +612,8 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("Prev")))
             .andExpect(content().string(containsString("Current")))
             .andExpect(content().string(containsString("Next")))
+            .andExpect(content().string(containsString("2026. 04. 06. ~ 2026. 04. 12.")))
+            .andExpect(content().string(containsString("2026. 04. 20. ~ 2026. 04. 26.")))
             .andExpect(content().string(containsString("/daymark/week?week=-2")))
             .andExpect(content().string(containsString("/daymark/week")))
             .andExpect(content().string(containsString("/daymark/week?week=0")));

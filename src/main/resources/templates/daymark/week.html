@@ -24,19 +24,19 @@
                            th:attr="aria-label=|이전 주 ${previousWeekRangeLabel}|"
                            class="week-nav-card">
                             <strong>Prev</strong>
-                            <span>이전 주</span>
+                            <span th:text="${previousWeekRangeLabel}">2026. 04. 13. ~ 2026. 04. 19.</span>
                         </a>
                         <a th:href="@{/daymark/week}"
                            th:attr="aria-label=|현재 주 ${currentWeekRangeLabel}|"
                            class="week-nav-card week-nav-card-current">
                             <strong>Current</strong>
-                            <span>현재 주</span>
+                            <span th:text="${currentWeekRangeLabel}">2026. 04. 20. ~ 2026. 04. 26.</span>
                         </a>
                         <a th:href="@{/daymark/week(week=${nextWeekOffset})}"
                            th:attr="aria-label=|다음 주 ${nextWeekRangeLabel}|"
                            class="week-nav-card">
                             <strong>Next</strong>
-                            <span>다음 주</span>
+                            <span th:text="${nextWeekRangeLabel}">2026. 04. 27. ~ 2026. 05. 03.</span>
                         </a>
                     </div>
                 </div>
