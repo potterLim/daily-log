@@ -86,6 +86,7 @@ build/libs/daymark.jar
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `false` |
 | `DAYMARK_REMEMBER_ME_COOKIE_SECURE` | `false` |
 | `DAYMARK_MAIL_FROM_ADDRESS` | `no-reply@daymark.local` |
+| `DAYMARK_SUPPORT_CONTACT_EMAIL` | `potterLim0808@gmail.com` |
 | `DAYMARK_ALERT_WEBHOOK_URL` | 없음 |
 | `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` |
 | `DAYMARK_LOG_DIR` | `./logs` |

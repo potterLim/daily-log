@@ -85,6 +85,8 @@ daymark:
     remember-me-cookie-name: ${DAYMARK_REMEMBER_ME_COOKIE_NAME:DAYMARK_REMEMBER_ME}
     remember-me-cookie-secure: ${DAYMARK_REMEMBER_ME_COOKIE_SECURE:false}
     remember-me-token-validity-seconds: ${DAYMARK_REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
+  support:
+    contact-email: ${DAYMARK_SUPPORT_CONTACT_EMAIL:potterLim0808@gmail.com}
 logging:
   file:
     path: ${DAYMARK_LOG_DIR:./logs}

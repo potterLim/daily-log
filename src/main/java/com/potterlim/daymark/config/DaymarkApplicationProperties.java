@@ -1,5 +1,6 @@
 package com.potterlim.daymark.config;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -13,6 +14,7 @@ public class DaymarkApplicationProperties {
     private final MailProperties mMail = new MailProperties();
     private final OperationsProperties mOperations = new OperationsProperties();
     private final SecurityProperties mSecurity = new SecurityProperties();
+    private final SupportProperties mSupport = new SupportProperties();
     private String mPublicBaseUrl = "";
 
     public AccountProperties getAccount() {
@@ -29,6 +31,10 @@ public class DaymarkApplicationProperties {
 
     public SecurityProperties getSecurity() {
         return mSecurity;
+    }
+
+    public SupportProperties getSupport() {
+        return mSupport;
     }
 
     public String getPublicBaseUrl() {
@@ -223,6 +229,21 @@ public class DaymarkApplicationProperties {
 
         public void setRememberMeTokenValiditySeconds(int rememberMeTokenValiditySeconds) {
             mRememberMeTokenValiditySeconds = rememberMeTokenValiditySeconds;
+        }
+    }
+
+    public static final class SupportProperties {
+
+        @NotBlank
+        @Email
+        private String mContactEmail = "potterLim0808@gmail.com";
+
+        public String getContactEmail() {
+            return mContactEmail;
+        }
+
+        public void setContactEmail(String contactEmail) {
+            mContactEmail = contactEmail;
         }
     }
 }

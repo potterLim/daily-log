@@ -714,6 +714,8 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("Daymark")))
             .andExpect(content().string(containsString("Sign In")))
             .andExpect(content().string(containsString("Create Account")))
+            .andExpect(content().string(containsString("Contact:")))
+            .andExpect(content().string(containsString("potterLim0808@gmail.com")))
             .andExpect(content().string(containsString("/login?next=/daymark/morning/edit?date%3D" + TEST_CURRENT_DATE)))
             .andExpect(content().string(containsString("/login?next=/daymark/evening/edit?date%3D" + TEST_CURRENT_DATE)))
             .andExpect(content().string(containsString("/login?next=/daymark/preview?date%3D" + TEST_CURRENT_DATE)))

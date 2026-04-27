@@ -455,6 +455,21 @@ ol {
     content: "•";
 }
 
+.footer-contact {
+    color: var(--text-tertiary);
+    text-decoration: none;
+}
+
+.footer-contact::before {
+    margin-right: 10px;
+    color: rgba(119, 135, 161, 0.7);
+    content: "•";
+}
+
+.footer-contact:hover {
+    color: var(--text-primary);
+}
+
 .surface-panel {
     position: relative;
     padding: 28px;
