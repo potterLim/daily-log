@@ -44,11 +44,13 @@ ns-685.awsdns-21.net
 ns-1110.awsdns-10.org
 ```
 
-DNS 위임 전 상태:
+현재 진행 상태:
 
 - App Runner 서비스는 `RUNNING`입니다.
-- App Runner custom domain은 DNS 검증 대기 상태입니다.
-- SES 도메인 인증, DKIM, MAIL FROM은 DNS 검증 대기 상태입니다.
+- Namecheap nameserver는 Route 53 네임서버로 저장했습니다.
+- Route 53에 App Runner custom domain 인증 CNAME을 등록했습니다.
+- Route 53에 SES DKIM, SPF, DMARC, MAIL FROM 레코드를 등록했습니다.
+- 공개 DNS 전파 전에는 일부 조회가 Namecheap 기본 네임서버를 계속 볼 수 있습니다.
 
 DNS 위임 후 확인할 항목:
 
