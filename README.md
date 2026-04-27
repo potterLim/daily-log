@@ -124,4 +124,5 @@ AWS App Runner 배포 설정은 [배포 문서](docs/deployment.md)를 확인하
 - [문서 안내](docs/README.md)
 - [프로젝트 구조](docs/project-architecture.md)
 - [배포 가이드](docs/deployment.md)
+- [운영 인수인계](docs/operations-handoff.md)
 - [출시 점검표](docs/release-readiness.md)
