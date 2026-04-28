@@ -134,10 +134,9 @@ git diff --check
 
 ## AWS 운영 점검
 
-현재 App Runner 운영과 서울 ECS Express Mode 이전을 구분해 다음 항목을 확정합니다.
+서울 ECS Express Mode 운영 기준으로 다음 항목을 확정합니다.
 
-- App Runner는 기존 운영 유지용이며, 장기 운영 기준은 서울 ECS Express Mode입니다.
-- 서울 ECS 이전 시 앱, RDS, ECR은 `ap-northeast-2`에 두고 SES SMTP는 기존 `ap-northeast-1` 도쿄를 유지합니다.
+- 애플리케이션, RDS, ECR, SES SMTP는 `ap-northeast-2` 서울 리전을 기준으로 둡니다.
 - RDS MySQL은 외부 공개 접근을 끄고 애플리케이션 보안 그룹에서 오는 트래픽만 허용합니다.
 - RDS 자동 백업 보존 기간을 7일 이상으로 설정합니다.
 - 공개 전 RDS 수동 스냅샷을 생성합니다.
