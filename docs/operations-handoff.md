@@ -293,6 +293,16 @@ curl -sS https://usedaymark.com/ | rg "방금 수정한 문구"
 
 도메인 값을 바꾸면 추가로 Route 53, App Runner custom domain, `DAYMARK_PUBLIC_BASE_URL`을 함께 확인합니다.
 
+로컬 브라우저나 터미널만 접속이 안 되면 DNS 캐시 문제일 수 있습니다. 먼저 Route 53 권한 DNS와 공개 DNS가 같은 값을 주는지 확인합니다.
+
+```bash
+dig @ns-402.awsdns-50.com +short usedaymark.com
+dig @8.8.8.8 +short usedaymark.com
+dig @1.1.1.1 +short usedaymark.com
+```
+
+공개 DNS가 App Runner 주소를 가리키는데 내 컴퓨터만 예전 IP를 보면 운영 장애로 단정하지 말고, 브라우저/DNS 캐시가 풀릴 때까지 기다리거나 다른 네트워크에서 재확인합니다.
+
 ## 롤백 기준
 
 가장 안전한 롤백은 Git revert 후 다시 배포하는 방식입니다.

@@ -230,6 +230,14 @@ curl -sS https://usedaymark.com/actuator/health/readiness
 curl -sS https://usedaymark.com/ | rg "방금 수정한 문구"
 ```
 
+내 컴퓨터에서만 접속이 안 되거나 예전 화면이 보이면 DNS 캐시와 브라우저 캐시를 분리해서 봅니다. Route 53 권한 DNS와 공개 DNS가 App Runner IP를 반환하면 운영 DNS는 정상이고, 로컬 캐시가 늦게 풀리는 상황일 수 있습니다.
+
+```bash
+dig @ns-402.awsdns-50.com +short usedaymark.com
+dig @8.8.8.8 +short usedaymark.com
+dig @1.1.1.1 +short usedaymark.com
+```
+
 ### 10. 운영자 계정 부여
 
 회원가입으로 계정을 만든 뒤 운영 DB에서 해당 계정을 관리자 권한으로 승격합니다.
