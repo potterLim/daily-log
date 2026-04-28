@@ -30,6 +30,12 @@
 https://usedaymark.com
 ```
 
+보조 도메인:
+
+```text
+https://www.usedaymark.com
+```
+
 상태 확인:
 
 ```text
@@ -225,7 +231,7 @@ AWS Console → RDS → daymark-production-db
 3. CloudWatch Logs에서 애플리케이션 시작 실패를 확인합니다.
 4. DB 연결 오류면 RDS 보안 그룹과 환경값을 확인합니다.
 5. 메일 오류면 SES identity, sandbox, SMTP credential을 확인합니다.
-6. 도메인 오류면 Route 53과 ALB 대상 상태를 확인합니다.
+6. 도메인 오류면 Route 53, ACM 인증서, ALB listener certificate, Host header rule, ALB 대상 상태를 확인합니다.
 7. 새 배포 오류면 ECR image tag와 ECS revision을 확인합니다.
 
 ## 비용 확인
