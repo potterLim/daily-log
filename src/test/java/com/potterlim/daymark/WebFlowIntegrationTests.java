@@ -17,6 +17,7 @@ import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
 import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
 import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
+import com.potterlim.daymark.service.IAlertNotificationService;
 import com.potterlim.daymark.service.IAuthenticationMailService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
@@ -24,6 +25,7 @@ import com.potterlim.daymark.service.OperationUsageEventService;
 import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.support.EDaymarkSectionType;
 import jakarta.servlet.RequestDispatcher;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,6 +102,9 @@ class WebFlowIntegrationTests {
     private IAuthenticationMailService mAuthenticationMailService;
 
     @MockitoBean
+    private IAlertNotificationService mAlertNotificationService;
+
+    @MockitoBean
     private Clock mClock;
 
     @BeforeEach
@@ -148,6 +155,30 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk());
 
         assertTrue(mUserAccountRepository.findByUserName("tester").isEmpty());
+    }
+
+    @Test
+    void mailFailureAlertShouldNotExposeWorkspaceIdOrEmailAddress() throws Exception {
+        doThrow(new IllegalStateException("smtp failed"))
+            .when(mAuthenticationMailService)
+            .sendEmailVerificationMail(any(UserAccount.class), anyString());
+
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "privacy-user")
+                .param("emailAddress", "private@example.com")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        ArgumentCaptor<String> alertMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mAlertNotificationService)
+            .sendOperationalAlert(eq("email-verification-mail-failed"), alertMessageCaptor.capture());
+
+        String alertMessage = alertMessageCaptor.getValue();
+        assertFalse(alertMessage.contains("privacy-user"));
+        assertFalse(alertMessage.contains("private@example.com"));
     }
 
     @Test

@@ -132,15 +132,14 @@ public class AuthenticationMailWorkflowService {
         RuntimeException runtimeException
     ) {
         LOGGER.error(
-            "Authentication mail delivery failed. alertType={}, userName={}, emailAddress={}",
+            "Authentication mail delivery failed. alertType={}, userAccountId={}",
             alertType,
-            userAccount.getUsername(),
-            userAccount.getEmailAddress(),
+            userAccount.getUserAccountId(),
             runtimeException
         );
         mAlertNotificationService.sendOperationalAlert(
             alertType,
-            "userName=%s, emailAddress=%s".formatted(userAccount.getUsername(), userAccount.getEmailAddress())
+            "userAccountId=%s".formatted(userAccount.getUserAccountId())
         );
     }
 }
