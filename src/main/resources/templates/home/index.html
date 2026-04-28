@@ -20,7 +20,7 @@
                 </a>
                 <a class="btn btn-primary btn-lg"
                    sec:authorize="isAnonymous()"
-                   th:href="@{/login(next=${todayMorningPath})}">
+                   th:href="${todayMorningPath}">
                     Plan
                 </a>
                 <a class="btn btn-primary btn-lg"
@@ -30,7 +30,7 @@
                 </a>
                 <a class="btn btn-primary btn-lg"
                    sec:authorize="isAnonymous()"
-                   th:href="@{/login(next=${todayEveningPath})}">
+                   th:href="${todayEveningPath}">
                     Review
                 </a>
                 <a class="btn btn-primary btn-lg"
@@ -40,7 +40,7 @@
                 </a>
                 <a class="btn btn-primary btn-lg"
                    sec:authorize="isAnonymous()"
-                   th:href="@{/login(next=${todayPreviewPath})}">
+                   th:href="${todayPreviewPath}">
                     View Today
                 </a>
             </div>

@@ -1,5 +1,6 @@
 package com.potterlim.daymark.controller;
 
+import java.net.URI;
 import java.util.Optional;
 import com.potterlim.daymark.dto.auth.ForgotPasswordRequestDto;
 import com.potterlim.daymark.dto.auth.LoginRequestDto;
@@ -16,7 +17,6 @@ import com.potterlim.daymark.service.IEmailVerificationTokenService;
 import com.potterlim.daymark.service.IPasswordResetTokenService;
 import com.potterlim.daymark.service.IUserAccountService;
 import com.potterlim.daymark.service.OperationUsageEventService;
-import com.potterlim.daymark.support.LoginRedirectSupport;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -29,6 +29,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -48,6 +50,7 @@ public class AuthController {
     private final AuthenticationManager mAuthenticationManager;
     private final SecurityContextRepository mSecurityContextRepository;
     private final RememberMeServices mRememberMeServices;
+    private final RequestCache mRequestCache;
     private final OperationUsageEventService mOperationUsageEventService;
 
     public AuthController(
@@ -58,6 +61,7 @@ public class AuthController {
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
         RememberMeServices rememberMeServices,
+        RequestCache requestCache,
         OperationUsageEventService operationUsageEventService
     ) {
         mUserAccountService = userAccountService;
@@ -67,24 +71,22 @@ public class AuthController {
         mAuthenticationManager = authenticationManager;
         mSecurityContextRepository = securityContextRepository;
         mRememberMeServices = rememberMeServices;
+        mRequestCache = requestCache;
         mOperationUsageEventService = operationUsageEventService;
     }
 
     @GetMapping("/login")
-    public String showLoginPage(
-        @RequestParam(name = "next", required = false) String nextPathOrNull,
-        Authentication authentication,
-        Model model
-    ) {
-        String loginRedirectPath = LoginRedirectSupport.resolveLoginRedirectPath(nextPathOrNull);
+    public String showLoginPage(Authentication authentication, HttpServletRequest httpServletRequest, Model model) {
         if (isAuthenticated(authentication)) {
-            return "redirect:" + loginRedirectPath;
+            return "redirect:/";
+        }
+
+        if (httpServletRequest.getQueryString() != null) {
+            return "redirect:/login";
         }
 
         if (!model.containsAttribute("loginRequestDto")) {
-            LoginRequestDto loginRequestDto = new LoginRequestDto();
-            loginRequestDto.setNextPath(loginRedirectPath);
-            model.addAttribute("loginRequestDto", loginRequestDto);
+            model.addAttribute("loginRequestDto", new LoginRequestDto());
         }
 
         return "auth/login";
@@ -98,9 +100,6 @@ public class AuthController {
         HttpServletResponse httpServletResponse,
         Model model
     ) {
-        String loginRedirectPath = LoginRedirectSupport.resolveLoginRedirectPath(loginRequestDto.getNextPath());
-        loginRequestDto.setNextPath(loginRedirectPath);
-
         if (bindingResult.hasErrors()) {
             return "auth/login";
         }
@@ -132,7 +131,7 @@ public class AuthController {
         }
 
         recordAuthenticatedUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, authentication);
-        return "redirect:" + loginRedirectPath;
+        return "redirect:" + resolveSavedRequestRedirectPath(httpServletRequest, httpServletResponse);
     }
 
     @GetMapping("/register")
@@ -321,7 +320,8 @@ public class AuthController {
     public String resetPassword(
         @Valid @ModelAttribute("resetPasswordRequestDto") ResetPasswordRequestDto resetPasswordRequestDto,
         BindingResult bindingResult,
-        Model model
+        Model model,
+        RedirectAttributes redirectAttributes
     ) {
         if (!resetPasswordRequestDto.hasMatchingPassword()) {
             bindingResult.rejectValue(
@@ -352,7 +352,11 @@ public class AuthController {
 
         mUserAccountService.resetPassword(userAccountIdOrNull, resetPasswordRequestDto.getPassword());
         mOperationUsageEventService.recordUserEvent(EOperationEventType.PASSWORD_RESET_COMPLETED, userAccountIdOrNull);
-        return "redirect:/login?passwordResetSuccess";
+        redirectAttributes.addFlashAttribute(
+            "passwordResetSuccessMessage",
+            "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
+        );
+        return "redirect:/login";
     }
 
     private static boolean isAuthenticated(Authentication authenticationOrNull) {
@@ -402,6 +406,64 @@ public class AuthController {
         SecurityContextHolder.setContext(securityContext);
         mSecurityContextRepository.saveContext(securityContext, httpServletRequest, httpServletResponse);
         return authentication;
+    }
+
+    private String resolveSavedRequestRedirectPath(
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse
+    ) {
+        SavedRequest savedRequestOrNull = mRequestCache.getRequest(httpServletRequest, httpServletResponse);
+        if (savedRequestOrNull == null) {
+            return "/";
+        }
+
+        mRequestCache.removeRequest(httpServletRequest, httpServletResponse);
+        String redirectUrl = savedRequestOrNull.getRedirectUrl();
+        if (redirectUrl == null || redirectUrl.isBlank()) {
+            return "/";
+        }
+
+        try {
+            URI redirectUri = URI.create(redirectUrl);
+            String redirectPath = redirectUri.getRawPath();
+            String redirectQuery = removeInternalSavedRequestQueryParameter(redirectUri.getRawQuery());
+            if (!isAllowedPostLoginRedirectPath(redirectPath)) {
+                return "/";
+            }
+
+            return redirectQuery == null || redirectQuery.isBlank()
+                ? redirectPath
+                : redirectPath + "?" + redirectQuery;
+        } catch (IllegalArgumentException illegalArgumentException) {
+            return "/";
+        }
+    }
+
+    private static String removeInternalSavedRequestQueryParameter(String rawQueryOrNull) {
+        if (rawQueryOrNull == null || rawQueryOrNull.isBlank()) {
+            return null;
+        }
+
+        StringBuilder queryBuilder = new StringBuilder();
+        for (String queryParameter : rawQueryOrNull.split("&")) {
+            if (queryParameter.equals("continue") || queryParameter.equals("continue=")) {
+                continue;
+            }
+
+            if (!queryBuilder.isEmpty()) {
+                queryBuilder.append('&');
+            }
+            queryBuilder.append(queryParameter);
+        }
+
+        return queryBuilder.isEmpty() ? null : queryBuilder.toString();
+    }
+
+    private static boolean isAllowedPostLoginRedirectPath(String redirectPathOrNull) {
+        return redirectPathOrNull != null
+            && (redirectPathOrNull.equals("/account")
+                || redirectPathOrNull.startsWith("/account/")
+                || redirectPathOrNull.startsWith("/daymark/"));
     }
 
     private void recordAuthenticatedUserEvent(EOperationEventType eventType, Authentication authentication) {

@@ -133,7 +133,7 @@ class MySqlIntegrationTests {
                 .param("password", "pass6789")
                 .param("confirmPassword", "pass6789"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login?passwordResetSuccess"));
+            .andExpect(redirectedUrl("/login"));
 
         mMockMvc.perform(post("/login")
                 .with(csrf())

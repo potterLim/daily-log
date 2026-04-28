@@ -29,10 +29,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.containsString;
@@ -198,22 +200,36 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void loginShouldRedirectToSafeNextPathAfterAuthentication() throws Exception {
+    void loginPageShouldCanonicalizeUnexpectedQueryString() throws Exception {
+        mMockMvc.perform(get("/login?next=/daymark/preview?date=" + TEST_CURRENT_DATE))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/login"));
+    }
+
+    @Test
+    void loginShouldRedirectToSavedProductPathAfterAuthentication() throws Exception {
         mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("next-user", "next-user@example.com", "pass1234")
         );
 
+        MvcResult protectedPageResult = mMockMvc.perform(get("/daymark/preview?date=" + TEST_CURRENT_DATE))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("http://localhost/login"))
+            .andReturn();
+        MockHttpSession session = (MockHttpSession) protectedPageResult.getRequest().getSession(false);
+        assertNotNull(session);
+
         mMockMvc.perform(post("/login")
+                .session(session)
                 .with(csrf())
                 .param("loginIdentifier", "next-user")
-                .param("password", "pass1234")
-                .param("nextPath", "/daymark/preview?date=" + TEST_CURRENT_DATE))
+                .param("password", "pass1234"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/daymark/preview?date=" + TEST_CURRENT_DATE));
     }
 
     @Test
-    void loginShouldRejectExternalNextPathAfterAuthentication() throws Exception {
+    void loginShouldIgnoreUnexpectedNextPathParameterAfterAuthentication() throws Exception {
         mUserAccountService.registerUserAccount(
             new RegisterUserAccountCommand("safe-next-user", "safe-next-user@example.com", "pass1234")
         );
@@ -330,7 +346,7 @@ class WebFlowIntegrationTests {
                 .param("password", "pass6789")
                 .param("confirmPassword", "pass6789"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login?passwordResetSuccess"));
+            .andExpect(redirectedUrl("/login"));
 
         mMockMvc.perform(post("/login")
                 .with(csrf())
@@ -716,9 +732,10 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("Create Account")))
             .andExpect(content().string(containsString("Contact:")))
             .andExpect(content().string(containsString("potterLim0808@gmail.com")))
-            .andExpect(content().string(containsString("/login?next=/daymark/morning/edit?date%3D" + TEST_CURRENT_DATE)))
-            .andExpect(content().string(containsString("/login?next=/daymark/evening/edit?date%3D" + TEST_CURRENT_DATE)))
-            .andExpect(content().string(containsString("/login?next=/daymark/preview?date%3D" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/daymark/morning/edit?date=" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/daymark/evening/edit?date=" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(containsString("/daymark/preview?date=" + TEST_CURRENT_DATE)))
+            .andExpect(content().string(not(containsString("/login?next="))))
             .andExpect(content().string(not(containsString("Sign Out"))));
 
         mMockMvc.perform(get("/")
@@ -884,9 +901,24 @@ class WebFlowIntegrationTests {
 
     @Test
     void protectedProductPagesShouldStillRequireLogin() throws Exception {
-        mMockMvc.perform(get("/daymark/morning"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("http://localhost/login"));
+        for (String protectedPath : new String[] {
+            "/account",
+            "/account/password",
+            "/admin/operations",
+            "/daymark/morning",
+            "/daymark/morning/edit",
+            "/daymark/evening",
+            "/daymark/evening/edit",
+            "/daymark/week",
+            "/daymark/library",
+            "/daymark/library/export/markdown",
+            "/daymark/library/export/pdf",
+            "/daymark/preview"
+        }) {
+            mMockMvc.perform(get(protectedPath))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("http://localhost/login"));
+        }
     }
 
     @Test

@@ -11,10 +11,10 @@
 
         <form th:action="@{/login}" th:object="${loginRequestDto}" method="post" class="form-stack">
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-            <input type="hidden" th:field="*{nextPath}" />
 
-            <div th:if="${param.passwordResetSuccess}" class="message-banner message-banner-success" role="alert">
-                비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.
+            <div th:if="${passwordResetSuccessMessage}" class="message-banner message-banner-success" role="alert"
+                 th:text="${passwordResetSuccessMessage}">
+                비밀번호가 재설정되었습니다.
             </div>
             <div th:if="${loginErrorMessage}" class="message-banner message-banner-danger" role="alert" th:text="${loginErrorMessage}">
                 로그인에 실패했습니다.

@@ -25,6 +25,8 @@ import org.springframework.security.web.authentication.rememberme.TokenBasedReme
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 @Configuration
 public class SecurityConfiguration {
@@ -39,7 +41,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain buildSecurityFilterChain(
         HttpSecurity httpSecurity,
         RememberMeServices rememberMeServices,
-        SecurityContextRepository securityContextRepository
+        SecurityContextRepository securityContextRepository,
+        RequestCache requestCache
     ) throws Exception {
         String rememberMeCookieName = mDaymarkApplicationProperties.getSecurity().getRememberMeCookieName();
 
@@ -96,6 +99,7 @@ public class SecurityConfiguration {
                     .accessDeniedHandler(SecurityConfiguration::forwardToNotFoundPage))
             .securityContext(securityContext ->
                 securityContext.securityContextRepository(securityContextRepository))
+            .requestCache(requestCacheConfigurer -> requestCacheConfigurer.requestCache(requestCache))
             .headers(headers -> headers
                 .contentTypeOptions(Customizer.withDefaults())
                 .referrerPolicy(referrerPolicy -> referrerPolicy.policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
@@ -139,6 +143,11 @@ public class SecurityConfiguration {
     @Bean
     public SecurityContextRepository createSecurityContextRepository() {
         return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
+    public RequestCache createRequestCache() {
+        return new HttpSessionRequestCache();
     }
 
     @Bean

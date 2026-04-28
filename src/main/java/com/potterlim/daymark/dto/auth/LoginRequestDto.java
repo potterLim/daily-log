@@ -8,8 +8,6 @@ public final class LoginRequestDto {
 
     private String mPassword = "";
 
-    private String mNextPath = "";
-
     private boolean mIsRememberMe;
 
     @NotBlank(message = "워크스페이스 ID 또는 이메일을 입력해주세요.")
@@ -28,14 +26,6 @@ public final class LoginRequestDto {
 
     public void setPassword(String password) {
         mPassword = password;
-    }
-
-    public String getNextPath() {
-        return mNextPath;
-    }
-
-    public void setNextPath(String nextPath) {
-        mNextPath = nextPath;
     }
 
     public boolean isRememberMe() {
