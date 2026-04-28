@@ -231,8 +231,10 @@ AWS Console → RDS → daymark-production-db
 3. CloudWatch Logs에서 애플리케이션 시작 실패를 확인합니다.
 4. DB 연결 오류면 RDS 보안 그룹과 환경값을 확인합니다.
 5. 메일 오류면 SES identity, sandbox, SMTP credential을 확인합니다.
-6. 도메인 오류면 Route 53, ACM 인증서, ALB listener certificate, Host header rule, ALB 대상 상태를 확인합니다.
+6. 도메인 오류면 Route 53, ACM 인증서, ALB listener certificate, Host header rule, ALB `80 -> 443` 리디렉션, ALB 대상 상태를 확인합니다.
 7. 새 배포 오류면 ECR image tag와 ECS revision을 확인합니다.
+
+공용 DNS는 정상인데 특정 기기에서만 `usedaymark.com`이 Namecheap URL Forward로 보이면, 그 기기의 DNS 캐시가 이전 값을 들고 있는 상태입니다. 이때 `dig @1.1.1.1 usedaymark.com`과 브라우저 접속 결과가 서로 다르게 보일 수 있습니다.
 
 ## 비용 확인
 
