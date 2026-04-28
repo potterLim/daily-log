@@ -134,10 +134,11 @@ git diff --check
 
 ## AWS 운영 점검
 
-App Runner 배포 전 다음 항목을 확정합니다.
+현재 App Runner 운영과 서울 ECS Express Mode 이전을 구분해 다음 항목을 확정합니다.
 
-- App Runner 서비스가 2026. 04. 30. 전에 생성되어 있는지 확인합니다.
-- RDS MySQL은 외부 공개 접근을 끄고 App Runner VPC Connector 보안 그룹만 허용합니다.
+- App Runner는 기존 운영 유지용이며, 장기 운영 기준은 서울 ECS Express Mode입니다.
+- 서울 ECS 이전 시 앱, RDS, ECR은 `ap-northeast-2`에 두고 SES SMTP는 기존 `ap-northeast-1` 도쿄를 유지합니다.
+- RDS MySQL은 외부 공개 접근을 끄고 애플리케이션 보안 그룹에서 오는 트래픽만 허용합니다.
 - RDS 자동 백업 보존 기간을 7일 이상으로 설정합니다.
 - 공개 전 RDS 수동 스냅샷을 생성합니다.
 - SES 도메인 인증, DKIM, SPF, DMARC 레코드를 모두 등록합니다.
@@ -146,7 +147,7 @@ App Runner 배포 전 다음 항목을 확정합니다.
 - `DAYMARK_REMEMBER_ME_KEY`는 64자 이상 임의 secret으로 설정합니다.
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`와 `DAYMARK_REMEMBER_ME_COOKIE_SECURE`는 `true`로 설정합니다.
 - `DAYMARK_ALERT_WEBHOOK_URL`은 실제 HTTPS webhook으로 설정합니다.
-- App Runner health check는 `/actuator/health/readiness`로 설정합니다.
+- health check는 `/actuator/health/readiness`로 설정합니다.
 - 운영자 계정을 `ADMIN` 권한으로 승격하고 `/admin/operations` 접근을 확인합니다.
 - 운영 지표가 `operation_usage_event`와 `weekly_operation_metric_snapshot`에 저장되는지 확인합니다.
 - 실제 운영 데이터, secret, webhook URL은 퍼블릭 저장소에 커밋하지 않습니다.

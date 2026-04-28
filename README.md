@@ -76,7 +76,7 @@ build/libs/daymark.jar
 | `DATABASE_PASSWORD` | MySQL 비밀번호 |
 | `DAYMARK_REMEMBER_ME_KEY` | remember-me 서명 키 |
 
-운영 환경에서는 App Runner 같은 HTTPS 앞단 뒤에서 실행하고, 세션 쿠키/remember-me 쿠키 보안 설정과 SES SMTP 설정을 함께 준비합니다.
+운영 환경에서는 App Runner 또는 ECS Express Mode 같은 HTTPS 앞단 뒤에서 실행하고, 세션 쿠키/remember-me 쿠키 보안 설정과 SES SMTP 설정을 함께 준비합니다.
 
 주요 선택 설정:
 
@@ -91,7 +91,7 @@ build/libs/daymark.jar
 | `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `false` |
 | `DAYMARK_LOG_DIR` | `./logs` |
 
-AWS App Runner 배포 설정은 [배포 문서](docs/deployment.md)를 확인하세요.
+AWS 배포 설정은 [배포 문서](docs/deployment.md)를 확인하세요. 서울 ECS Express Mode 이전은 [ECS Express Mode 이전 계획](docs/ecs-express-migration.md)을 기준으로 진행합니다.
 
 ## 저장 구조
 
@@ -115,7 +115,7 @@ AWS App Runner 배포 설정은 [배포 문서](docs/deployment.md)를 확인하
 - 로그인 실패와 비밀번호 찾기 응답은 계정 존재 여부를 노출하지 않도록 일반화합니다.
 - CSRF 보호와 HTTP-only 세션 쿠키를 사용합니다.
 - 상태 확인 엔드포인트는 `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`입니다.
-- `.env.example`과 `ops/aws/app-runner-env.example`은 예시 값만 보관하고, 실제 운영 환경값은 AWS 콘솔/Secrets Manager/로컬 `.env`처럼 저장소 밖에서 관리합니다.
+- `.env.example`, `ops/aws/app-runner-env.example`, `ops/aws/ecs-express-env.example`은 예시 값만 보관하고, 실제 운영 환경값은 AWS 콘솔/Secrets Manager/로컬 `.env`처럼 저장소 밖에서 관리합니다.
 - 운영 지표 코드는 저장소에 포함하지만, 실제 통계 데이터와 운영 secret은 저장소에 커밋하지 않습니다.
 - 로그, 백업, 캡처, 생성된 PDF/Markdown 파일은 저장소에 커밋하지 않습니다.
 
@@ -124,5 +124,6 @@ AWS App Runner 배포 설정은 [배포 문서](docs/deployment.md)를 확인하
 - [문서 안내](docs/README.md)
 - [프로젝트 구조](docs/project-architecture.md)
 - [배포 가이드](docs/deployment.md)
+- [ECS Express Mode 이전 계획](docs/ecs-express-migration.md)
 - [운영 인수인계](docs/operations-handoff.md)
 - [출시 점검표](docs/release-readiness.md)

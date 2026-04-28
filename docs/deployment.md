@@ -1,6 +1,8 @@
 # 배포 가이드
 
-Daymark의 초기 AWS 배포 기준은 App Runner, Amazon ECR, Amazon RDS for MySQL, Amazon SES SMTP, Route 53/ACM, 운영 알림 웹훅입니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
+Daymark의 현재 AWS 배포 기준은 App Runner, Amazon ECR, Amazon RDS for MySQL, Amazon SES SMTP, Route 53/ACM, 운영 알림 웹훅입니다. 운영 데이터는 MySQL에 저장하며, Flyway가 스키마 변경을 관리합니다.
+
+장기 운영 기준은 서울 ECS Express Mode로 이전하는 것입니다. 이전 절차는 [ECS Express Mode 이전 계획](ecs-express-migration.md)을 따릅니다.
 
 ## 운영 결정
 
@@ -18,7 +20,7 @@ Daymark의 초기 AWS 배포 기준은 App Runner, Amazon ECR, Amazon RDS for My
 | 알림 | `DAYMARK_ALERT_WEBHOOK_URL`로 운영 실패 알림 전송 |
 | 알 수 없는 공개 URL | 로그인으로 보내지 않고 제품형 404 표시 |
 
-App Runner는 2026. 04. 30.부터 신규 고객에게 닫히므로, 사용하려면 그 전에 App Runner 서비스를 생성해 둡니다. 기존 고객은 서비스를 계속 사용할 수 있지만, 정식 장기 운영 전에는 ECS Express Mode 이전 가능성을 열어 둡니다.
+App Runner는 2026. 04. 30.부터 신규 고객에게 닫힙니다. 기존 고객은 서비스를 계속 사용할 수 있지만, 정식 장기 운영 전에는 ECS Express Mode로 이전합니다.
 
 ## 현재 운영 리소스
 

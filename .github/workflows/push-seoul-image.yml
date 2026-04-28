@@ -1,0 +1,67 @@
+name: Push Seoul Image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: seoul-image-push
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY_NAME: daymark
+
+jobs:
+  build-and-push-image:
+    name: Build and push Seoul image
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Verify production build
+        run: ./gradlew test bootJar
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: daymark-seoul-image-push
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          IMAGE_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI="${IMAGE_REGISTRY}/${ECR_REPOSITORY_NAME}:${IMAGE_TAG}"
+          LATEST_IMAGE_URI="${IMAGE_REGISTRY}/${ECR_REPOSITORY_NAME}:latest"
+
+          docker build \
+            --platform linux/amd64 \
+            --tag "${IMAGE_URI}" \
+            --tag "${LATEST_IMAGE_URI}" \
+            .
+
+          docker push "${IMAGE_URI}"
+          docker push "${LATEST_IMAGE_URI}"
+
+          echo "image-uri=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
