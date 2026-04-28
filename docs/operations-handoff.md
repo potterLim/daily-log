@@ -216,6 +216,12 @@ Actions → Deploy Production
 
 실패하면 실패한 step의 로그를 보고 수정한 뒤 다시 push합니다.
 
+주의할 점:
+
+- GitHub Actions 성공은 새 Docker 이미지가 ECR에 올라갔다는 뜻입니다.
+- 운영 화면 반영까지 끝났다는 뜻은 아닙니다.
+- App Runner가 그 이미지를 받아 새 인스턴스를 띄우고 트래픽을 넘긴 뒤 운영 도메인에서 직접 확인해야 배포 완료입니다.
+
 ### 10. App Runner 배포 확인
 
 AWS Console에서 확인합니다.
@@ -231,7 +237,13 @@ App Runner → daymark-production → Deployments
 - health check가 통과하는지
 - 로그에 시작 실패가 없는지
 
-자동 배포가 연결되어 있지 않다면 App Runner 서비스 화면에서 수동 배포를 실행합니다.
+서비스 목록이나 상세 화면에 `Operation in progress`가 보이면 배포가 진행 중인 상태입니다. 보통 몇 분 동안 기존 화면이 계속 보일 수 있으므로 `Running`으로 돌아올 때까지 기다립니다.
+
+자동 배포가 연결되어 있지 않거나 새 이미지가 반영되지 않는다면 App Runner 서비스 화면에서 수동 배포를 실행합니다.
+
+```text
+App Runner → daymark-production → Deploy
+```
 
 ### 11. 운영 확인
 
@@ -251,8 +263,18 @@ https://xefgmam2t3.ap-northeast-1.awsapprunner.com
 
 - `/actuator/health/readiness`가 `UP`인지
 - 홈이 열리는지
+- 방금 수정한 문구, 링크, 화면 요소가 실제 운영 HTML에 반영되었는지
 - 로그인과 회원가입이 동작하는지
 - 인증 메일과 비밀번호 재설정 메일이 발송되는지
+
+터미널에서 빠르게 확인할 때는 다음처럼 확인합니다.
+
+```bash
+curl -sS https://usedaymark.com/actuator/health/readiness
+curl -sS https://usedaymark.com/ | rg "방금 수정한 문구"
+```
+
+운영 도메인에서 새 내용이 확인되기 전까지는 배포가 끝난 것으로 보지 않습니다.
 - 아침 계획, 저녁 회고, 주간 리뷰가 저장되는지
 - 라이브러리 검색과 Markdown/PDF 내보내기가 동작하는지
 - 관리자 계정으로 `/admin/operations`가 열리는지

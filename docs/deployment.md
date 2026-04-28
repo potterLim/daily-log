@@ -148,6 +148,8 @@ git push origin main
 
 워크플로는 `daymark:<commit-sha>`와 `daymark:latest` 이미지를 ECR에 푸시합니다.
 
+여기까지는 이미지 업로드 단계입니다. 운영 화면 반영은 App Runner가 새 이미지를 받아 배포까지 마쳐야 완료됩니다. GitHub Actions가 성공했더라도 App Runner가 `Operation in progress` 상태이면 기존 화면이 잠시 계속 보일 수 있습니다.
+
 ### 6. App Runner 서비스 생성
 
 App Runner에서 다음 값으로 서비스를 생성합니다.
@@ -212,11 +214,21 @@ https://usedaymark.com/actuator/health/readiness
 확인 항목:
 
 - App Runner health check가 통과하는지 확인합니다.
+- App Runner 서비스가 `Running` 상태인지 확인합니다.
+- `Operation in progress`가 보이면 새 컨테이너가 준비되는 중이므로 완료될 때까지 기다립니다.
+- GitHub Actions 성공만으로 배포 완료로 판단하지 않고, 운영 도메인에서 방금 수정한 화면 또는 문구가 실제로 보이는지 확인합니다.
 - 회원가입 후 인증 메일이 실제로 도착하는지 확인합니다.
 - 비밀번호 재설정 메일이 실제로 도착하는지 확인합니다.
 - 인증/재설정 링크가 `DAYMARK_PUBLIC_BASE_URL` 도메인으로 생성되는지 확인합니다.
 - 알 수 없는 공개 URL이 로그인 대신 404 화면을 보여주는지 확인합니다.
 - `/daymark/morning` 같은 보호 화면은 로그인으로 이동하는지 확인합니다.
+
+빠른 운영 확인 예:
+
+```bash
+curl -sS https://usedaymark.com/actuator/health/readiness
+curl -sS https://usedaymark.com/ | rg "방금 수정한 문구"
+```
 
 ### 10. 운영자 계정 부여
 
