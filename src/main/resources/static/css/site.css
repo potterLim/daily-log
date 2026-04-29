@@ -731,10 +731,28 @@ ol {
 }
 
 .btn-google {
+    display: grid;
+    grid-template-columns: 22px auto 22px;
+    align-items: center;
+    justify-content: center;
+    column-gap: 12px;
+    min-height: 56px;
     color: var(--text-strong);
     border: 1px solid rgba(73, 101, 145, 0.16);
     background: rgba(255, 255, 255, 0.88);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 14px 32px rgba(20, 38, 68, 0.06);
+}
+
+.btn-google::after {
+    display: block;
+    width: 22px;
+    height: 22px;
+    content: "";
+}
+
+.btn-google .google-mark {
+    width: 20px;
+    height: 20px;
 }
 
 .btn-google:hover,
@@ -1518,6 +1536,21 @@ ol {
 
 .auth-helper-separator {
     color: var(--text-tertiary);
+}
+
+.auth-provider-stack {
+    align-items: stretch;
+    text-align: center;
+}
+
+.auth-support-copy {
+    max-width: 360px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.6;
+    word-break: keep-all;
 }
 
 .auth-divider {

@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(~{::section}, '비밀번호 도움말')}">
+      th:replace="~{fragments/layout :: layout(~{::section}, '로그인 도움말')}">
 <section class="auth-layout auth-layout-centered">
     <div class="surface-panel auth-card">
         <div class="panel-header">
             <div>
-                <h2>비밀번호 도움말</h2>
+                <h2>로그인 도움말</h2>
             </div>
         </div>
 
-        <div class="form-stack">
-            <div class="google-start-card">
-                <span>Password Help</span>
-                <strong>Google 계정으로 로그인하면 Workspace에 다시 접근할 수 있습니다.</strong>
-            </div>
+        <div class="form-stack auth-provider-stack">
+            <p class="auth-support-copy">Google로 접속 후 Account에서 비밀번호를 변경하세요.</p>
 
             <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
-                Continue with Google
+                <img class="google-mark" th:src="@{/images/google-g.svg}" alt="" width="20" height="20" />
+                <span>Continue with Google</span>
             </a>
 
             <div class="auth-helper">

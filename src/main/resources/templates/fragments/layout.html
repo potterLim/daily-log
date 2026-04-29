@@ -130,7 +130,8 @@
     </div>
 </main>
 
-<footer class="app-footer">
+<footer class="app-footer"
+        th:with="footerContactEmail=${#strings.isEmpty(supportContactEmailAddress) ? 'potterLim0808@gmail.com' : supportContactEmailAddress}">
     <div class="app-frame footer-shell">
         <div class="footer-brand">
             <img th:src="@{/images/daymark-logo.svg}" alt="" width="34" height="34" />
@@ -140,8 +141,8 @@
             </div>
         </div>
         <a class="footer-contact"
-           th:href="${'mailto:' + supportContactEmailAddress}">
-            Contact: <span th:text="${supportContactEmailAddress}">potterLim0808@gmail.com</span>
+           th:href="${'mailto:' + footerContactEmail}">
+            Contact: <span th:text="${footerContactEmail}">potterLim0808@gmail.com</span>
         </a>
         <span class="footer-year" th:text="${T(java.time.Year).now().getValue()}">2026</span>
     </div>

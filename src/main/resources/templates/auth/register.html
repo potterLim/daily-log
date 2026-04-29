@@ -9,15 +9,12 @@
             </div>
         </div>
 
-        <div th:if="${!hasPendingGoogleRegistration}" class="form-stack">
-            <div class="google-start-card">
-                <span>Google Account</span>
-                <strong>먼저 Google 계정으로 본인 확인을 진행합니다.</strong>
-            </div>
-
+        <div th:if="${!hasPendingGoogleRegistration}" class="form-stack auth-provider-stack">
             <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
-                Continue with Google
+                <img class="google-mark" th:src="@{/images/google-g.svg}" alt="" width="20" height="20" />
+                <span>Continue with Google</span>
             </a>
+            <p class="auth-support-copy">Google 확인 후 Workspace ID를 만듭니다.</p>
 
             <div class="auth-helper">
                 <a th:href="@{/login}">Sign In</a>

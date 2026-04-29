@@ -217,8 +217,17 @@ public class AuthController {
     }
 
     @GetMapping("/forgot-password")
-    public String showForgotPasswordPage() {
-        return "auth/forgot-password";
+    public String redirectForgotPasswordPage() {
+        return "redirect:/sign-in-help";
+    }
+
+    @GetMapping("/sign-in-help")
+    public String showSignInHelpPage(Authentication authentication) {
+        if (isAuthenticated(authentication)) {
+            return "redirect:/account/password";
+        }
+
+        return "auth/sign-in-help";
     }
 
     private static boolean isAuthenticated(Authentication authenticationOrNull) {

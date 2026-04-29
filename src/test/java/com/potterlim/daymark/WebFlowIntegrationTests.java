@@ -102,6 +102,8 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/register"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Continue with Google")))
+            .andExpect(content().string(containsString("google-g.svg")))
+            .andExpect(content().string(containsString("Google 확인 후 Workspace ID를 만듭니다.")))
             .andExpect(content().string(not(containsString("사용할 워크스페이스 ID를 입력하세요"))));
     }
 
@@ -170,10 +172,20 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void forgotPasswordShouldRenderGoogleRecoveryPath() throws Exception {
+    void forgotPasswordShouldRedirectToSignInHelp() throws Exception {
         mMockMvc.perform(get("/forgot-password"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/sign-in-help"));
+    }
+
+    @Test
+    void signInHelpShouldRenderGoogleRecoveryPath() throws Exception {
+        mMockMvc.perform(get("/sign-in-help"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("Continue with Google")));
+            .andExpect(content().string(containsString("로그인 도움말")))
+            .andExpect(content().string(containsString("Google로 접속 후 Account에서 비밀번호를 변경하세요.")))
+            .andExpect(content().string(containsString("Continue with Google")))
+            .andExpect(content().string(containsString("google-g.svg")));
     }
 
     @Test
@@ -722,6 +734,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isNotFound())
             .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
             .andExpect(content().string(containsString("Home")))
+            .andExpect(content().string(containsString("potterLim0808@gmail.com")))
             .andExpect(content().string(not(containsString("Library"))));
 
         mMockMvc.perform(get("/missing-product-page")
@@ -729,6 +742,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isNotFound())
             .andExpect(content().string(containsString("페이지를 찾을 수 없습니다.")))
             .andExpect(content().string(containsString("Home")))
+            .andExpect(content().string(containsString("potterLim0808@gmail.com")))
             .andExpect(content().string(not(containsString("Library"))));
     }
 

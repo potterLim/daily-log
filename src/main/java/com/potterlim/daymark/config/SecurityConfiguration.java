@@ -67,7 +67,8 @@ public class SecurityConfiguration {
                         "/oauth2/**",
                         "/login/oauth2/**",
                         "/register",
-                        "/forgot-password"
+                        "/forgot-password",
+                        "/sign-in-help"
                     )
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin/operations")
