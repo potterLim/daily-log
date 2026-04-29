@@ -22,6 +22,35 @@
 | 이상 비용 감지 | AWS Cost Management → Cost Anomaly Detection |
 | 운영 로그 | ECS service events, CloudWatch Logs |
 
+## 비용 방어 운영값
+
+Daymark 초기 운영은 정상 사용자 20명 안팎을 기준으로 합니다. 서버가 순간적으로 느려지거나 429 응답을 반환하는 것은 허용하고, 자동 확장으로 비용이 커지는 상황을 우선 방어합니다.
+
+| 항목 | 기준 |
+| --- | --- |
+| ECS service task | 최소 1, 최대 1 |
+| CloudWatch Logs retention | 7일 |
+| RDS storage | 20 GiB |
+| RDS storage autoscaling | 끄기 |
+| RDS storage 알림 | 70%, 85% |
+| RDS backup retention | 7일 |
+| 로그인 제한 | IP 10회/10분, Workspace ID 5회/10분 |
+| Google 로그인 시작 제한 | IP 20회/10분 |
+| Workspace 생성 제한 | IP 5회/1시간 |
+| 기록 저장 제한 | 사용자 30회/10분 |
+| 내보내기 제한 | 사용자 10회/10분, 50회/1일 |
+| 일반 화면 조회 제한 | IP 120회/1분 |
+| 기록 입력 제한 | 한 번 저장 기준 8,000자 |
+
+AWS 콘솔 확인 위치:
+
+- ECS 최대 task 수: AWS 서울 리전 → Amazon ECS → `daymark-production` → service scaling
+- 로그 보관: AWS 서울 리전 → CloudWatch → Log groups → Daymark log group → Retention `7 days`
+- RDS 저장공간: AWS 서울 리전 → RDS → `daymark-production-db` → Storage autoscaling disabled
+- 비용 알림: AWS Billing and Cost Management → Budgets → 10달러, 20달러, 30달러, 50달러, 100달러 알림
+
+앱 내부 rate limit은 단일 ECS task 기준으로 동작합니다. 초기에는 최대 task 수를 1로 고정하기 때문에 이 방식이 비용 없이 가장 단순합니다. task 수를 늘리는 시점에는 AWS WAF 또는 공유 저장소 기반 rate limit을 다시 검토합니다.
+
 ## 공개 접속 주소
 
 운영 도메인:

@@ -39,6 +39,10 @@
                 </div>
             </div>
 
+            <div th:if="${#fields.hasGlobalErrors()}" class="message-banner message-banner-danger" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">입력 오류</span>
+            </div>
+
             <div class="form-section">
                 <label class="form-label field-label">목표 체크</label>
                 <div th:if="${#lists.isEmpty(eveningFormDto.goals)}" class="empty-inline">
@@ -56,6 +60,7 @@
                         목표
                     </label>
                 </div>
+                <div class="text-danger mt-2" th:errors="*{goals}"></div>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
@@ -65,7 +70,9 @@
                           th:field="*{achievements}"
                           class="form-control text-area js-autosize"
                           rows="3"
+                          maxlength="2000"
                           placeholder="예: 핵심 화면의 문구를 정리했다."></textarea>
+                <div class="text-danger mt-2" th:errors="*{achievements}"></div>
             </div>
 
             <div class="form-section">
@@ -74,7 +81,9 @@
                           th:field="*{improvements}"
                           class="form-control text-area js-autosize"
                           rows="3"
+                          maxlength="1500"
                           placeholder="예: 내일은 입력 흐름을 더 짧게 본다."></textarea>
+                <div class="text-danger mt-2" th:errors="*{improvements}"></div>
             </div>
 
             <div class="form-section">
@@ -83,7 +92,9 @@
                           th:field="*{gratitude}"
                           class="form-control text-area js-autosize"
                           rows="3"
+                          maxlength="1000"
                           placeholder="예: 집중해서 마무리할 시간이 있었다."></textarea>
+                <div class="text-danger mt-2" th:errors="*{gratitude}"></div>
             </div>
 
             <div class="form-section">
@@ -92,7 +103,9 @@
                           th:field="*{notes}"
                           class="form-control text-area js-autosize"
                           rows="3"
+                          maxlength="2000"
                           placeholder="예: 오전에 주간 리뷰부터 확인한다."></textarea>
+                <div class="text-danger mt-2" th:errors="*{notes}"></div>
             </div>
 
             <div class="action-stack action-stack-inline">

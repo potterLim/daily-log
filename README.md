@@ -107,6 +107,9 @@ build/libs/daymark.jar
 - 비밀번호는 BCrypt로 저장합니다.
 - CSRF 보호와 HTTP-only 세션 쿠키를 사용합니다.
 - 운영에서는 Secure 쿠키와 HTTPS를 전제로 합니다.
+- 초기 운영 비용 방어를 위해 ECS 최대 task 수는 1, RDS는 20GiB 고정, CloudWatch Logs는 7일 보관을 기준으로 합니다.
+- 로그인, Google 로그인 시작, Workspace 생성, 기록 저장, 내보내기는 앱 내부 rate limit으로 보호합니다.
+- 기록 입력은 한 번 저장 기준 8,000자 안에서 제한합니다.
 - 상태 확인 엔드포인트는 `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`입니다.
 - `.env.example`, `ops/aws/ecs-express-env.example`은 예시 값만 보관하고 실제 운영 값은 저장소 밖에서 관리합니다.
 - 로그, 백업, 캡처, 생성된 PDF/Markdown 파일은 저장소에 커밋하지 않습니다.

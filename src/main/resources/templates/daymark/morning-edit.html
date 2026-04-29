@@ -21,13 +21,19 @@
         <input type="hidden" th:field="*{date}" />
 
         <div class="surface-panel editor-main">
+            <div th:if="${#fields.hasGlobalErrors()}" class="message-banner message-banner-danger" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">입력 오류</span>
+            </div>
+
             <div class="form-section">
                 <label for="goals" class="form-label field-label">목표</label>
                 <textarea id="goals"
                           th:field="*{goals}"
                           class="form-control text-area js-autosize"
                           rows="7"
+                          maxlength="2000"
                           placeholder="한 줄에 하나씩 목표를 적어주세요&#10;예: 출시 전 화면 점검&#10;예: 고객 피드백 정리"></textarea>
+                <div class="text-danger mt-2" th:errors="*{goals}"></div>
                 <div class="text-danger mt-2" th:errors="*{date}"></div>
             </div>
 
@@ -37,7 +43,9 @@
                           th:field="*{focus}"
                           class="form-control text-area js-autosize"
                           rows="4"
+                          maxlength="1200"
                           placeholder="오늘 가장 주의를 써야 할 기준을 적어주세요&#10;예: 오전에는 문서 정리, 오후에는 화면 확인"></textarea>
+                <div class="text-danger mt-2" th:errors="*{focus}"></div>
             </div>
 
             <div class="form-section">
@@ -46,7 +54,9 @@
                           th:field="*{challenges}"
                           class="form-control text-area js-autosize"
                           rows="4"
+                          maxlength="1500"
                           placeholder="방해 요소와 대응 방법을 함께 적어주세요&#10;예: 회의가 길어지면 핵심 목표부터 처리"></textarea>
+                <div class="text-danger mt-2" th:errors="*{challenges}"></div>
             </div>
         </div>
 

@@ -169,10 +169,36 @@ ops/aws/ecs-express-env.example
 | Container port | `8080` |
 | Health check path | `/actuator/health/readiness` |
 | CPU/Memory | 초기 소규모 트래픽 기준 최소값부터 시작 |
-| Scaling | 초기 최소 1, 최대 2 |
+| Scaling | 초기 최소 1, 최대 1 |
 | Network | RDS와 같은 VPC의 subnet/security group |
 
 ECS Express Mode는 Fargate 기반 ECS 서비스, ALB, HTTPS, 오토스케일링, CloudWatch 로그를 함께 구성합니다. Express Mode 자체 추가 비용은 없고, 생성되는 Fargate, ALB, 로그, 데이터 전송 비용을 지불합니다.
+
+초기 운영에서는 서버 장애보다 비용 방어를 우선합니다. 정상 사용자 20명 안팎에서는 task 1개로 시작하고, 실제 지연이 확인될 때만 최대 task 수를 2 이상으로 올립니다.
+
+## 비용 방어 기준
+
+| 항목 | 운영값 |
+| --- | --- |
+| ECS service task | 최소 1, 최대 1 |
+| RDS allocated storage | 20 GiB |
+| RDS storage autoscaling | 비활성화 |
+| RDS autoscaling이 필요한 경우 | 최대 30 GiB |
+| RDS storage 알림 | 70%, 85% |
+| RDS backup retention | 7일 |
+| CloudWatch Logs retention | 7일 |
+| Tomcat form post size | 64KB |
+| 로그인 rate limit | IP 기준 10회/10분, Workspace ID 기준 5회/10분 |
+| Google 로그인 시작 rate limit | IP 기준 20회/10분 |
+| Workspace 생성 rate limit | IP 기준 5회/1시간 |
+| 기록 저장 rate limit | 사용자 기준 30회/10분 |
+| Markdown/PDF 내보내기 rate limit | 사용자 기준 10회/10분, 50회/1일 |
+| 일반 화면 조회 rate limit | IP 기준 120회/1분 |
+| 기록 입력 제한 | 한 번 저장 기준 8,000자 |
+
+CloudWatch Logs retention은 AWS 콘솔의 CloudWatch Logs log group에서 7일로 설정합니다. RDS storage autoscaling은 DB 생성 또는 수정 화면에서 끄고, 이미 켜져 있다면 최대 storage를 30 GiB 이하로 제한합니다.
+
+앱 내부 rate limit은 단일 ECS task 기준의 메모리 기반 제한입니다. 초기 비용 방어를 위해 최대 task 수를 1로 유지하는 동안에는 가장 단순하고 비용이 들지 않는 방식입니다. 나중에 task 수를 2개 이상으로 늘리면 AWS WAF rate-based rule 또는 공유 저장소 기반 rate limit으로 전환을 검토합니다.
 
 ## 도메인 연결
 

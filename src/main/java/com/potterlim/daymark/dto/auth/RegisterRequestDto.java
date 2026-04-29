@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 
 public final class RegisterRequestDto {
 
+    private static final int USER_NAME_MAX_LENGTH = 100;
+
     private String mUserName = "";
 
     private String mPassword = "";
@@ -12,6 +14,7 @@ public final class RegisterRequestDto {
     private String mConfirmPassword = "";
 
     @NotBlank(message = "워크스페이스 ID를 입력해주세요.")
+    @Size(max = USER_NAME_MAX_LENGTH, message = "워크스페이스 ID는 100자 이하로 입력해주세요.")
     public String getUserName() {
         return mUserName;
     }

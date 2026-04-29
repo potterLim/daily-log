@@ -32,6 +32,7 @@ server:
   shutdown: graceful
   tomcat:
     basedir: ${DAYMARK_TOMCAT_BASE_DIR:./ops/runtime/tomcat}
+    max-http-form-post-size: 64KB
     accesslog:
       enabled: true
       directory: logs
@@ -90,5 +91,5 @@ logging:
   logback:
     rollingpolicy:
       max-file-size: 10MB
-      max-history: 14
-      total-size-cap: 1GB
+      max-history: 7
+      total-size-cap: 200MB

@@ -14,6 +14,7 @@ import com.potterlim.daymark.repository.IDaymarkEntryRepository;
 import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
+import com.potterlim.daymark.security.InMemoryRateLimiter;
 import com.potterlim.daymark.service.IAlertNotificationService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
@@ -79,6 +80,9 @@ class WebFlowIntegrationTests {
     @Autowired
     private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
 
+    @Autowired
+    private InMemoryRateLimiter mInMemoryRateLimiter;
+
     @MockitoBean
     private IAlertNotificationService mAlertNotificationService;
 
@@ -95,6 +99,7 @@ class WebFlowIntegrationTests {
         mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
         mUserAccountRepository.deleteAll();
+        mInMemoryRateLimiter.clear();
     }
 
     @Test
@@ -103,7 +108,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Continue with Google")))
             .andExpect(content().string(containsString("google-g.svg")))
-            .andExpect(content().string(containsString("Google 확인 후 Workspace ID를 만듭니다.")))
+            .andExpect(content().string(containsString("Google 계정으로 본인 확인 후 Workspace ID를 만듭니다.")))
             .andExpect(content().string(not(containsString("사용할 워크스페이스 ID를 입력하세요"))));
     }
 
@@ -207,6 +212,24 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("워크스페이스 ID 또는 이메일을 입력해주세요.")))
             .andExpect(content().string(containsString("비밀번호를 입력해주세요.")));
+    }
+
+    @Test
+    void loginShouldRateLimitRepeatedAttemptsByClient() throws Exception {
+        for (int attemptIndex = 0; attemptIndex < 10; attemptIndex++) {
+            mMockMvc.perform(post("/login")
+                    .with(csrf())
+                    .param("loginIdentifier", "missing-user-" + attemptIndex)
+                    .param("password", "wrong-password"))
+                .andExpect(status().isOk());
+        }
+
+        mMockMvc.perform(post("/login")
+                .with(csrf())
+                .param("loginIdentifier", "missing-user-over-limit")
+                .param("password", "wrong-password"))
+            .andExpect(status().isTooManyRequests())
+            .andExpect(content().string(containsString("요청이 잠시 제한되었습니다.")));
     }
 
     @Test
@@ -353,6 +376,45 @@ class WebFlowIntegrationTests {
         assertTrue(markdownText.contains("- 책 읽기"));
         assertTrue(markdownText.contains("## 집중 영역"));
         assertEquals(1, mDaymarkEntryRepository.count());
+    }
+
+    @Test
+    void morningSaveShouldRejectOversizedInput() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("oversized-writer", "oversized-writer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daymark/morning/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("goals", "가".repeat(301))
+                .param("focus", "집중 업무")
+                .param("challenges", "피곤함 관리"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("목표는 한 줄당 300자 이하로 입력해주세요.")));
+
+        assertEquals(0, mDaymarkEntryRepository.count());
+    }
+
+    @Test
+    void eveningSaveShouldRejectOversizedInput() throws Exception {
+        UserAccount userAccount = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("oversized-reviewer", "oversized-reviewer@example.com", "pass1234")
+        );
+
+        mMockMvc.perform(post("/daymark/evening/save")
+                .with(csrf())
+                .with(SecurityMockMvcRequestPostProcessors.user(userAccount))
+                .param("date", TEST_CURRENT_DATE.toString())
+                .param("achievements", "성과")
+                .param("improvements", "개선")
+                .param("gratitude", "감사".repeat(501))
+                .param("notes", "메모"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("감사는 1,000자 이하로 입력해주세요.")));
+
+        assertEquals(0, mDaymarkEntryRepository.count());
     }
 
     @Test

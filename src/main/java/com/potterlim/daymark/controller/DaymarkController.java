@@ -114,6 +114,8 @@ public class DaymarkController {
         @AuthenticationPrincipal UserAccount userAccount,
         RedirectAttributes redirectAttributes
     ) {
+        validateMorningFormInput(morningFormDto, bindingResult);
+
         if (bindingResult.hasErrors()) {
             return "daymark/morning-edit";
         }
@@ -175,6 +177,8 @@ public class DaymarkController {
         Model model,
         RedirectAttributes redirectAttributes
     ) {
+        validateEveningFormInput(eveningFormDto, bindingResult);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute(
                 "morningEntryHtml",
@@ -380,6 +384,50 @@ public class DaymarkController {
                 : ""
         );
         return "daymark/log-preview";
+    }
+
+    private static void validateMorningFormInput(
+        MorningFormDto morningFormDto,
+        BindingResult bindingResult
+    ) {
+        if (!morningFormDto.hasValidGoalLineCount()) {
+            bindingResult.rejectValue(
+                "goals",
+                "morningForm.goalLineCount",
+                "목표는 30개 이하로 입력해주세요."
+            );
+        }
+
+        if (!morningFormDto.hasValidGoalLineLengths()) {
+            bindingResult.rejectValue(
+                "goals",
+                "morningForm.goalLineLength",
+                "목표는 한 줄당 300자 이하로 입력해주세요."
+            );
+        }
+
+        if (morningFormDto.isWithinTotalBodyLimit()) {
+            return;
+        }
+
+        bindingResult.reject(
+            "morningForm.totalBodyLength",
+            "한 번에 저장할 수 있는 전체 기록은 8,000자까지입니다."
+        );
+    }
+
+    private static void validateEveningFormInput(
+        EveningFormDto eveningFormDto,
+        BindingResult bindingResult
+    ) {
+        if (eveningFormDto.isWithinTotalBodyLimit()) {
+            return;
+        }
+
+        bindingResult.reject(
+            "eveningForm.totalBodyLength",
+            "한 번에 저장할 수 있는 전체 기록은 8,000자까지입니다."
+        );
     }
 
     private DaymarkLibrarySearchCriteria buildLibrarySearchCriteria(
