@@ -17,6 +17,8 @@ concurrency:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY_NAME: daymark
+  ECS_CLUSTER_NAME: default
+  ECS_SERVICE_NAME: daymark-production
 
 jobs:
   build-and-push-image:
@@ -70,12 +72,15 @@ jobs:
           echo "image-uri=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
 
       - name: Deploy ECS service
+        env:
+          ECS_CLUSTER_NAME: ${{ vars.ECS_CLUSTER_NAME || env.ECS_CLUSTER_NAME }}
+          ECS_SERVICE_NAME: ${{ vars.ECS_SERVICE_NAME || env.ECS_SERVICE_NAME }}
         run: |
           aws ecs update-service \
-            --cluster "${{ vars.ECS_CLUSTER_NAME }}" \
-            --service "${{ vars.ECS_SERVICE_NAME }}" \
+            --cluster "${ECS_CLUSTER_NAME}" \
+            --service "${ECS_SERVICE_NAME}" \
             --force-new-deployment
 
           aws ecs wait services-stable \
-            --cluster "${{ vars.ECS_CLUSTER_NAME }}" \
-            --services "${{ vars.ECS_SERVICE_NAME }}"
+            --cluster "${ECS_CLUSTER_NAME}" \
+            --services "${ECS_SERVICE_NAME}"
