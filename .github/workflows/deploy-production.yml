@@ -68,3 +68,14 @@ jobs:
           docker push "${LATEST_IMAGE_URI}"
 
           echo "image-uri=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
+
+      - name: Deploy ECS service
+        run: |
+          aws ecs update-service \
+            --cluster "${{ vars.ECS_CLUSTER_NAME }}" \
+            --service "${{ vars.ECS_SERVICE_NAME }}" \
+            --force-new-deployment
+
+          aws ecs wait services-stable \
+            --cluster "${{ vars.ECS_CLUSTER_NAME }}" \
+            --services "${{ vars.ECS_SERVICE_NAME }}"

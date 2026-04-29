@@ -7,11 +7,8 @@ SERVER_SERVLET_SESSION_COOKIE_SECURE=true
 DATABASE_URL=jdbc:mysql://daymark-production-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/daymark?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 DATABASE_USERNAME=daymark
 
-DAYMARK_MAIL_FROM_ADDRESS=no-reply@usedaymark.com
-SPRING_MAIL_HOST=email-smtp.ap-northeast-2.amazonaws.com
-SPRING_MAIL_PORT=587
-SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
-SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+GOOGLE_CLIENT_ID=xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=change-this-google-client-secret
 
 DAYMARK_ALERT_WEBHOOK_URL=https://hooks.example.com/daymark-alerts
 DAYMARK_WEEKLY_SUMMARY_ENABLED=true

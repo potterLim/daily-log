@@ -25,6 +25,15 @@
         "ecr:UploadLayerPart"
       ],
       "Resource": "arn:aws:ecr:${AWS_REGION}:${AWS_ACCOUNT_ID}:repository/daymark"
+    },
+    {
+      "Sid": "DeployDaymarkEcsService",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeServices",
+        "ecs:UpdateService"
+      ],
+      "Resource": "arn:aws:ecs:${AWS_REGION}:${AWS_ACCOUNT_ID}:service/${ECS_CLUSTER_NAME}/${ECS_SERVICE_NAME}"
     }
   ]
 }

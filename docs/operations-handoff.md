@@ -2,7 +2,7 @@
 
 이 문서는 Daymark 운영자가 AWS/GitHub 리소스 위치와 재배포 절차를 빠르게 확인하기 위한 안내입니다.
 
-실제 secret 값은 이 문서에 적지 않습니다. 비밀번호, SMTP credential, remember-me secret, DB 접속 정보, webhook URL은 AWS 콘솔의 SSM Parameter Store 또는 Secrets Manager에서 확인하거나 재발급합니다.
+실제 secret 값은 이 문서에 적지 않습니다. DB 비밀번호, Google OAuth secret, remember-me secret, webhook URL은 AWS 콘솔의 SSM Parameter Store 또는 Secrets Manager에서 확인하거나 재발급합니다.
 
 ## 운영 리소스 위치
 
@@ -15,7 +15,7 @@
 | 애플리케이션 서버 | AWS 서울 리전 → Amazon ECS → Express Mode → `daymark-production` |
 | 운영 DB | AWS 서울 리전 → RDS → `daymark-production-db` |
 | 운영 환경값 | AWS 서울 리전 → Systems Manager → Parameter Store → `/daymark/production` |
-| 메일 발송 | AWS 서울 리전 → Amazon SES → Verified identities → `usedaymark.com` |
+| Google OAuth | Google Cloud Console → APIs & Services → Credentials |
 | DNS | AWS Route 53 → Hosted zones → `usedaymark.com` |
 | 도메인 등록 | Namecheap → Domain List → `usedaymark.com` |
 | 비용 알림 | AWS Billing and Cost Management → Budgets |
@@ -63,7 +63,7 @@ GitHub에 저장하면 안 되는 것:
 
 - AWS access key
 - DB 비밀번호
-- SES SMTP username/password
+- Google OAuth client secret
 - `DAYMARK_REMEMBER_ME_KEY`
 - 실제 webhook URL
 - `.env`
@@ -75,7 +75,7 @@ GitHub에 저장하면 안 되는 것:
 
 - GitHub Secret은 원문을 다시 볼 수 없으므로 새 값으로 재등록합니다.
 - RDS 비밀번호는 원문 확인이 아니라 재설정으로 복구합니다.
-- SES SMTP credential은 필요하면 새로 발급합니다.
+- Google OAuth client secret은 Google Cloud Console에서 새 secret을 발급합니다.
 - remember-me secret을 바꾸면 기존 remember-me 로그인은 무효화될 수 있습니다.
 
 ## 코드 수정부터 재배포까지
@@ -117,7 +117,14 @@ git pull --ff-only
 http://127.0.0.1:8080
 ```
 
-### 4. 테스트
+로컬에서 Google 로그인을 확인하려면 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`을 환경 변수로 넣고 Google OAuth redirect URI에 아래 주소를 등록합니다.
+
+```text
+http://127.0.0.1:8080/login/oauth2/code/google
+http://localhost:8080/login/oauth2/code/google
+```
+
+### 4. 테스트와 빌드
 
 ```bash
 ./gradlew test
@@ -160,6 +167,8 @@ GitHub → potterLim/daymark → Actions → Deploy Production
 - JAR 빌드 성공
 - Docker build 성공
 - 서울 ECR push 성공
+- ECS service 업데이트 성공
+- ECS service stable 대기 성공
 
 ### 7. ECS 배포 확인
 
@@ -186,24 +195,28 @@ AWS Systems Manager → Parameter Store → /daymark/production
 
 일반 값은 String, 비밀번호와 secret은 SecureString으로 저장합니다. 환경값을 바꾼 뒤에는 ECS 서비스를 새 revision으로 업데이트해 컨테이너가 새 값을 읽게 합니다.
 
-## 메일 확인
+## Google OAuth 확인
 
 확인 위치:
 
 ```text
-AWS Console → Amazon SES → Verified identities → usedaymark.com
+Google Cloud Console → APIs & Services → Credentials
+```
+
+운영 redirect URI:
+
+```text
+https://usedaymark.com/login/oauth2/code/google
+https://www.usedaymark.com/login/oauth2/code/google
 ```
 
 확인 항목:
 
-- Identity status
-- DKIM status
-- MAIL FROM status
-- SPF/DMARC DNS record
-- Production access status
-- CloudWatch 또는 SES event에서 bounce/complaint 여부
-
-SES sandbox 상태에서는 검증되지 않은 수신자에게 메일이 가지 않습니다.
+- OAuth client type이 Web application인지 확인합니다.
+- 운영 redirect URI가 정확히 등록되어 있는지 확인합니다.
+- `GOOGLE_CLIENT_ID`와 `GOOGLE_CLIENT_SECRET`이 ECS 환경값에 들어갔는지 확인합니다.
+- Google 로그인 후 신규 사용자가 Workspace 생성 화면으로 이동하는지 확인합니다.
+- 기존 사용자가 Google 로그인으로 바로 홈에 들어가는지 확인합니다.
 
 ## DB 확인
 
@@ -230,11 +243,11 @@ AWS Console → RDS → daymark-production-db
 2. ECS service event를 확인합니다.
 3. CloudWatch Logs에서 애플리케이션 시작 실패를 확인합니다.
 4. DB 연결 오류면 RDS 보안 그룹과 환경값을 확인합니다.
-5. 메일 오류면 SES identity, sandbox, SMTP credential을 확인합니다.
+5. Google 로그인 오류면 redirect URI, client ID, client secret, HTTPS 도메인을 확인합니다.
 6. 도메인 오류면 Route 53, ACM 인증서, ALB listener certificate, Host header rule, ALB `80 -> 443` 리디렉션, ALB 대상 상태를 확인합니다.
 7. 새 배포 오류면 ECR image tag와 ECS revision을 확인합니다.
 
-공용 DNS는 정상인데 특정 기기에서만 `usedaymark.com`이 Namecheap URL Forward로 보이면, 그 기기의 DNS 캐시가 이전 값을 들고 있는 상태입니다. 이때 `dig @1.1.1.1 usedaymark.com`과 브라우저 접속 결과가 서로 다르게 보일 수 있습니다.
+공용 DNS는 정상인데 특정 기기에서만 `usedaymark.com`이 Namecheap URL Forward로 보이면, 그 기기의 DNS 캐시가 이전 값을 들고 있는 상태입니다.
 
 ## 비용 확인
 

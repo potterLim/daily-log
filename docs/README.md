@@ -14,7 +14,7 @@
 | 문서 | 내용 |
 | --- | --- |
 | [프로젝트 구조](project-architecture.md) | 코드 구조, 주요 패키지, 데이터 저장 방식, 핵심 요청 흐름 |
-| [배포 가이드](deployment.md) | 서울 ECS Express Mode, RDS, SES, Route 53, 환경 변수 |
+| [배포 가이드](deployment.md) | 서울 ECS Express Mode, RDS, Google OAuth, Route 53, 환경 변수 |
 | [운영 인수인계](operations-handoff.md) | AWS/GitHub 운영 리소스 위치, 수정-빌드-재배포 절차 |
 | [출시 점검표](release-readiness.md) | 출시 전 자동 테스트, 화면 점검, 내보내기 검증, 최종 체크리스트 |
 
