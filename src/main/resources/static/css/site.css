@@ -1544,12 +1544,13 @@ ol {
 }
 
 .auth-support-copy {
-    max-width: 360px;
+    max-width: min(100%, 440px);
     margin: 0 auto;
     color: var(--text-secondary);
     font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.6;
+    white-space: nowrap;
     word-break: keep-all;
 }
 
@@ -4003,6 +4004,10 @@ ol {
 
     .auth-helper-separator {
         display: none;
+    }
+
+    .auth-support-copy {
+        white-space: normal;
     }
 
     .display-title {

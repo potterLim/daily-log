@@ -108,7 +108,7 @@ class WebFlowIntegrationTests {
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Continue with Google")))
             .andExpect(content().string(containsString("google-g.svg")))
-            .andExpect(content().string(containsString("Google 계정으로 본인 확인 후 Workspace ID를 만듭니다.")))
+            .andExpect(content().string(containsString("Google 계정 확인 후 Workspace ID를 만듭니다.")))
             .andExpect(content().string(not(containsString("사용할 워크스페이스 ID를 입력하세요"))));
     }
 
