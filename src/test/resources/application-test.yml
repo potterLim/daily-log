@@ -24,5 +24,7 @@ spring:
   thymeleaf:
     cache: false
 daymark:
+  operations:
+    administrator-workspace-ids: potterLim
   security:
     remember-me-key: test-remember-me-key

@@ -1,5 +1,7 @@
 package com.potterlim.daymark.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -38,6 +40,7 @@ public class DaymarkApplicationProperties {
     public static final class OperationsProperties {
 
         private String mAlertWebhookUrl = "";
+        private List<String> mAdministratorWorkspaceIds = new ArrayList<>();
         private final ProductionReadinessProperties mProductionReadiness = new ProductionReadinessProperties();
         private final WeeklySummaryProperties mWeeklySummary = new WeeklySummaryProperties();
 
@@ -47,6 +50,16 @@ public class DaymarkApplicationProperties {
 
         public void setAlertWebhookUrl(String alertWebhookUrl) {
             mAlertWebhookUrl = alertWebhookUrl;
+        }
+
+        public List<String> getAdministratorWorkspaceIds() {
+            return mAdministratorWorkspaceIds;
+        }
+
+        public void setAdministratorWorkspaceIds(List<String> administratorWorkspaceIds) {
+            mAdministratorWorkspaceIds = administratorWorkspaceIds == null
+                ? new ArrayList<>()
+                : administratorWorkspaceIds;
         }
 
         public ProductionReadinessProperties getProductionReadiness() {

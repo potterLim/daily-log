@@ -144,6 +144,7 @@ ops/aws/ecs-express-env.example
 | `DAYMARK_REMEMBER_ME_COOKIE_SECURE` | `true` |
 | `SERVER_SERVLET_SESSION_COOKIE_SECURE` | `true` |
 | `GOOGLE_CLIENT_ID` | Google OAuth 클라이언트 ID |
+| `DAYMARK_ADMINISTRATOR_WORKSPACE_IDS` | 운영자 Workspace ID 목록 |
 | `DAYMARK_WEEKLY_SUMMARY_ENABLED` | `true` |
 | `DAYMARK_WEEKLY_SUMMARY_ZONE` | `Asia/Seoul` |
 

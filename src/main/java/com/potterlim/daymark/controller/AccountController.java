@@ -29,7 +29,7 @@ public class AccountController {
 
         model.addAttribute("accountWorkspaceId", currentUserAccount.getUsername());
         model.addAttribute("accountEmailAddress", currentUserAccount.getEmailAddress());
-        model.addAttribute("isGoogleConnected", currentUserAccount.hasConnectedGoogleAccount());
+        model.addAttribute("accountCreatedAt", currentUserAccount.getCreatedAt());
         return "account/index";
     }
 

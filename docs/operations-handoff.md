@@ -87,6 +87,7 @@ GitHub에 저장해도 되는 것:
 - GitHub Actions 워크플로
 - AWS 리소스 이름
 - public URL
+- 운영자 Workspace ID 목록
 
 GitHub에 저장하면 안 되는 것:
 

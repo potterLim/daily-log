@@ -1768,12 +1768,14 @@ ol {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.account-profile-card {
+.account-profile-card,
+.account-email-card {
     background: rgba(255, 255, 255, 0.68);
 }
 
 .account-info-grid {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -4008,6 +4010,10 @@ ol {
 
     .auth-support-copy {
         white-space: normal;
+    }
+
+    .account-info-grid {
+        grid-template-columns: 1fr;
     }
 
     .display-title {

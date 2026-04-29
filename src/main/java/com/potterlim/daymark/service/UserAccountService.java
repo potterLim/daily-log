@@ -19,15 +19,18 @@ public class UserAccountService implements IUserAccountService {
 
     private final IUserAccountRepository mUserAccountRepository;
     private final PasswordEncoder mPasswordEncoder;
+    private final AdministratorWorkspaceIdPolicy mAdministratorWorkspaceIdPolicy;
     private final Clock mClock;
 
     public UserAccountService(
         IUserAccountRepository userAccountRepository,
         PasswordEncoder passwordEncoder,
+        AdministratorWorkspaceIdPolicy administratorWorkspaceIdPolicy,
         Clock clock
     ) {
         mUserAccountRepository = userAccountRepository;
         mPasswordEncoder = passwordEncoder;
+        mAdministratorWorkspaceIdPolicy = administratorWorkspaceIdPolicy;
         mClock = clock;
     }
 
@@ -53,6 +56,7 @@ public class UserAccountService implements IUserAccountService {
             normalizedEmailAddress,
             mPasswordEncoder.encode(rawPassword)
         );
+        grantAdministratorRoleIfConfigured(userAccount);
 
         try {
             return mUserAccountRepository.save(userAccount);
@@ -94,6 +98,7 @@ public class UserAccountService implements IUserAccountService {
             normalizedGoogleSubject,
             LocalDateTime.now(mClock)
         );
+        grantAdministratorRoleIfConfigured(userAccount);
 
         try {
             return mUserAccountRepository.save(userAccount);
@@ -271,6 +276,12 @@ public class UserAccountService implements IUserAccountService {
     private void applyNewPassword(UserAccount userAccount, String newRawPassword) {
         validateRawPassword(newRawPassword);
         userAccount.changePasswordHash(mPasswordEncoder.encode(newRawPassword));
+    }
+
+    private void grantAdministratorRoleIfConfigured(UserAccount userAccount) {
+        if (mAdministratorWorkspaceIdPolicy.isAdministratorWorkspaceId(userAccount.getUsername())) {
+            userAccount.grantAdministratorRole();
+        }
     }
 
     private RuntimeException resolveDuplicateRegistrationException(

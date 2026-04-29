@@ -212,7 +212,7 @@ public class AuthController {
         );
 
         httpServletRequest.getSession().removeAttribute(GoogleRegistrationSession.SESSION_ATTRIBUTE_NAME);
-        redirectAttributes.addFlashAttribute("accountSuccessMessage", "Workspace가 준비되었습니다.");
+        redirectAttributes.addFlashAttribute("accountSuccessMessage", "Workspace가 생성되었습니다.");
         return "redirect:/";
     }
 

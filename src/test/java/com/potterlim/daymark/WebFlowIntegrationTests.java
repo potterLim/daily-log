@@ -15,6 +15,7 @@ import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
 import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.security.InMemoryRateLimiter;
+import com.potterlim.daymark.service.AdministratorAccountInitializer;
 import com.potterlim.daymark.service.IAlertNotificationService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
@@ -44,6 +45,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,6 +78,9 @@ class WebFlowIntegrationTests {
 
     @Autowired
     private OperationUsageEventService mOperationUsageEventService;
+
+    @Autowired
+    private AdministratorAccountInitializer mAdministratorAccountInitializer;
 
     @Autowired
     private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
@@ -121,12 +126,43 @@ class WebFlowIntegrationTests {
                 .param("password", "pass1234")
                 .param("confirmPassword", "pass1234"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/"));
+            .andExpect(redirectedUrl("/"))
+            .andExpect(flash().attribute("accountSuccessMessage", "Workspace가 생성되었습니다."));
 
         UserAccount userAccount = mUserAccountRepository.findByUserName("tester").orElseThrow();
         assertEquals("tester@example.com", userAccount.getEmailAddress());
         assertTrue(userAccount.hasVerifiedEmailAddress());
         assertTrue(userAccount.hasConnectedGoogleAccount());
+    }
+
+    @Test
+    void configuredAdministratorWorkspaceShouldReceiveAdministratorRole() throws Exception {
+        mMockMvc.perform(post("/register")
+                .session(createGoogleRegistrationSession("google-subject-admin", "admin@example.com"))
+                .with(csrf())
+                .param("userName", "potterLim")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
+
+        UserAccount userAccount = mUserAccountRepository.findByUserName("potterLim").orElseThrow();
+        assertTrue(userAccount.isAdministrator());
+    }
+
+    @Test
+    void administratorInitializerShouldPromoteExistingConfiguredWorkspace() {
+        UserAccount userAccount = UserAccount.createRegularUser(
+            "potterlim",
+            "existing-admin@example.com",
+            "encoded-password"
+        );
+        mUserAccountRepository.saveAndFlush(userAccount);
+
+        mAdministratorAccountInitializer.promoteConfiguredAdministratorAccounts();
+
+        UserAccount administratorUserAccount = mUserAccountRepository.findByUserName("potterlim").orElseThrow();
+        assertTrue(administratorUserAccount.isAdministrator());
     }
 
     @Test
@@ -755,9 +791,13 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(userAccount)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("계정")))
+            .andExpect(content().string(containsString("가입 Google 메일")))
             .andExpect(content().string(containsString("Workspace ID")))
+            .andExpect(content().string(containsString("생성일")))
             .andExpect(content().string(containsString("reviewer")))
             .andExpect(content().string(containsString("reviewer@example.com")))
+            .andExpect(content().string(not(containsString(">Google</span>"))))
+            .andExpect(content().string(not(containsString("연결됨"))))
             .andExpect(content().string(containsString("Change Password")));
 
         mMockMvc.perform(get("/images/daymark-logo.svg"))

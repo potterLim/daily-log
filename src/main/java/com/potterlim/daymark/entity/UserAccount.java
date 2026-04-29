@@ -96,6 +96,10 @@ public class UserAccount implements UserDetails {
         return mEmailAddress;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return mCreatedAt;
+    }
+
     public void changePasswordHash(String passwordHash) {
         mPasswordHash = passwordHash;
     }

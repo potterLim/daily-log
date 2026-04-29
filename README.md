@@ -98,7 +98,7 @@ build/libs/daymark.jar
 - `operation_usage_event`
 - `weekly_operation_metric_snapshot`
 
-관리자 지표 화면은 `ADMIN` 권한 계정으로 로그인한 뒤 `/admin/operations`에서 확인합니다. 초기 운영자는 운영 DB에서 필요한 계정의 `user_role`을 `ADMIN`으로 승격해 부여합니다.
+관리자 지표 화면은 `ADMIN` 권한 계정으로 로그인한 뒤 `/admin/operations`에서 확인합니다. 운영자 Workspace ID는 `DAYMARK_ADMINISTRATOR_WORKSPACE_IDS`로 지정하며, 지정된 계정 활동은 운영 지표에서 제외됩니다.
 
 ## 운영과 보안
 

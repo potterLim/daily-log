@@ -10,19 +10,19 @@
         </div>
 
         <div class="account-overview-stack">
-            <div class="account-profile-card">
-                <span>Workspace ID</span>
-                <strong th:text="${accountWorkspaceId}">workspace</strong>
+            <div class="account-profile-card account-email-card">
+                <span>가입 Google 메일</span>
+                <strong th:text="${accountEmailAddress}">user@example.com</strong>
             </div>
 
             <div class="account-info-grid">
                 <div class="account-info-card">
-                    <span>가입 이메일</span>
-                    <strong th:text="${accountEmailAddress}">user@example.com</strong>
+                    <span>Workspace ID</span>
+                    <strong th:text="${accountWorkspaceId}">workspace</strong>
                 </div>
                 <div class="account-info-card">
-                    <span>Google</span>
-                    <strong th:text="${isGoogleConnected} ? '연결됨' : '미연결'">연결됨</strong>
+                    <span>생성일</span>
+                    <strong th:text="${#temporals.format(accountCreatedAt, 'yyyy. MM. dd.')}">2026. 04. 30.</strong>
                 </div>
             </div>
 

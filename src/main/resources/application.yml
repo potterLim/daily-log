@@ -66,6 +66,7 @@ daymark:
   public-base-url: ${DAYMARK_PUBLIC_BASE_URL:}
   operations:
     alert-webhook-url: ${DAYMARK_ALERT_WEBHOOK_URL:}
+    administrator-workspace-ids: ${DAYMARK_ADMINISTRATOR_WORKSPACE_IDS:}
     production-readiness:
       enabled: ${DAYMARK_PRODUCTION_READINESS_ENABLED:false}
       require-alert-webhook: ${DAYMARK_REQUIRE_ALERT_WEBHOOK:false}

@@ -20,6 +20,7 @@ server:
 daymark:
   public-base-url: ${DAYMARK_PUBLIC_BASE_URL:}
   operations:
+    administrator-workspace-ids: ${DAYMARK_ADMINISTRATOR_WORKSPACE_IDS:potterLim}
     production-readiness:
       enabled: true
       require-alert-webhook: ${DAYMARK_REQUIRE_ALERT_WEBHOOK:false}

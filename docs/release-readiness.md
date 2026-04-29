@@ -145,7 +145,7 @@ git diff --check
 - `SERVER_SERVLET_SESSION_COOKIE_SECURE`와 `DAYMARK_REMEMBER_ME_COOKIE_SECURE`는 `true`로 설정합니다.
 - `DAYMARK_ALERT_WEBHOOK_URL`은 실제 HTTPS webhook으로 설정합니다.
 - health check는 `/actuator/health/readiness`로 설정합니다.
-- 운영자 계정을 `ADMIN` 권한으로 승격하고 `/admin/operations` 접근을 확인합니다.
+- `DAYMARK_ADMINISTRATOR_WORKSPACE_IDS`에 운영자 Workspace ID를 지정하고 `/admin/operations` 접근을 확인합니다.
 - 운영 지표가 `operation_usage_event`와 `weekly_operation_metric_snapshot`에 저장되는지 확인합니다.
 - 실제 운영 데이터, secret, webhook URL은 퍼블릭 저장소에 커밋하지 않습니다.
 
