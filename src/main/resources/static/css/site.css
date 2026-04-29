@@ -2057,8 +2057,42 @@ ol {
     transform: translateX(2px);
 }
 
-.operations-summary-grid {
-    grid-template-columns: 1.4fr repeat(2, minmax(0, 1fr));
+.operations-hero {
+    display: grid;
+    gap: 22px;
+}
+
+.operations-period-summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 54px;
+    padding: 0 18px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.12);
+}
+
+.operations-period-summary span {
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.operations-period-summary strong {
+    color: var(--text-strong);
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.operations-command-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.operations-command-grid .summary-card-featured {
+    grid-column: span 1;
 }
 
 .operations-grid {
@@ -2181,7 +2215,8 @@ ol {
     gap: 10px;
 }
 
-.operations-trend-filter {
+.operations-trend-filter,
+.operations-period-control {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -2189,7 +2224,8 @@ ol {
     flex-wrap: wrap;
 }
 
-.operations-trend-filter label {
+.operations-trend-filter label,
+.operations-period-control label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -2200,7 +2236,8 @@ ol {
     box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.12);
 }
 
-.operations-trend-filter label span {
+.operations-trend-filter label span,
+.operations-period-control label span {
     color: var(--text-tertiary);
     font-size: 0.74rem;
     font-weight: 900;
@@ -2208,7 +2245,8 @@ ol {
     text-transform: uppercase;
 }
 
-.operations-trend-filter input[type="date"] {
+.operations-trend-filter input[type="date"],
+.operations-period-control input[type="date"] {
     min-height: 30px;
     border: 0;
     color: var(--text-strong);
@@ -2279,6 +2317,12 @@ ol {
     gap: 18px;
 }
 
+.operations-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.62fr) minmax(280px, 0.68fr);
+    gap: 18px;
+}
+
 .operations-chart-card {
     display: grid;
     gap: 14px;
@@ -2295,6 +2339,10 @@ ol {
     background:
         linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 249, 236, 0.62)),
         rgba(255, 255, 255, 0.74);
+}
+
+.operations-chart-card-primary {
+    min-height: 100%;
 }
 
 .operations-chart-head,
@@ -2467,6 +2515,71 @@ ol {
     color: var(--text-tertiary);
     font-size: 0.72rem;
     font-weight: 800;
+}
+
+.operations-signal-card {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid rgba(108, 123, 146, 0.13);
+    border-radius: 24px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 255, 0.68)),
+        rgba(255, 255, 255, 0.76);
+}
+
+.operations-signal-header {
+    display: grid;
+    gap: 6px;
+}
+
+.operations-signal-header span {
+    color: var(--text-strong);
+    font-size: 0.86rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.operations-signal-header strong {
+    color: var(--text-tertiary);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.operations-signal-list {
+    display: grid;
+    gap: 10px;
+}
+
+.operations-signal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 54px;
+    padding: 0 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.1);
+}
+
+.operations-signal-row span {
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.operations-signal-row strong {
+    color: var(--text-strong);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.operations-snapshot-panel {
+    gap: 14px;
 }
 
 .progress-card {
@@ -3752,6 +3865,7 @@ ol {
     .auth-layout,
     .operations-grid,
     .operations-trend-grid,
+    .operations-dashboard-grid,
     .workspace-grid-two,
     .reflection-layout,
     .reader-grid,
@@ -3780,6 +3894,14 @@ ol {
 
     .summary-card-featured {
         grid-column: span 2;
+    }
+
+    .operations-command-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .operations-command-grid .summary-card-featured {
+        grid-column: span 1;
     }
 
     .library-filter-actions {
@@ -3847,6 +3969,7 @@ ol {
     .feature-grid,
     .summary-grid,
     .operations-summary-grid,
+    .operations-command-grid,
     .export-report-summary,
     .library-filter-grid,
     .helper-stack-tight,
@@ -3860,6 +3983,17 @@ ol {
 
     .summary-card-featured {
         grid-column: span 1;
+    }
+
+    .operations-period-control {
+        justify-content: flex-start;
+    }
+
+    .operations-period-summary {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding: 14px 18px;
     }
 }
 
