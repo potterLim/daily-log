@@ -72,6 +72,8 @@ public class OperationsAdminController {
         model.addAttribute("currentWeeklySummary", currentWeeklySummary);
         model.addAttribute("recentWeeklySnapshots", selectedWeeklySnapshots);
         model.addAttribute("selectedTrendDate", selectedReferenceDate);
+        model.addAttribute("selectedTrendStartDate", trendStartDate);
+        model.addAttribute("selectedTrendEndDate", selectedWeekEndDate);
         model.addAttribute("selectedTrendWeekCount", selectedTrendWeekCount);
         model.addAttribute("trendWeekOptions", TREND_WEEK_OPTIONS);
         model.addAttribute(

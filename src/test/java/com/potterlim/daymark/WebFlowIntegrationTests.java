@@ -1055,6 +1055,15 @@ class WebFlowIntegrationTests {
 
         saveWeeklyOperationsSnapshot(LocalDate.of(2026, 3, 9), 1L, 1L, 40.0);
         saveWeeklyOperationsSnapshot(LocalDate.of(2026, 3, 23), 3L, 2L, 58.0);
+        UserAccount trendUser = mUserAccountService.registerUserAccount(
+            new RegisterUserAccountCommand("trend-user", "trend-user@example.com", "pass1234")
+        );
+        mDaymarkService.writeSection(
+            LocalDate.of(2026, 4, 14),
+            trendUser.getUserAccountId(),
+            EDaymarkSectionType.GOALS,
+            "선택 주간 목표"
+        );
 
         mMockMvc.perform(get("/admin/operations")
                 .param("date", "2026-04-17")
@@ -1062,9 +1071,15 @@ class WebFlowIntegrationTests {
                 .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("value=\"2026-04-17\"")))
+            .andExpect(content().string(containsString("data-auto-submit-control")))
+            .andExpect(content().string(containsString("data-trend-week-input")))
+            .andExpect(content().string(containsString("Trend Range")))
             .andExpect(content().string(containsString("4W")))
-            .andExpect(content().string(containsString("03. 23.")))
-            .andExpect(content().string(containsString("04. 13.")))
+            .andExpect(content().string(containsString("2026. 03. 23.")))
+            .andExpect(content().string(containsString("2026. 04. 13.")))
+            .andExpect(content().string(containsString("2026. 04. 19.")))
+            .andExpect(content().string(containsString("Total Workspaces 1")))
+            .andExpect(content().string(containsString("Writing Workspaces 1")))
             .andExpect(content().string(not(containsString("03. 09."))));
     }
 

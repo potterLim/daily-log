@@ -2063,18 +2063,29 @@ ol {
 }
 
 .operations-period-summary {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
-    min-height: 54px;
-    padding: 0 18px;
+    padding: 14px 18px;
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.68);
     box-shadow: inset 0 0 0 1px rgba(108, 123, 146, 0.12);
 }
 
-.operations-period-summary span {
+.operations-period-summary div {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.operations-period-summary div:last-child {
+    justify-items: end;
+    text-align: right;
+}
+
+.operations-period-summary span,
+.operations-week-selector > span {
     color: var(--text-tertiary);
     font-size: 0.78rem;
     font-weight: 900;
@@ -2222,6 +2233,12 @@ ol {
     justify-content: flex-end;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+.operations-week-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .operations-trend-filter label,
@@ -3990,10 +4007,17 @@ ol {
     }
 
     .operations-period-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .operations-period-summary div:last-child {
+        justify-items: start;
+        text-align: left;
+    }
+
+    .operations-week-selector {
         align-items: flex-start;
         flex-direction: column;
-        justify-content: center;
-        padding: 14px 18px;
     }
 }
 

@@ -9,30 +9,49 @@
             </div>
             <form class="operations-period-control"
                   method="get"
+                  data-operations-period-form
                   th:action="@{/admin/operations}">
                 <label>
                     <span>Base Date</span>
                     <input type="date"
                            name="date"
+                           data-auto-submit-control
                            th:value="${#temporals.format(selectedTrendDate, 'yyyy-MM-dd')}">
                 </label>
-                <div class="operations-week-buttons" role="group" aria-label="추이 기간 선택">
-                    <button type="submit"
-                            name="weeks"
-                            th:each="weekOption : ${trendWeekOptions}"
-                            th:value="${weekOption}"
-                            th:classappend="${weekOption == selectedTrendWeekCount} ? ' is-active' : ''"
-                            th:text="${weekOption} + 'W'">12W</button>
+                <input type="hidden"
+                       name="weeks"
+                       data-trend-week-input
+                       th:value="${selectedTrendWeekCount}">
+                <div class="operations-week-selector">
+                    <span>Trend Range</span>
+                    <div class="operations-week-buttons" role="group" aria-label="추이 기간 선택">
+                        <button type="button"
+                                data-trend-week-button
+                                th:each="weekOption : ${trendWeekOptions}"
+                                th:value="${weekOption}"
+                                th:classappend="${weekOption == selectedTrendWeekCount} ? ' is-active' : ''"
+                                th:text="${weekOption} + 'W'">12W</button>
+                    </div>
                 </div>
             </form>
         </div>
         <div class="operations-period-summary">
-            <span>Selected Week</span>
-            <strong>
-                <span th:text="${#temporals.format(currentWeeklySummary.weekStartDate, 'yyyy. MM. dd.')}">2026. 04. 27.</span>
-                <span>~</span>
-                <span th:text="${#temporals.format(currentWeeklySummary.weekEndDate, 'yyyy. MM. dd.')}">2026. 05. 03.</span>
-            </strong>
+            <div>
+                <span>Selected Week</span>
+                <strong>
+                    <span th:text="${#temporals.format(currentWeeklySummary.weekStartDate, 'yyyy. MM. dd.')}">2026. 04. 27.</span>
+                    <span>~</span>
+                    <span th:text="${#temporals.format(currentWeeklySummary.weekEndDate, 'yyyy. MM. dd.')}">2026. 05. 03.</span>
+                </strong>
+            </div>
+            <div>
+                <span>Trend Range</span>
+                <strong>
+                    <span th:text="${#temporals.format(selectedTrendStartDate, 'yyyy. MM. dd.')}">2026. 03. 09.</span>
+                    <span>~</span>
+                    <span th:text="${#temporals.format(selectedTrendEndDate, 'yyyy. MM. dd.')}">2026. 05. 03.</span>
+                </strong>
+            </div>
         </div>
     </div>
 

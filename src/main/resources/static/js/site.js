@@ -27,4 +27,31 @@ document.addEventListener("DOMContentLoaded", () => {
             window.print();
         });
     });
+
+    document.querySelectorAll("[data-operations-period-form]").forEach(periodFormElement => {
+        const trendWeekInputElement = periodFormElement.querySelector("[data-trend-week-input]");
+
+        const submitPeriodForm = () => {
+            if (typeof periodFormElement.requestSubmit === "function") {
+                periodFormElement.requestSubmit();
+                return;
+            }
+
+            periodFormElement.submit();
+        };
+
+        periodFormElement.querySelectorAll("[data-auto-submit-control]").forEach(controlElement => {
+            controlElement.addEventListener("change", submitPeriodForm);
+        });
+
+        periodFormElement.querySelectorAll("[data-trend-week-button]").forEach(weekButtonElement => {
+            weekButtonElement.addEventListener("click", () => {
+                if (trendWeekInputElement) {
+                    trendWeekInputElement.value = weekButtonElement.value;
+                }
+
+                submitPeriodForm();
+            });
+        });
+    });
 });
