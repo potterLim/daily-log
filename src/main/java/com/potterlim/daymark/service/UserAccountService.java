@@ -1,7 +1,10 @@
 package com.potterlim.daymark.service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
+import com.potterlim.daymark.dto.auth.RegisterGoogleUserAccountCommand;
 import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.entity.UserAccountId;
@@ -16,10 +19,16 @@ public class UserAccountService implements IUserAccountService {
 
     private final IUserAccountRepository mUserAccountRepository;
     private final PasswordEncoder mPasswordEncoder;
+    private final Clock mClock;
 
-    public UserAccountService(IUserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder) {
+    public UserAccountService(
+        IUserAccountRepository userAccountRepository,
+        PasswordEncoder passwordEncoder,
+        Clock clock
+    ) {
         mUserAccountRepository = userAccountRepository;
         mPasswordEncoder = passwordEncoder;
+        mClock = clock;
     }
 
     @Override
@@ -57,6 +66,47 @@ public class UserAccountService implements IUserAccountService {
     }
 
     @Override
+    @Transactional
+    public UserAccount registerGoogleUserAccount(RegisterGoogleUserAccountCommand registerGoogleUserAccountCommand) {
+        validateRegisterGoogleUserAccountCommand(registerGoogleUserAccountCommand);
+
+        String normalizedUserName = normalizeUserName(registerGoogleUserAccountCommand.getUserName());
+        String normalizedEmailAddress = normalizeEmailAddress(registerGoogleUserAccountCommand.getEmailAddress());
+        String normalizedGoogleSubject = registerGoogleUserAccountCommand.getGoogleSubject().trim();
+        String rawPassword = registerGoogleUserAccountCommand.getRawPassword();
+
+        if (mUserAccountRepository.findByUserName(normalizedUserName).isPresent()) {
+            throw new DuplicateUserNameException(normalizedUserName);
+        }
+
+        if (mUserAccountRepository.findByEmailAddress(normalizedEmailAddress).isPresent()) {
+            throw new DuplicateEmailException(normalizedEmailAddress);
+        }
+
+        if (mUserAccountRepository.findByGoogleSubject(normalizedGoogleSubject).isPresent()) {
+            throw new DuplicateEmailException(normalizedEmailAddress);
+        }
+
+        UserAccount userAccount = UserAccount.createGoogleVerifiedUser(
+            normalizedUserName,
+            normalizedEmailAddress,
+            mPasswordEncoder.encode(rawPassword),
+            normalizedGoogleSubject,
+            LocalDateTime.now(mClock)
+        );
+
+        try {
+            return mUserAccountRepository.save(userAccount);
+        } catch (DataIntegrityViolationException dataIntegrityViolationException) {
+            throw resolveDuplicateRegistrationException(
+                normalizedUserName,
+                normalizedEmailAddress,
+                dataIntegrityViolationException
+            );
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<UserAccount> findUserAccountByLoginIdentifier(String loginIdentifierOrNull) {
         if (loginIdentifierOrNull == null || loginIdentifierOrNull.isBlank()) {
@@ -77,6 +127,45 @@ public class UserAccountService implements IUserAccountService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<UserAccount> findUserAccountByGoogleSubject(String googleSubjectOrNull) {
+        if (googleSubjectOrNull == null || googleSubjectOrNull.isBlank()) {
+            return Optional.empty();
+        }
+
+        return mUserAccountRepository.findByGoogleSubject(googleSubjectOrNull.trim());
+    }
+
+    @Override
+    @Transactional
+    public Optional<UserAccount> connectGoogleIdentityByEmailAddress(
+        String emailAddressOrNull,
+        String googleSubjectOrNull
+    ) {
+        if (emailAddressOrNull == null || emailAddressOrNull.isBlank()) {
+            return Optional.empty();
+        }
+
+        if (googleSubjectOrNull == null || googleSubjectOrNull.isBlank()) {
+            return Optional.empty();
+        }
+
+        String normalizedEmailAddress = normalizeEmailAddress(emailAddressOrNull);
+        String normalizedGoogleSubject = googleSubjectOrNull.trim();
+        Optional<UserAccount> existingGoogleUserAccountOrEmpty =
+            mUserAccountRepository.findByGoogleSubject(normalizedGoogleSubject);
+        if (existingGoogleUserAccountOrEmpty.isPresent()) {
+            return existingGoogleUserAccountOrEmpty;
+        }
+
+        return mUserAccountRepository.findByEmailAddress(normalizedEmailAddress)
+            .map(userAccount -> {
+                userAccount.connectGoogleIdentity(normalizedGoogleSubject, LocalDateTime.now(mClock));
+                return userAccount;
+            });
+    }
+
+    @Override
     @Transactional
     public void changePassword(UserAccountId userAccountId, String currentRawPassword, String newRawPassword) {
         validatePasswordChangeInput(userAccountId, currentRawPassword, newRawPassword);
@@ -87,13 +176,6 @@ public class UserAccountService implements IUserAccountService {
         }
 
         applyNewPassword(userAccount, newRawPassword);
-    }
-
-    @Override
-    @Transactional
-    public void resetPassword(UserAccountId userAccountId, String newRawPassword) {
-        validatePasswordResetInput(userAccountId, newRawPassword);
-        applyNewPassword(getRequiredUserAccount(userAccountId), newRawPassword);
     }
 
     private static void validateRegisterUserAccountCommand(RegisterUserAccountCommand registerUserAccountCommand) {
@@ -116,6 +198,36 @@ public class UserAccountService implements IUserAccountService {
         validateRawPassword(registerUserAccountCommand.getRawPassword());
     }
 
+    private static void validateRegisterGoogleUserAccountCommand(
+        RegisterGoogleUserAccountCommand registerGoogleUserAccountCommand
+    ) {
+        if (registerGoogleUserAccountCommand == null) {
+            throw new IllegalArgumentException("registerGoogleUserAccountCommand must not be null.");
+        }
+
+        if (registerGoogleUserAccountCommand.getUserName() == null
+            || registerGoogleUserAccountCommand.getUserName().isBlank()) {
+            throw new IllegalArgumentException("userName must not be blank.");
+        }
+
+        if (registerGoogleUserAccountCommand.getEmailAddress() == null
+            || registerGoogleUserAccountCommand.getEmailAddress().isBlank()) {
+            throw new IllegalArgumentException("emailAddress must not be blank.");
+        }
+
+        if (registerGoogleUserAccountCommand.getGoogleSubject() == null
+            || registerGoogleUserAccountCommand.getGoogleSubject().isBlank()) {
+            throw new IllegalArgumentException("googleSubject must not be blank.");
+        }
+
+        if (registerGoogleUserAccountCommand.getRawPassword() == null
+            || registerGoogleUserAccountCommand.getRawPassword().isBlank()) {
+            throw new IllegalArgumentException("rawPassword must not be blank.");
+        }
+
+        validateRawPassword(registerGoogleUserAccountCommand.getRawPassword());
+    }
+
     private static void validatePasswordChangeInput(
         UserAccountId userAccountId,
         String currentRawPassword,
@@ -127,14 +239,6 @@ public class UserAccountService implements IUserAccountService {
 
         if (currentRawPassword == null || currentRawPassword.isBlank()) {
             throw new IllegalArgumentException("currentRawPassword must not be blank.");
-        }
-
-        validateRawPassword(newRawPassword);
-    }
-
-    private static void validatePasswordResetInput(UserAccountId userAccountId, String newRawPassword) {
-        if (userAccountId == null) {
-            throw new IllegalArgumentException("userAccountId must not be null.");
         }
 
         validateRawPassword(newRawPassword);

@@ -1,20 +1,14 @@
 package com.potterlim.daymark.controller;
 
 import java.net.URI;
-import java.util.Optional;
-import com.potterlim.daymark.dto.auth.ForgotPasswordRequestDto;
+import com.potterlim.daymark.dto.auth.GoogleRegistrationSession;
 import com.potterlim.daymark.dto.auth.LoginRequestDto;
+import com.potterlim.daymark.dto.auth.RegisterGoogleUserAccountCommand;
 import com.potterlim.daymark.dto.auth.RegisterRequestDto;
-import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
-import com.potterlim.daymark.dto.auth.ResetPasswordRequestDto;
 import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
-import com.potterlim.daymark.entity.UserAccountId;
-import com.potterlim.daymark.service.AuthenticationMailWorkflowService;
 import com.potterlim.daymark.service.DuplicateEmailException;
 import com.potterlim.daymark.service.DuplicateUserNameException;
-import com.potterlim.daymark.service.IEmailVerificationTokenService;
-import com.potterlim.daymark.service.IPasswordResetTokenService;
 import com.potterlim.daymark.service.IUserAccountService;
 import com.potterlim.daymark.service.OperationUsageEventService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,16 +31,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AuthController {
 
     private final IUserAccountService mUserAccountService;
-    private final IPasswordResetTokenService mPasswordResetTokenService;
-    private final IEmailVerificationTokenService mEmailVerificationTokenService;
-    private final AuthenticationMailWorkflowService mAuthenticationMailWorkflowService;
     private final AuthenticationManager mAuthenticationManager;
     private final SecurityContextRepository mSecurityContextRepository;
     private final RememberMeServices mRememberMeServices;
@@ -55,9 +45,6 @@ public class AuthController {
 
     public AuthController(
         IUserAccountService userAccountService,
-        IPasswordResetTokenService passwordResetTokenService,
-        IEmailVerificationTokenService emailVerificationTokenService,
-        AuthenticationMailWorkflowService authenticationMailWorkflowService,
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
         RememberMeServices rememberMeServices,
@@ -65,9 +52,6 @@ public class AuthController {
         OperationUsageEventService operationUsageEventService
     ) {
         mUserAccountService = userAccountService;
-        mPasswordResetTokenService = passwordResetTokenService;
-        mEmailVerificationTokenService = emailVerificationTokenService;
-        mAuthenticationMailWorkflowService = authenticationMailWorkflowService;
         mAuthenticationManager = authenticationManager;
         mSecurityContextRepository = securityContextRepository;
         mRememberMeServices = rememberMeServices;
@@ -81,8 +65,15 @@ public class AuthController {
             return "redirect:/";
         }
 
-        if (httpServletRequest.getQueryString() != null) {
+        String googleStateOrNull = httpServletRequest.getParameter("google");
+        if (httpServletRequest.getQueryString() != null && googleStateOrNull == null) {
             return "redirect:/login";
+        }
+
+        if ("failed".equals(googleStateOrNull)) {
+            model.addAttribute("loginErrorMessage", "Google 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        } else if ("unverified".equals(googleStateOrNull)) {
+            model.addAttribute("loginErrorMessage", "Google에서 확인된 이메일 계정만 사용할 수 있습니다.");
         }
 
         if (!model.containsAttribute("loginRequestDto")) {
@@ -135,7 +126,11 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String showRegisterPage(Authentication authentication, Model model) {
+    public String showRegisterPage(
+        Authentication authentication,
+        HttpServletRequest httpServletRequest,
+        Model model
+    ) {
         if (isAuthenticated(authentication)) {
             return "redirect:/";
         }
@@ -144,6 +139,7 @@ public class AuthController {
             model.addAttribute("registerRequestDto", new RegisterRequestDto());
         }
 
+        prepareRegisterModel(httpServletRequest, model);
         return "auth/register";
     }
 
@@ -153,8 +149,14 @@ public class AuthController {
         BindingResult bindingResult,
         HttpServletRequest httpServletRequest,
         HttpServletResponse httpServletResponse,
+        Model model,
         RedirectAttributes redirectAttributes
     ) {
+        GoogleRegistrationSession googleRegistrationSessionOrNull = getPendingGoogleRegistrationSession(httpServletRequest);
+        if (googleRegistrationSessionOrNull == null) {
+            return "redirect:/register";
+        }
+
         if (!registerRequestDto.hasMatchingPassword()) {
             bindingResult.rejectValue(
                 "confirmPassword",
@@ -164,33 +166,36 @@ public class AuthController {
         }
 
         if (bindingResult.hasErrors()) {
+            prepareRegisterModel(httpServletRequest, model);
             return "auth/register";
         }
 
-        RegisterUserAccountCommand registerUserAccountCommand =
-            new RegisterUserAccountCommand(
+        RegisterGoogleUserAccountCommand registerGoogleUserAccountCommand =
+            new RegisterGoogleUserAccountCommand(
                 registerRequestDto.getUserName().trim(),
-                registerRequestDto.getEmailAddress().trim(),
+                googleRegistrationSessionOrNull.emailAddress(),
+                googleRegistrationSessionOrNull.googleSubject(),
                 registerRequestDto.getPassword()
             );
 
         UserAccount userAccount;
 
         try {
-            userAccount = mUserAccountService.registerUserAccount(registerUserAccountCommand);
+            userAccount = mUserAccountService.registerGoogleUserAccount(registerGoogleUserAccountCommand);
         } catch (DuplicateUserNameException duplicateUserNameException) {
             bindingResult.rejectValue(
                 "userName",
                 "register.userName",
                 "이미 사용 중인 워크스페이스 ID입니다."
             );
+            prepareRegisterModel(httpServletRequest, model);
             return "auth/register";
         } catch (DuplicateEmailException duplicateEmailException) {
-            bindingResult.rejectValue(
-                "emailAddress",
+            bindingResult.reject(
                 "register.emailAddress",
-                "이미 사용 중인 이메일입니다."
+                "이미 연결된 Google 계정입니다. 로그인으로 계속해주세요."
             );
+            prepareRegisterModel(httpServletRequest, model);
             return "auth/register";
         }
 
@@ -198,8 +203,6 @@ public class AuthController {
             EOperationEventType.USER_REGISTERED,
             userAccount.getUserAccountId()
         );
-        boolean wasVerificationMailSent =
-            mAuthenticationMailWorkflowService.sendEmailVerificationInstructions(userAccount, httpServletRequest);
 
         authenticateUser(
             registerRequestDto.getUserName().trim(),
@@ -208,155 +211,14 @@ public class AuthController {
             httpServletResponse
         );
 
-        if (wasVerificationMailSent) {
-            redirectAttributes.addFlashAttribute(
-                "emailVerificationSuccessMessage",
-                "가입이 완료되었습니다. 인증 메일을 확인해 주세요."
-            );
-        } else {
-            redirectAttributes.addFlashAttribute(
-                "emailVerificationWarningMessage",
-                "가입은 완료되었습니다. 인증 메일은 계정에서 다시 요청해 주세요."
-            );
-        }
-
+        httpServletRequest.getSession().removeAttribute(GoogleRegistrationSession.SESSION_ATTRIBUTE_NAME);
+        redirectAttributes.addFlashAttribute("accountSuccessMessage", "Workspace가 준비되었습니다.");
         return "redirect:/";
     }
 
     @GetMapping("/forgot-password")
-    public String showForgotPasswordPage(Model model) {
-        if (!model.containsAttribute("forgotPasswordRequestDto")) {
-            model.addAttribute("forgotPasswordRequestDto", new ForgotPasswordRequestDto());
-        }
-
+    public String showForgotPasswordPage() {
         return "auth/forgot-password";
-    }
-
-    @PostMapping("/forgot-password")
-    public String requestPasswordReset(
-        @Valid @ModelAttribute("forgotPasswordRequestDto") ForgotPasswordRequestDto forgotPasswordRequestDto,
-        BindingResult bindingResult,
-        HttpServletRequest httpServletRequest,
-        RedirectAttributes redirectAttributes
-    ) {
-        if (bindingResult.hasErrors()) {
-            return "auth/forgot-password";
-        }
-
-        Optional<UserAccount> userAccountOrEmpty =
-            mUserAccountService.findUserAccountByEmailAddress(forgotPasswordRequestDto.getEmailAddress());
-        userAccountOrEmpty.ifPresentOrElse(
-            userAccount -> {
-                mOperationUsageEventService.recordUserEvent(
-                    EOperationEventType.PASSWORD_RESET_REQUESTED,
-                    userAccount.getUserAccountId()
-                );
-                mAuthenticationMailWorkflowService.sendRecoveryInstructions(userAccount, httpServletRequest);
-            },
-            () -> mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED)
-        );
-
-        redirectAttributes.addFlashAttribute(
-            "forgotPasswordSuccessMessage",
-            "안내 메일을 전송했습니다. 메일함을 확인해 주세요."
-        );
-        return "redirect:/forgot-password";
-    }
-
-    @GetMapping("/reset-password")
-    public String showResetPasswordPage(
-        @RequestParam(name = "token", required = false) String tokenOrNull,
-        Model model
-    ) {
-        boolean isPasswordResetTokenValid = mPasswordResetTokenService.isPasswordResetTokenValid(tokenOrNull);
-
-        if (!model.containsAttribute("resetPasswordRequestDto")) {
-            ResetPasswordRequestDto resetPasswordRequestDto = new ResetPasswordRequestDto();
-            if (tokenOrNull != null) {
-                resetPasswordRequestDto.setToken(tokenOrNull);
-            }
-            model.addAttribute("resetPasswordRequestDto", resetPasswordRequestDto);
-        }
-
-        model.addAttribute("isPasswordResetTokenValid", isPasswordResetTokenValid);
-        if (!isPasswordResetTokenValid) {
-            model.addAttribute(
-                "passwordResetErrorMessage",
-                "재설정 링크가 유효하지 않거나 이미 만료되었습니다."
-            );
-        }
-
-        return "auth/reset-password";
-    }
-
-    @GetMapping("/verify-email")
-    public String verifyEmailAddress(
-        @RequestParam(name = "token", required = false) String tokenOrNull,
-        Authentication authenticationOrNull,
-        RedirectAttributes redirectAttributes
-    ) {
-        Optional<UserAccountId> verifiedUserAccountIdOrEmpty =
-            mEmailVerificationTokenService.verifyEmailAddress(tokenOrNull);
-        if (verifiedUserAccountIdOrEmpty.isPresent()) {
-            mOperationUsageEventService.recordUserEvent(
-                EOperationEventType.EMAIL_VERIFIED,
-                verifiedUserAccountIdOrEmpty.get()
-            );
-            redirectAttributes.addFlashAttribute(
-                "emailVerificationSuccessMessage",
-                "이메일 확인이 완료되었습니다. 복구 메일을 받을 수 있습니다."
-            );
-        } else {
-            redirectAttributes.addFlashAttribute(
-                "emailVerificationErrorMessage",
-                "이메일 인증 링크가 유효하지 않거나 이미 만료되었습니다."
-            );
-        }
-
-        return isAuthenticated(authenticationOrNull) ? "redirect:/" : "redirect:/login";
-    }
-
-    @PostMapping("/reset-password")
-    public String resetPassword(
-        @Valid @ModelAttribute("resetPasswordRequestDto") ResetPasswordRequestDto resetPasswordRequestDto,
-        BindingResult bindingResult,
-        Model model,
-        RedirectAttributes redirectAttributes
-    ) {
-        if (!resetPasswordRequestDto.hasMatchingPassword()) {
-            bindingResult.rejectValue(
-                "confirmPassword",
-                "reset.confirmPassword",
-                "비밀번호와 비밀번호 확인이 일치하지 않습니다."
-            );
-        }
-
-        if (bindingResult.hasErrors()) {
-            model.addAttribute(
-                "isPasswordResetTokenValid",
-                mPasswordResetTokenService.isPasswordResetTokenValid(resetPasswordRequestDto.getToken())
-            );
-            return "auth/reset-password";
-        }
-
-        UserAccountId userAccountIdOrNull =
-            mPasswordResetTokenService.consumePasswordResetToken(resetPasswordRequestDto.getToken()).orElse(null);
-        if (userAccountIdOrNull == null) {
-            model.addAttribute("isPasswordResetTokenValid", false);
-            model.addAttribute(
-                "passwordResetErrorMessage",
-                "재설정 링크가 유효하지 않거나 이미 만료되었습니다."
-            );
-            return "auth/reset-password";
-        }
-
-        mUserAccountService.resetPassword(userAccountIdOrNull, resetPasswordRequestDto.getPassword());
-        mOperationUsageEventService.recordUserEvent(EOperationEventType.PASSWORD_RESET_COMPLETED, userAccountIdOrNull);
-        redirectAttributes.addFlashAttribute(
-            "passwordResetSuccessMessage",
-            "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
-        );
-        return "redirect:/login";
     }
 
     private static boolean isAuthenticated(Authentication authenticationOrNull) {
@@ -484,6 +346,27 @@ public class AuthController {
                 ),
                 () -> mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED)
             );
+    }
+
+    private static void prepareRegisterModel(HttpServletRequest httpServletRequest, Model model) {
+        GoogleRegistrationSession googleRegistrationSessionOrNull = getPendingGoogleRegistrationSession(httpServletRequest);
+        model.addAttribute("hasPendingGoogleRegistration", googleRegistrationSessionOrNull != null);
+        if (googleRegistrationSessionOrNull == null) {
+            return;
+        }
+
+        model.addAttribute("googleEmailAddress", googleRegistrationSessionOrNull.emailAddress());
+        model.addAttribute("googleDisplayName", googleRegistrationSessionOrNull.displayName());
+    }
+
+    private static GoogleRegistrationSession getPendingGoogleRegistrationSession(HttpServletRequest httpServletRequest) {
+        Object sessionValueOrNull = httpServletRequest.getSession(true)
+            .getAttribute(GoogleRegistrationSession.SESSION_ATTRIBUTE_NAME);
+        if (sessionValueOrNull instanceof GoogleRegistrationSession googleRegistrationSession) {
+            return googleRegistrationSession;
+        }
+
+        return null;
     }
 
 }

@@ -5,11 +5,9 @@ import java.util.List;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,20 +20,16 @@ import org.springframework.stereotype.Component;
 public class ProductionReadinessValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionReadinessValidator.class);
-    private static final String DEFAULT_MAIL_FROM_ADDRESS = "no-reply@daymark.local";
 
     private final DaymarkApplicationProperties mDaymarkApplicationProperties;
     private final Environment mEnvironment;
-    private final ObjectProvider<JavaMailSender> mJavaMailSenderProvider;
 
     public ProductionReadinessValidator(
         DaymarkApplicationProperties daymarkApplicationProperties,
-        Environment environment,
-        ObjectProvider<JavaMailSender> javaMailSenderProvider
+        Environment environment
     ) {
         mDaymarkApplicationProperties = daymarkApplicationProperties;
         mEnvironment = environment;
-        mJavaMailSenderProvider = javaMailSenderProvider;
     }
 
     @PostConstruct
@@ -45,7 +39,7 @@ public class ProductionReadinessValidator {
         validateRememberMeKey(validationErrors);
         validatePublicBaseUrl(validationErrors);
         validateSecureSessionCookie(validationErrors);
-        validateSmtpConfiguration(validationErrors);
+        validateGoogleOAuthConfiguration(validationErrors);
         validateAlertWebhook(validationErrors);
 
         if (!validationErrors.isEmpty()) {
@@ -122,62 +116,17 @@ public class ProductionReadinessValidator {
         }
     }
 
-    private void validateSmtpConfiguration(List<String> validationErrors) {
-        if (!mDaymarkApplicationProperties.getOperations().getProductionReadiness().isRequireSmtp()) {
-            return;
-        }
-
-        if (mJavaMailSenderProvider.getIfAvailable() == null) {
-            validationErrors.add("SMTP must be configured in production so verification and recovery mail can be sent.");
-        }
-
+    private void validateGoogleOAuthConfiguration(List<String> validationErrors) {
         requireTextProperty(
             validationErrors,
-            "spring.mail.host",
-            "spring.mail.host must be configured for AWS SES SMTP."
+            "spring.security.oauth2.client.registration.google.client-id",
+            "Google OAuth client id must be configured in production."
         );
         requireTextProperty(
             validationErrors,
-            "spring.mail.username",
-            "spring.mail.username must contain the AWS SES SMTP user."
+            "spring.security.oauth2.client.registration.google.client-secret",
+            "Google OAuth client secret must be configured in production."
         );
-        requireTextProperty(
-            validationErrors,
-            "spring.mail.password",
-            "spring.mail.password must contain the AWS SES SMTP password."
-        );
-
-        Integer smtpPort = mEnvironment.getProperty("spring.mail.port", Integer.class);
-        if (smtpPort == null || smtpPort <= 0) {
-            validationErrors.add("spring.mail.port must be configured for AWS SES SMTP.");
-        }
-
-        if (!isTrueProperty("spring.mail.properties.mail.smtp.auth")) {
-            validationErrors.add("spring.mail.properties.mail.smtp.auth must be true for AWS SES SMTP.");
-        }
-
-        if (!isTrueProperty("spring.mail.properties.mail.smtp.starttls.enable")) {
-            validationErrors.add("spring.mail.properties.mail.smtp.starttls.enable must be true for AWS SES SMTP.");
-        }
-
-        String mailFromAddress = mDaymarkApplicationProperties.getMail().getFromAddress();
-        if (mailFromAddress == null || mailFromAddress.isBlank()) {
-            validationErrors.add("daymark.mail.from-address must not be blank in production.");
-            return;
-        }
-
-        if (DEFAULT_MAIL_FROM_ADDRESS.equalsIgnoreCase(mailFromAddress)) {
-            validationErrors.add("daymark.mail.from-address must be replaced with a real sender address in production.");
-        }
-
-        String normalizedMailFromAddress = mailFromAddress.strip().toLowerCase();
-        if (
-            normalizedMailFromAddress.endsWith("@example.com")
-                || normalizedMailFromAddress.endsWith(".local")
-                || normalizedMailFromAddress.contains("@localhost")
-        ) {
-            validationErrors.add("daymark.mail.from-address must use the verified production mail domain.");
-        }
     }
 
     private void validateAlertWebhook(List<String> validationErrors) {
@@ -199,10 +148,6 @@ public class ProductionReadinessValidator {
         if (normalizedAlertWebhookUrl.contains("example.com")) {
             validationErrors.add("daymark.operations.alert-webhook-url must not use a placeholder URL.");
         }
-    }
-
-    private boolean isTrueProperty(String propertyName) {
-        return mEnvironment.getProperty(propertyName, Boolean.class, false);
     }
 
     private void requireTextProperty(List<String> validationErrors, String propertyName, String validationMessage) {

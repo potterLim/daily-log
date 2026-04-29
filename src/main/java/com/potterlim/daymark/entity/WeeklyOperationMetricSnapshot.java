@@ -64,27 +64,6 @@ public class WeeklyOperationMetricSnapshot {
     @Column(name = "sign_in_failed_count", nullable = false)
     private long mSignInFailedCount;
 
-    @Column(name = "email_verification_mail_sent_count", nullable = false)
-    private long mEmailVerificationMailSentCount;
-
-    @Column(name = "email_verification_mail_failed_count", nullable = false)
-    private long mEmailVerificationMailFailedCount;
-
-    @Column(name = "email_verified_count", nullable = false)
-    private long mEmailVerifiedCount;
-
-    @Column(name = "password_reset_requested_count", nullable = false)
-    private long mPasswordResetRequestedCount;
-
-    @Column(name = "password_reset_mail_sent_count", nullable = false)
-    private long mPasswordResetMailSentCount;
-
-    @Column(name = "password_reset_mail_failed_count", nullable = false)
-    private long mPasswordResetMailFailedCount;
-
-    @Column(name = "password_reset_completed_count", nullable = false)
-    private long mPasswordResetCompletedCount;
-
     @Column(name = "record_library_viewed_count", nullable = false)
     private long mRecordLibraryViewedCount;
 
@@ -150,13 +129,6 @@ public class WeeklyOperationMetricSnapshot {
         mWeeklyEveningEntries = weeklyOperationsSummary.getWeeklyEveningEntries();
         mSignInSucceededCount = weeklyOperationsSummary.getSignInSucceededCount();
         mSignInFailedCount = weeklyOperationsSummary.getSignInFailedCount();
-        mEmailVerificationMailSentCount = weeklyOperationsSummary.getEmailVerificationMailSentCount();
-        mEmailVerificationMailFailedCount = weeklyOperationsSummary.getEmailVerificationMailFailedCount();
-        mEmailVerifiedCount = weeklyOperationsSummary.getEmailVerifiedCount();
-        mPasswordResetRequestedCount = weeklyOperationsSummary.getPasswordResetRequestedCount();
-        mPasswordResetMailSentCount = weeklyOperationsSummary.getPasswordResetMailSentCount();
-        mPasswordResetMailFailedCount = weeklyOperationsSummary.getPasswordResetMailFailedCount();
-        mPasswordResetCompletedCount = weeklyOperationsSummary.getPasswordResetCompletedCount();
         mRecordLibraryViewedCount = weeklyOperationsSummary.getRecordLibraryViewedCount();
         mMarkdownExportedCount = weeklyOperationsSummary.getMarkdownExportedCount();
         mPdfExportViewedCount = weeklyOperationsSummary.getPdfExportViewedCount();
@@ -211,34 +183,6 @@ public class WeeklyOperationMetricSnapshot {
 
     public long getSignInFailedCount() {
         return mSignInFailedCount;
-    }
-
-    public long getEmailVerificationMailSentCount() {
-        return mEmailVerificationMailSentCount;
-    }
-
-    public long getEmailVerificationMailFailedCount() {
-        return mEmailVerificationMailFailedCount;
-    }
-
-    public long getEmailVerifiedCount() {
-        return mEmailVerifiedCount;
-    }
-
-    public long getPasswordResetRequestedCount() {
-        return mPasswordResetRequestedCount;
-    }
-
-    public long getPasswordResetMailSentCount() {
-        return mPasswordResetMailSentCount;
-    }
-
-    public long getPasswordResetMailFailedCount() {
-        return mPasswordResetMailFailedCount;
-    }
-
-    public long getPasswordResetCompletedCount() {
-        return mPasswordResetCompletedCount;
     }
 
     public long getRecordLibraryViewedCount() {

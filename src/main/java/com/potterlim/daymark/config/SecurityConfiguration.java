@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,7 +19,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
@@ -42,7 +45,9 @@ public class SecurityConfiguration {
         HttpSecurity httpSecurity,
         RememberMeServices rememberMeServices,
         SecurityContextRepository securityContextRepository,
-        RequestCache requestCache
+        RequestCache requestCache,
+        ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider,
+        AuthenticationSuccessHandler googleOAuth2AuthenticationSuccessHandler
     ) throws Exception {
         String rememberMeCookieName = mDaymarkApplicationProperties.getSecurity().getRememberMeCookieName();
 
@@ -59,10 +64,10 @@ public class SecurityConfiguration {
                         "/favicon.ico",
                         "/error",
                         "/login",
+                        "/oauth2/**",
+                        "/login/oauth2/**",
                         "/register",
-                        "/forgot-password",
-                        "/reset-password",
-                        "/verify-email"
+                        "/forgot-password"
                     )
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin/operations")
@@ -83,7 +88,6 @@ public class SecurityConfiguration {
                     .authenticated()
                     .requestMatchers(HttpMethod.POST,
                         "/account/password",
-                        "/account/email-verification/resend",
                         "/daymark/morning/save",
                         "/daymark/evening/save",
                         "/logout"
@@ -110,6 +114,13 @@ public class SecurityConfiguration {
                 .logoutSuccessUrl("/?logout")
                 .deleteCookies("JSESSIONID", rememberMeCookieName))
             .csrf(Customizer.withDefaults());
+
+        if (clientRegistrationRepositoryProvider.getIfAvailable() != null) {
+            httpSecurity.oauth2Login(oAuth2Login -> oAuth2Login
+                .loginPage("/login")
+                .successHandler(googleOAuth2AuthenticationSuccessHandler)
+                .failureUrl("/login?google=failed"));
+        }
 
         return httpSecurity.build();
     }

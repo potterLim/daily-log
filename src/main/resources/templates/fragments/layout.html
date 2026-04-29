@@ -118,28 +118,10 @@
             <div th:if="${param.logout}" class="message-banner message-banner-success" role="alert">
                 로그아웃되었습니다.
             </div>
-            <div th:if="${emailVerificationSuccessMessage}" class="message-banner message-banner-success" role="alert"
-                 th:text="${emailVerificationSuccessMessage}">
-                이메일 인증이 완료되었습니다.
+            <div th:if="${accountSuccessMessage}" class="message-banner message-banner-success" role="alert"
+                 th:text="${accountSuccessMessage}">
+                계정 설정이 완료되었습니다.
             </div>
-            <div th:if="${emailVerificationWarningMessage}" class="message-banner message-banner-warning" role="alert"
-                 th:text="${emailVerificationWarningMessage}">
-                인증 메일 전송에 문제가 있습니다.
-            </div>
-            <div th:if="${emailVerificationErrorMessage}" class="message-banner message-banner-danger" role="alert"
-                 th:text="${emailVerificationErrorMessage}">
-                인증 링크를 확인할 수 없습니다.
-            </div>
-        </div>
-
-        <div sec:authorize="isAuthenticated()" th:if="${isEmailVerificationRequired}" class="message-banner message-banner-warning verification-banner" role="alert">
-            <div class="verification-banner-copy">
-                <strong>이메일 인증 필요</strong>
-            </div>
-            <form th:action="@{/account/email-verification/resend}" method="post" class="verification-banner-action">
-                <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
-                <button type="submit" class="btn btn-outline-secondary btn-sm">Resend Email</button>
-            </form>
         </div>
 
         <div class="page-stage" th:replace="${content}">

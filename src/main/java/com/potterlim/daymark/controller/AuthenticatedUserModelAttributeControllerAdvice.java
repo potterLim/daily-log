@@ -25,8 +25,6 @@ public class AuthenticatedUserModelAttributeControllerAdvice {
             return;
         }
 
-        boolean isEmailVerificationRequired = !userAccountOrNull.hasVerifiedEmailAddress();
-        model.addAttribute("isEmailVerificationRequired", isEmailVerificationRequired);
         model.addAttribute("currentUserEmailAddress", userAccountOrNull.getEmailAddress());
     }
 

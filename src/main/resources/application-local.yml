@@ -1,4 +1,15 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:local-daymark-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:local-daymark-google-client-secret}
+            scope:
+              - openid
+              - email
+              - profile
   datasource:
     url: jdbc:h2:mem:daymark-local;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
@@ -13,7 +24,5 @@ spring:
   thymeleaf:
     cache: false
 daymark:
-  account:
-    email-verification-token-validity-minutes: 1440
   security:
     remember-me-key: local-development-remember-me-key

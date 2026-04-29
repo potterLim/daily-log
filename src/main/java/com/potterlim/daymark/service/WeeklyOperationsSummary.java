@@ -15,13 +15,6 @@ public final class WeeklyOperationsSummary {
     private final long mWeeklyEveningEntries;
     private final long mSignInSucceededCount;
     private final long mSignInFailedCount;
-    private final long mEmailVerificationMailSentCount;
-    private final long mEmailVerificationMailFailedCount;
-    private final long mEmailVerifiedCount;
-    private final long mPasswordResetRequestedCount;
-    private final long mPasswordResetMailSentCount;
-    private final long mPasswordResetMailFailedCount;
-    private final long mPasswordResetCompletedCount;
     private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
@@ -41,13 +34,6 @@ public final class WeeklyOperationsSummary {
         long weeklyEveningEntries,
         long signInSucceededCount,
         long signInFailedCount,
-        long emailVerificationMailSentCount,
-        long emailVerificationMailFailedCount,
-        long emailVerifiedCount,
-        long passwordResetRequestedCount,
-        long passwordResetMailSentCount,
-        long passwordResetMailFailedCount,
-        long passwordResetCompletedCount,
         long recordLibraryViewedCount,
         long markdownExportedCount,
         long pdfExportViewedCount,
@@ -66,13 +52,6 @@ public final class WeeklyOperationsSummary {
         mWeeklyEveningEntries = weeklyEveningEntries;
         mSignInSucceededCount = signInSucceededCount;
         mSignInFailedCount = signInFailedCount;
-        mEmailVerificationMailSentCount = emailVerificationMailSentCount;
-        mEmailVerificationMailFailedCount = emailVerificationMailFailedCount;
-        mEmailVerifiedCount = emailVerifiedCount;
-        mPasswordResetRequestedCount = passwordResetRequestedCount;
-        mPasswordResetMailSentCount = passwordResetMailSentCount;
-        mPasswordResetMailFailedCount = passwordResetMailFailedCount;
-        mPasswordResetCompletedCount = passwordResetCompletedCount;
         mRecordLibraryViewedCount = recordLibraryViewedCount;
         mMarkdownExportedCount = markdownExportedCount;
         mPdfExportViewedCount = pdfExportViewedCount;
@@ -123,34 +102,6 @@ public final class WeeklyOperationsSummary {
 
     public long getSignInFailedCount() {
         return mSignInFailedCount;
-    }
-
-    public long getEmailVerificationMailSentCount() {
-        return mEmailVerificationMailSentCount;
-    }
-
-    public long getEmailVerificationMailFailedCount() {
-        return mEmailVerificationMailFailedCount;
-    }
-
-    public long getEmailVerifiedCount() {
-        return mEmailVerifiedCount;
-    }
-
-    public long getPasswordResetRequestedCount() {
-        return mPasswordResetRequestedCount;
-    }
-
-    public long getPasswordResetMailSentCount() {
-        return mPasswordResetMailSentCount;
-    }
-
-    public long getPasswordResetMailFailedCount() {
-        return mPasswordResetMailFailedCount;
-    }
-
-    public long getPasswordResetCompletedCount() {
-        return mPasswordResetCompletedCount;
     }
 
     public long getRecordLibraryViewedCount() {

@@ -21,7 +21,6 @@ public final class OperationsTrendPointDto {
     private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
-    private final long mMailFailureCount;
     private final double mGoalCompletionRatePercent;
     private final int mActiveUserBarPercent;
     private final int mWritingUserBarPercent;
@@ -51,7 +50,6 @@ public final class OperationsTrendPointDto {
         mRecordLibraryViewedCount = operationsTrendRawPointDto.getRecordLibraryViewedCount();
         mMarkdownExportedCount = operationsTrendRawPointDto.getMarkdownExportedCount();
         mPdfExportViewedCount = operationsTrendRawPointDto.getPdfExportViewedCount();
-        mMailFailureCount = operationsTrendRawPointDto.getMailFailureCount();
         mGoalCompletionRatePercent = operationsTrendRawPointDto.getGoalCompletionRatePercent();
         mXAxisCoordinate = calculateXAxisCoordinate(pointIndex, pointCount);
         mActiveUserYAxisCoordinate = calculateYAxisCoordinate(mWeeklyActiveUsers, maximumUserCount);
@@ -106,10 +104,6 @@ public final class OperationsTrendPointDto {
 
     public long getPdfExportViewedCount() {
         return mPdfExportViewedCount;
-    }
-
-    public long getMailFailureCount() {
-        return mMailFailureCount;
     }
 
     public double getGoalCompletionRatePercent() {

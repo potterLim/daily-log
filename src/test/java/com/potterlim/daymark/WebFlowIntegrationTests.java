@@ -1,11 +1,10 @@
 package com.potterlim.daymark;
 
-import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.concurrent.atomic.AtomicReference;
+import com.potterlim.daymark.dto.auth.GoogleRegistrationSession;
 import com.potterlim.daymark.dto.auth.RegisterUserAccountCommand;
 import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.UserAccount;
@@ -14,18 +13,14 @@ import com.potterlim.daymark.entity.WeeklyOperationMetricSnapshot;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
 import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
-import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
-import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
 import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.service.IAlertNotificationService;
-import com.potterlim.daymark.service.IAuthenticationMailService;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
 import com.potterlim.daymark.service.OperationUsageEventService;
 import com.potterlim.daymark.service.WeeklyOperationsSummary;
 import com.potterlim.daymark.support.EDaymarkSectionType;
 import jakarta.servlet.RequestDispatcher;
-import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -84,12 +71,6 @@ class WebFlowIntegrationTests {
     private IUserAccountRepository mUserAccountRepository;
 
     @Autowired
-    private IUserPasswordResetTokenRepository mUserPasswordResetTokenRepository;
-
-    @Autowired
-    private IUserEmailVerificationTokenRepository mUserEmailVerificationTokenRepository;
-
-    @Autowired
     private IOperationUsageEventRepository mOperationUsageEventRepository;
 
     @Autowired
@@ -97,9 +78,6 @@ class WebFlowIntegrationTests {
 
     @Autowired
     private IWeeklyOperationMetricSnapshotRepository mWeeklyOperationMetricSnapshotRepository;
-
-    @MockitoBean
-    private IAuthenticationMailService mAuthenticationMailService;
 
     @MockitoBean
     private IAlertNotificationService mAlertNotificationService;
@@ -116,23 +94,23 @@ class WebFlowIntegrationTests {
         mWeeklyOperationMetricSnapshotRepository.deleteAll();
         mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
-        mUserPasswordResetTokenRepository.deleteAll();
-        mUserEmailVerificationTokenRepository.deleteAll();
         mUserAccountRepository.deleteAll();
     }
 
     @Test
-    void registerShouldCreateUserAndRedirectToHome() throws Exception {
-        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
-        doAnswer(invocation -> {
-            sentVerificationUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
+    void registerShouldShowGoogleStartWhenGoogleIdentityIsNotConfirmed() throws Exception {
+        mMockMvc.perform(get("/register"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Continue with Google")))
+            .andExpect(content().string(not(containsString("사용할 워크스페이스 ID를 입력하세요"))));
+    }
 
+    @Test
+    void registerShouldCreateGoogleConnectedUserAndRedirectToHome() throws Exception {
         mMockMvc.perform(post("/register")
+                .session(createGoogleRegistrationSession("google-subject-1", "tester@example.com"))
                 .with(csrf())
                 .param("userName", "tester")
-                .param("emailAddress", "tester@example.com")
                 .param("password", "pass1234")
                 .param("confirmPassword", "pass1234"))
             .andExpect(status().is3xxRedirection())
@@ -140,16 +118,16 @@ class WebFlowIntegrationTests {
 
         UserAccount userAccount = mUserAccountRepository.findByUserName("tester").orElseThrow();
         assertEquals("tester@example.com", userAccount.getEmailAddress());
-        assertFalse(userAccount.hasVerifiedEmailAddress());
-        assertNotNull(sentVerificationUrl.get());
+        assertTrue(userAccount.hasVerifiedEmailAddress());
+        assertTrue(userAccount.hasConnectedGoogleAccount());
     }
 
     @Test
     void registerShouldRejectShortPassword() throws Exception {
         mMockMvc.perform(post("/register")
+                .session(createGoogleRegistrationSession("google-subject-2", "tester@example.com"))
                 .with(csrf())
                 .param("userName", "tester")
-                .param("emailAddress", "tester@example.com")
                 .param("password", "pass12")
                 .param("confirmPassword", "pass12"))
             .andExpect(status().isOk());
@@ -158,55 +136,44 @@ class WebFlowIntegrationTests {
     }
 
     @Test
-    void mailFailureAlertShouldNotExposeWorkspaceIdOrEmailAddress() throws Exception {
-        doThrow(new IllegalStateException("smtp failed"))
-            .when(mAuthenticationMailService)
-            .sendEmailVerificationMail(any(UserAccount.class), anyString());
-
+    void registerShouldRejectDuplicateWorkspaceId() throws Exception {
         mMockMvc.perform(post("/register")
+                .session(createGoogleRegistrationSession("google-subject-3", "first@example.com"))
                 .with(csrf())
                 .param("userName", "privacy-user")
-                .param("emailAddress", "private@example.com")
                 .param("password", "pass1234")
                 .param("confirmPassword", "pass1234"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
 
-        ArgumentCaptor<String> alertMessageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mAlertNotificationService)
-            .sendOperationalAlert(eq("email-verification-mail-failed"), alertMessageCaptor.capture());
-
-        String alertMessage = alertMessageCaptor.getValue();
-        assertFalse(alertMessage.contains("privacy-user"));
-        assertFalse(alertMessage.contains("private@example.com"));
-    }
-
-    @Test
-    void authEmailFormsShouldRenderProductStyledEmailValidation() throws Exception {
-        mMockMvc.perform(get("/register"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString("novalidate")));
-
         mMockMvc.perform(post("/register")
+                .session(createGoogleRegistrationSession("google-subject-4", "second@example.com"))
                 .with(csrf())
-                .param("userName", "tester")
-                .param("emailAddress", "invalid-email")
+                .param("userName", "privacy-user")
                 .param("password", "pass1234")
                 .param("confirmPassword", "pass1234"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("올바른 이메일 형식을 입력해주세요.")));
+            .andExpect(content().string(containsString("이미 사용 중인 워크스페이스 ID입니다.")));
+    }
+
+    @Test
+    void registerShouldRedirectToGoogleStartWithoutPendingGoogleIdentity() throws Exception {
+        mMockMvc.perform(post("/register")
+                .with(csrf())
+                .param("userName", "tester")
+                .param("password", "pass1234")
+                .param("confirmPassword", "pass1234"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/register"));
 
         assertTrue(mUserAccountRepository.findByUserName("tester").isEmpty());
+    }
 
+    @Test
+    void forgotPasswordShouldRenderGoogleRecoveryPath() throws Exception {
         mMockMvc.perform(get("/forgot-password"))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("novalidate")));
-
-        mMockMvc.perform(post("/forgot-password")
-                .with(csrf())
-                .param("emailAddress", "invalid-email"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString("올바른 이메일 형식을 입력해주세요.")));
+            .andExpect(content().string(containsString("Continue with Google")));
     }
 
     @Test
@@ -301,137 +268,6 @@ class WebFlowIntegrationTests {
                 .param("password", "pass1234"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/"));
-    }
-
-    @Test
-    void forgotPasswordShouldReturnGenericResponseForUnknownEmailAddress() throws Exception {
-        mMockMvc.perform(post("/forgot-password")
-                .with(csrf())
-                .param("emailAddress", "missing@example.com"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/forgot-password"));
-
-        assertEquals(0, mUserPasswordResetTokenRepository.count());
-        verify(mAuthenticationMailService, never()).sendPasswordResetMail(any(UserAccount.class), anyString());
-        verify(mAuthenticationMailService, never()).sendEmailVerificationMail(any(UserAccount.class), anyString());
-    }
-
-    @Test
-    void forgotPasswordShouldResendEmailVerificationForUnverifiedEmailAddress() throws Exception {
-        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
-        doAnswer(invocation -> {
-            sentVerificationUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
-
-        mUserAccountService.registerUserAccount(
-            new RegisterUserAccountCommand("unverified-user", "unverified@example.com", "pass1234")
-        );
-
-        mMockMvc.perform(post("/forgot-password")
-                .with(csrf())
-                .param("emailAddress", "unverified@example.com"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/forgot-password"));
-
-        verify(mAuthenticationMailService, never()).sendPasswordResetMail(any(UserAccount.class), anyString());
-        assertNotNull(sentVerificationUrl.get());
-    }
-
-    @Test
-    void resetPasswordShouldAllowLoginWithNewPassword() throws Exception {
-        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
-        AtomicReference<String> sentResetPasswordUrl = new AtomicReference<>();
-        doAnswer(invocation -> {
-            sentVerificationUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
-        doAnswer(invocation -> {
-            sentResetPasswordUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendPasswordResetMail(any(UserAccount.class), anyString());
-
-        mMockMvc.perform(post("/register")
-                .with(csrf())
-                .param("userName", "reset-user")
-                .param("emailAddress", "reset-user@example.com")
-                .param("password", "pass1234")
-                .param("confirmPassword", "pass1234"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/"));
-
-        String rawVerificationToken = extractTokenFromUrl(sentVerificationUrl.get(), "token");
-        mMockMvc.perform(get("/verify-email").param("token", rawVerificationToken))
-            .andExpect(status().is3xxRedirection());
-
-        mMockMvc.perform(post("/forgot-password")
-                .with(csrf())
-                .param("emailAddress", "reset-user@example.com"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/forgot-password"));
-
-        String rawToken = extractTokenFromUrl(sentResetPasswordUrl.get(), "token");
-        mMockMvc.perform(post("/reset-password")
-                .with(csrf())
-                .param("token", rawToken)
-                .param("password", "pass6789")
-                .param("confirmPassword", "pass6789"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/login"));
-
-        mMockMvc.perform(post("/login")
-                .with(csrf())
-                .param("loginIdentifier", "reset-user")
-                .param("password", "pass1234"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString("로그인 정보가 올바르지 않습니다.")));
-
-        mMockMvc.perform(post("/login")
-                .with(csrf())
-                .param("loginIdentifier", "reset-user@example.com")
-                .param("password", "pass6789"))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/"));
-    }
-
-    @Test
-    void resetPasswordShouldRenderPasswordLengthValidationMessage() throws Exception {
-        AtomicReference<String> sentVerificationUrl = new AtomicReference<>();
-        AtomicReference<String> sentResetPasswordUrl = new AtomicReference<>();
-        doAnswer(invocation -> {
-            sentVerificationUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendEmailVerificationMail(any(UserAccount.class), anyString());
-        doAnswer(invocation -> {
-            sentResetPasswordUrl.set(invocation.getArgument(1));
-            return null;
-        }).when(mAuthenticationMailService).sendPasswordResetMail(any(UserAccount.class), anyString());
-
-        mMockMvc.perform(post("/register")
-                .with(csrf())
-                .param("userName", "reset-validation-user")
-                .param("emailAddress", "reset-validation-user@example.com")
-                .param("password", "pass1234")
-                .param("confirmPassword", "pass1234"))
-            .andExpect(status().is3xxRedirection());
-
-        String rawVerificationToken = extractTokenFromUrl(sentVerificationUrl.get(), "token");
-        mMockMvc.perform(get("/verify-email").param("token", rawVerificationToken))
-            .andExpect(status().is3xxRedirection());
-
-        mMockMvc.perform(post("/forgot-password")
-                .with(csrf())
-                .param("emailAddress", "reset-validation-user@example.com"))
-            .andExpect(status().is3xxRedirection());
-
-        String rawResetToken = extractTokenFromUrl(sentResetPasswordUrl.get(), "token");
-        mMockMvc.perform(post("/reset-password")
-                .with(csrf())
-                .param("token", rawResetToken)
-                .param("password", "short")
-                .param("confirmPassword", "short"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString("비밀번호는 8자 이상 72자 이하여야 합니다.")));
     }
 
     @Test
@@ -1087,19 +923,13 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("\"status\":\"UP\"")));
     }
 
-    private static String extractTokenFromUrl(String targetUrl, String parameterName) {
-        assertNotNull(targetUrl);
-        String query = URI.create(targetUrl).getQuery();
-        assertNotNull(query);
-
-        for (String queryParameter : query.split("&")) {
-            String prefix = parameterName + "=";
-            if (queryParameter.startsWith(prefix)) {
-                return queryParameter.substring(prefix.length());
-            }
-        }
-
-        throw new IllegalStateException("Expected query parameter was not found.");
+    private static MockHttpSession createGoogleRegistrationSession(String googleSubject, String emailAddress) {
+        MockHttpSession mockHttpSession = new MockHttpSession();
+        mockHttpSession.setAttribute(
+            GoogleRegistrationSession.SESSION_ATTRIBUTE_NAME,
+            new GoogleRegistrationSession(googleSubject, emailAddress, "")
+        );
+        return mockHttpSession;
     }
 
     private void savePreviousWeeklyOperationsSnapshot() {
@@ -1126,13 +956,6 @@ class WebFlowIntegrationTests {
             1L,
             2L,
             1L,
-            1L,
-            0L,
-            1L,
-            1L,
-            1L,
-            0L,
-            0L,
             1L,
             0L,
             0L,

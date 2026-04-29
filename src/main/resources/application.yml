@@ -63,16 +63,10 @@ management:
       enabled: true
 daymark:
   public-base-url: ${DAYMARK_PUBLIC_BASE_URL:}
-  account:
-    password-reset-token-validity-minutes: ${DAYMARK_PASSWORD_RESET_TOKEN_VALIDITY_MINUTES:30}
-    email-verification-token-validity-minutes: ${DAYMARK_EMAIL_VERIFICATION_TOKEN_VALIDITY_MINUTES:1440}
-  mail:
-    from-address: ${DAYMARK_MAIL_FROM_ADDRESS:no-reply@daymark.local}
   operations:
     alert-webhook-url: ${DAYMARK_ALERT_WEBHOOK_URL:}
     production-readiness:
       enabled: ${DAYMARK_PRODUCTION_READINESS_ENABLED:false}
-      require-smtp: ${DAYMARK_REQUIRE_SMTP:false}
       require-alert-webhook: ${DAYMARK_REQUIRE_ALERT_WEBHOOK:false}
       require-secure-session-cookie: ${DAYMARK_REQUIRE_SECURE_SESSION_COOKIE:false}
       minimum-remember-me-key-length: ${DAYMARK_MINIMUM_REMEMBER_ME_KEY_LENGTH:32}

@@ -10,20 +10,10 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DaymarkApplicationProperties {
 
-    private final AccountProperties mAccount = new AccountProperties();
-    private final MailProperties mMail = new MailProperties();
     private final OperationsProperties mOperations = new OperationsProperties();
     private final SecurityProperties mSecurity = new SecurityProperties();
     private final SupportProperties mSupport = new SupportProperties();
     private String mPublicBaseUrl = "";
-
-    public AccountProperties getAccount() {
-        return mAccount;
-    }
-
-    public MailProperties getMail() {
-        return mMail;
-    }
 
     public OperationsProperties getOperations() {
         return mOperations;
@@ -43,44 +33,6 @@ public class DaymarkApplicationProperties {
 
     public void setPublicBaseUrl(String publicBaseUrl) {
         mPublicBaseUrl = publicBaseUrl;
-    }
-
-    public static final class AccountProperties {
-
-        @Positive
-        private int mPasswordResetTokenValidityMinutes = 30;
-        @Positive
-        private int mEmailVerificationTokenValidityMinutes = 1_440;
-
-        public int getPasswordResetTokenValidityMinutes() {
-            return mPasswordResetTokenValidityMinutes;
-        }
-
-        public void setPasswordResetTokenValidityMinutes(int passwordResetTokenValidityMinutes) {
-            mPasswordResetTokenValidityMinutes = passwordResetTokenValidityMinutes;
-        }
-
-        public int getEmailVerificationTokenValidityMinutes() {
-            return mEmailVerificationTokenValidityMinutes;
-        }
-
-        public void setEmailVerificationTokenValidityMinutes(int emailVerificationTokenValidityMinutes) {
-            mEmailVerificationTokenValidityMinutes = emailVerificationTokenValidityMinutes;
-        }
-    }
-
-    public static final class MailProperties {
-
-        @NotBlank
-        private String mFromAddress = "no-reply@daymark.local";
-
-        public String getFromAddress() {
-            return mFromAddress;
-        }
-
-        public void setFromAddress(String fromAddress) {
-            mFromAddress = fromAddress;
-        }
     }
 
     public static final class OperationsProperties {
@@ -109,7 +61,6 @@ public class DaymarkApplicationProperties {
     public static final class ProductionReadinessProperties {
 
         private boolean mIsEnabled;
-        private boolean mShouldRequireSmtp;
         private boolean mShouldRequireAlertWebhook;
         private boolean mShouldRequireSecureSessionCookie;
         @Positive
@@ -121,14 +72,6 @@ public class DaymarkApplicationProperties {
 
         public void setEnabled(boolean enabled) {
             mIsEnabled = enabled;
-        }
-
-        public boolean isRequireSmtp() {
-            return mShouldRequireSmtp;
-        }
-
-        public void setRequireSmtp(boolean requireSmtp) {
-            mShouldRequireSmtp = requireSmtp;
         }
 
         public boolean isRequireAlertWebhook() {

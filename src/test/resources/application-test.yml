@@ -1,4 +1,15 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-daymark-google-client-id
+            client-secret: test-daymark-google-client-secret
+            scope:
+              - openid
+              - email
+              - profile
   datasource:
     url: jdbc:h2:mem:daymark-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver

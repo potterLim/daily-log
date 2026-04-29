@@ -21,8 +21,8 @@
                     <strong th:text="${accountEmailAddress}">user@example.com</strong>
                 </div>
                 <div class="account-info-card">
-                    <span>이메일 상태</span>
-                    <strong th:text="${isAccountEmailVerified} ? '인증 완료' : '인증 필요'">인증 완료</strong>
+                    <span>Google</span>
+                    <strong th:text="${isGoogleConnected} ? '연결됨' : '미연결'">연결됨</strong>
                 </div>
             </div>
 

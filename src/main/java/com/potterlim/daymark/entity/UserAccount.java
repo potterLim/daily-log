@@ -38,6 +38,12 @@ public class UserAccount implements UserDetails {
     @Column(name = "email_verified_at")
     private LocalDateTime mEmailVerifiedAt;
 
+    @Column(name = "google_subject", unique = true, length = 255)
+    private String mGoogleSubject;
+
+    @Column(name = "google_connected_at")
+    private LocalDateTime mGoogleConnectedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 30)
     private EUserRole mUserRole;
@@ -70,6 +76,18 @@ public class UserAccount implements UserDetails {
         return new UserAccount(userName, emailAddress, passwordHash, EUserRole.USER);
     }
 
+    public static UserAccount createGoogleVerifiedUser(
+        String userName,
+        String emailAddress,
+        String passwordHash,
+        String googleSubject,
+        LocalDateTime connectedAt
+    ) {
+        UserAccount userAccount = new UserAccount(userName, emailAddress, passwordHash, EUserRole.USER);
+        userAccount.connectGoogleIdentity(googleSubject, connectedAt);
+        return userAccount;
+    }
+
     public UserAccountId getUserAccountId() {
         return UserAccountId.from(mId);
     }
@@ -86,6 +104,10 @@ public class UserAccount implements UserDetails {
         return mEmailVerifiedAt != null;
     }
 
+    public boolean hasConnectedGoogleAccount() {
+        return mGoogleSubject != null && !mGoogleSubject.isBlank();
+    }
+
     public boolean isAdministrator() {
         return mUserRole == EUserRole.ADMIN;
     }
@@ -100,6 +122,20 @@ public class UserAccount implements UserDetails {
         }
 
         mEmailVerifiedAt = verifiedAt;
+    }
+
+    public void connectGoogleIdentity(String googleSubject, LocalDateTime connectedAt) {
+        if (googleSubject == null || googleSubject.isBlank()) {
+            throw new IllegalArgumentException("googleSubject must not be blank.");
+        }
+
+        if (connectedAt == null) {
+            throw new IllegalArgumentException("connectedAt must not be null.");
+        }
+
+        mGoogleSubject = googleSubject;
+        mGoogleConnectedAt = connectedAt;
+        markEmailAddressVerified(connectedAt);
     }
 
     @Override

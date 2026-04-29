@@ -12,13 +12,15 @@
         <form th:action="@{/login}" th:object="${loginRequestDto}" method="post" class="form-stack">
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
 
-            <div th:if="${passwordResetSuccessMessage}" class="message-banner message-banner-success" role="alert"
-                 th:text="${passwordResetSuccessMessage}">
-                비밀번호가 재설정되었습니다.
-            </div>
             <div th:if="${loginErrorMessage}" class="message-banner message-banner-danger" role="alert" th:text="${loginErrorMessage}">
                 로그인에 실패했습니다.
             </div>
+
+            <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
+                Continue with Google
+            </a>
+
+            <div class="auth-divider"><span>or</span></div>
 
             <div class="form-section">
                 <label for="loginIdentifier" class="form-label field-label">워크스페이스 ID 또는 이메일</label>
@@ -51,7 +53,7 @@
             <button type="submit" class="btn btn-primary btn-lg w-100">Sign In</button>
 
             <div class="auth-helper">
-                <a th:href="@{/forgot-password}">Reset Password</a>
+                <a th:href="@{/forgot-password}">Password Help</a>
                 <span class="auth-helper-separator">•</span>
                 <a th:href="@{/register}">Create Account</a>
             </div>

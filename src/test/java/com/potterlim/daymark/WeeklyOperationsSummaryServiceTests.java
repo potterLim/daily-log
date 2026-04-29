@@ -8,8 +8,6 @@ import com.potterlim.daymark.entity.UserAccount;
 import com.potterlim.daymark.repository.IDaymarkEntryRepository;
 import com.potterlim.daymark.repository.IOperationUsageEventRepository;
 import com.potterlim.daymark.repository.IUserAccountRepository;
-import com.potterlim.daymark.repository.IUserEmailVerificationTokenRepository;
-import com.potterlim.daymark.repository.IUserPasswordResetTokenRepository;
 import com.potterlim.daymark.repository.IWeeklyOperationMetricSnapshotRepository;
 import com.potterlim.daymark.service.IDaymarkService;
 import com.potterlim.daymark.service.IUserAccountService;
@@ -49,12 +47,6 @@ class WeeklyOperationsSummaryServiceTests {
     private WeeklyOperationMetricSnapshotService mWeeklyOperationMetricSnapshotService;
 
     @Autowired
-    private IUserPasswordResetTokenRepository mUserPasswordResetTokenRepository;
-
-    @Autowired
-    private IUserEmailVerificationTokenRepository mUserEmailVerificationTokenRepository;
-
-    @Autowired
     private IUserAccountRepository mUserAccountRepository;
 
     @Autowired
@@ -68,8 +60,6 @@ class WeeklyOperationsSummaryServiceTests {
         mWeeklyOperationMetricSnapshotRepository.deleteAll();
         mOperationUsageEventRepository.deleteAll();
         mDaymarkEntryRepository.deleteAll();
-        mUserPasswordResetTokenRepository.deleteAll();
-        mUserEmailVerificationTokenRepository.deleteAll();
         mUserAccountRepository.deleteAll();
     }
 
@@ -137,7 +127,6 @@ class WeeklyOperationsSummaryServiceTests {
         recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, adminUser);
         recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, adminUser);
         mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
-        mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.PASSWORD_RESET_REQUESTED);
 
         WeeklyOperationsSummary weeklyOperationsSummary =
             mWeeklyOperationsSummaryService.buildWeeklySummary(weekStartDate, weekEndDate);
@@ -151,7 +140,6 @@ class WeeklyOperationsSummaryServiceTests {
         assertEquals(2L, weeklyOperationsSummary.getWeeklyEveningEntries());
         assertEquals(1L, weeklyOperationsSummary.getSignInSucceededCount());
         assertEquals(1L, weeklyOperationsSummary.getSignInFailedCount());
-        assertEquals(1L, weeklyOperationsSummary.getPasswordResetRequestedCount());
         assertEquals(1L, weeklyOperationsSummary.getRecordLibraryViewedCount());
         assertEquals(1L, weeklyOperationsSummary.getMarkdownExportedCount());
         assertEquals(0L, weeklyOperationsSummary.getPdfExportViewedCount());

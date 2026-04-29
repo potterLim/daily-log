@@ -50,9 +50,7 @@ public class WeeklyOperationsSummaryScheduler {
                 "WEEKLY_OPERATIONS_SUMMARY weekStart={} weekEnd={} totalRegisteredUsers={} newlyRegisteredUsers={} "
                     + "weeklyActiveUsers={} weeklyWritingUsers={} weeklyWritingDays={} weeklyMorningEntries={} "
                     + "weeklyEveningEntries={} signInSucceededCount={} signInFailedCount={} "
-                    + "emailVerificationMailSentCount={} emailVerificationMailFailedCount={} emailVerifiedCount={} "
-                    + "passwordResetRequestedCount={} passwordResetMailSentCount={} passwordResetMailFailedCount={} "
-                    + "passwordResetCompletedCount={} recordLibraryViewedCount={} markdownExportedCount={} "
+                    + "recordLibraryViewedCount={} markdownExportedCount={} "
                     + "pdfExportViewedCount={} averageWritingDaysPerActiveUser={} "
                     + "averageEntryCompletionsPerActiveUser={} goalCompletionRatePercent={}",
                 weeklyOperationsSummary.getWeekStartDate(),
@@ -66,13 +64,6 @@ public class WeeklyOperationsSummaryScheduler {
                 weeklyOperationsSummary.getWeeklyEveningEntries(),
                 weeklyOperationsSummary.getSignInSucceededCount(),
                 weeklyOperationsSummary.getSignInFailedCount(),
-                weeklyOperationsSummary.getEmailVerificationMailSentCount(),
-                weeklyOperationsSummary.getEmailVerificationMailFailedCount(),
-                weeklyOperationsSummary.getEmailVerifiedCount(),
-                weeklyOperationsSummary.getPasswordResetRequestedCount(),
-                weeklyOperationsSummary.getPasswordResetMailSentCount(),
-                weeklyOperationsSummary.getPasswordResetMailFailedCount(),
-                weeklyOperationsSummary.getPasswordResetCompletedCount(),
                 weeklyOperationsSummary.getRecordLibraryViewedCount(),
                 weeklyOperationsSummary.getMarkdownExportedCount(),
                 weeklyOperationsSummary.getPdfExportViewedCount(),

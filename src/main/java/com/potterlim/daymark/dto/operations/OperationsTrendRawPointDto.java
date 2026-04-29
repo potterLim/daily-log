@@ -17,7 +17,6 @@ final class OperationsTrendRawPointDto {
     private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
-    private final long mMailFailureCount;
     private final double mGoalCompletionRatePercent;
 
     private OperationsTrendRawPointDto(
@@ -32,7 +31,6 @@ final class OperationsTrendRawPointDto {
         long recordLibraryViewedCount,
         long markdownExportedCount,
         long pdfExportViewedCount,
-        long mailFailureCount,
         double goalCompletionRatePercent
     ) {
         mWeekStartDate = weekStartDate;
@@ -46,16 +44,12 @@ final class OperationsTrendRawPointDto {
         mRecordLibraryViewedCount = recordLibraryViewedCount;
         mMarkdownExportedCount = markdownExportedCount;
         mPdfExportViewedCount = pdfExportViewedCount;
-        mMailFailureCount = mailFailureCount;
         mGoalCompletionRatePercent = goalCompletionRatePercent;
     }
 
     static OperationsTrendRawPointDto createFromSnapshot(
         WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot
     ) {
-        long mailFailureCount = weeklyOperationMetricSnapshot.getEmailVerificationMailFailedCount()
-            + weeklyOperationMetricSnapshot.getPasswordResetMailFailedCount();
-
         return new OperationsTrendRawPointDto(
             weeklyOperationMetricSnapshot.getWeekStartDate(),
             weeklyOperationMetricSnapshot.getWeekEndDate(),
@@ -68,15 +62,11 @@ final class OperationsTrendRawPointDto {
             weeklyOperationMetricSnapshot.getRecordLibraryViewedCount(),
             weeklyOperationMetricSnapshot.getMarkdownExportedCount(),
             weeklyOperationMetricSnapshot.getPdfExportViewedCount(),
-            mailFailureCount,
             weeklyOperationMetricSnapshot.getGoalCompletionRatePercent()
         );
     }
 
     static OperationsTrendRawPointDto createFromSummary(WeeklyOperationsSummary weeklyOperationsSummary) {
-        long mailFailureCount = weeklyOperationsSummary.getEmailVerificationMailFailedCount()
-            + weeklyOperationsSummary.getPasswordResetMailFailedCount();
-
         return new OperationsTrendRawPointDto(
             weeklyOperationsSummary.getWeekStartDate(),
             weeklyOperationsSummary.getWeekEndDate(),
@@ -89,7 +79,6 @@ final class OperationsTrendRawPointDto {
             weeklyOperationsSummary.getRecordLibraryViewedCount(),
             weeklyOperationsSummary.getMarkdownExportedCount(),
             weeklyOperationsSummary.getPdfExportViewedCount(),
-            mailFailureCount,
             weeklyOperationsSummary.getGoalCompletionRatePercent()
         );
     }
@@ -136,10 +125,6 @@ final class OperationsTrendRawPointDto {
 
     long getPdfExportViewedCount() {
         return mPdfExportViewedCount;
-    }
-
-    long getMailFailureCount() {
-        return mMailFailureCount;
     }
 
     double getGoalCompletionRatePercent() {

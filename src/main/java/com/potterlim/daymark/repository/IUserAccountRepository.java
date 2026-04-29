@@ -27,6 +27,13 @@ public interface IUserAccountRepository extends JpaRepository<UserAccount, Long>
     @Query("""
         select userAccount
         from UserAccount userAccount
+        where userAccount.mGoogleSubject = :googleSubject
+        """)
+    Optional<UserAccount> findByGoogleSubject(@Param("googleSubject") String googleSubject);
+
+    @Query("""
+        select userAccount
+        from UserAccount userAccount
         where userAccount.mUserName = :loginIdentifier
             or lower(userAccount.mEmailAddress) = lower(:loginIdentifier)
         """)

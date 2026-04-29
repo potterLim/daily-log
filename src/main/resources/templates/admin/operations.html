@@ -164,7 +164,7 @@
     <div class="operations-grid">
         <section class="surface-panel operations-panel">
             <div class="operations-panel-header">
-                <h2>인증 흐름</h2>
+                <h2>가입과 로그인</h2>
             </div>
             <div class="operations-metric-list">
                 <div class="operations-metric-row">
@@ -176,33 +176,21 @@
                     <strong th:text="${currentWeeklySummary.signInFailedCount}">0</strong>
                 </div>
                 <div class="operations-metric-row">
-                    <span>Email Sent</span>
-                    <strong th:text="${currentWeeklySummary.emailVerificationMailSentCount}">0</strong>
+                    <span>New Workspace</span>
+                    <strong th:text="${currentWeeklySummary.newlyRegisteredUsers}">0</strong>
                 </div>
                 <div class="operations-metric-row">
-                    <span>Email Failed</span>
-                    <strong th:text="${currentWeeklySummary.emailVerificationMailFailedCount}">0</strong>
-                </div>
-                <div class="operations-metric-row">
-                    <span>Email Verified</span>
-                    <strong th:text="${currentWeeklySummary.emailVerifiedCount}">0</strong>
+                    <span>Total Workspace</span>
+                    <strong th:text="${currentWeeklySummary.totalRegisteredUsers}">0</strong>
                 </div>
             </div>
         </section>
 
         <section class="surface-panel operations-panel">
             <div class="operations-panel-header">
-                <h2>복구와 내보내기</h2>
+                <h2>라이브러리와 내보내기</h2>
             </div>
             <div class="operations-metric-list">
-                <div class="operations-metric-row">
-                    <span>Password Reset</span>
-                    <strong th:text="${currentWeeklySummary.passwordResetRequestedCount}">0</strong>
-                </div>
-                <div class="operations-metric-row">
-                    <span>Reset Mail Failed</span>
-                    <strong th:text="${currentWeeklySummary.passwordResetMailFailedCount}">0</strong>
-                </div>
                 <div class="operations-metric-row">
                     <span>Records Viewed</span>
                     <strong th:text="${currentWeeklySummary.recordLibraryViewedCount}">0</strong>
@@ -235,7 +223,7 @@
                     <th>작성</th>
                     <th>신규</th>
                     <th>목표율</th>
-                    <th>메일 실패</th>
+                    <th>PDF</th>
                     <th>저장 시각</th>
                 </tr>
                 </thead>
@@ -250,7 +238,7 @@
                     <td th:text="${snapshot.weeklyWritingUsers}">0</td>
                     <td th:text="${snapshot.newlyRegisteredUsers}">0</td>
                     <td th:text="${#numbers.formatDecimal(snapshot.goalCompletionRatePercent, 1, 1)} + '%'">0.0%</td>
-                    <td th:text="${snapshot.emailVerificationMailFailedCount + snapshot.passwordResetMailFailedCount}">0</td>
+                    <td th:text="${snapshot.pdfExportViewedCount}">0</td>
                     <td th:text="${#temporals.format(snapshot.generatedAt, 'yyyy. MM. dd. HH:mm')}">2026. 04. 27. 09:00</td>
                 </tr>
                 </tbody>

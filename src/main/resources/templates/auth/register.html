@@ -9,8 +9,37 @@
             </div>
         </div>
 
-        <form th:action="@{/register}" th:object="${registerRequestDto}" method="post" class="form-stack" novalidate>
+        <div th:if="${!hasPendingGoogleRegistration}" class="form-stack">
+            <div class="google-start-card">
+                <span>Google Account</span>
+                <strong>먼저 Google 계정으로 본인 확인을 진행합니다.</strong>
+            </div>
+
+            <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
+                Continue with Google
+            </a>
+
+            <div class="auth-helper">
+                <a th:href="@{/login}">Sign In</a>
+            </div>
+        </div>
+
+        <form th:if="${hasPendingGoogleRegistration}"
+              th:action="@{/register}"
+              th:object="${registerRequestDto}"
+              method="post"
+              class="form-stack"
+              novalidate>
             <th:block th:replace="~{fragments/csrf :: hiddenInput}"></th:block>
+
+            <div class="google-start-card google-start-card-verified">
+                <span>Google Verified</span>
+                <strong th:text="${googleEmailAddress}">user@example.com</strong>
+            </div>
+
+            <div th:if="${#fields.hasGlobalErrors()}" class="message-banner message-banner-danger" role="alert">
+                <span th:each="error : ${#fields.globalErrors()}" th:text="${error}">가입 오류</span>
+            </div>
 
             <div class="form-section">
                 <label for="userName" class="form-label field-label">워크스페이스 ID</label>
@@ -20,17 +49,6 @@
                        autocomplete="username"
                        placeholder="사용할 워크스페이스 ID를 입력하세요" />
                 <div class="text-danger mt-2" th:errors="*{userName}"></div>
-            </div>
-
-            <div class="form-section">
-                <label for="emailAddress" class="form-label field-label">이메일</label>
-                <input id="emailAddress"
-                       th:field="*{emailAddress}"
-                       type="email"
-                       class="form-control form-control-lg"
-                       autocomplete="email"
-                       placeholder="사용할 이메일을 입력하세요" />
-                <div class="text-danger mt-2" th:errors="*{emailAddress}"></div>
             </div>
 
             <div class="form-section">
