@@ -49,10 +49,12 @@ public class WeeklyOperationsSummaryScheduler {
             LOGGER.info(
                 "WEEKLY_OPERATIONS_SUMMARY weekStart={} weekEnd={} totalRegisteredUsers={} newlyRegisteredUsers={} "
                     + "weeklyActiveUsers={} weeklyWritingUsers={} weeklyWritingDays={} weeklyMorningEntries={} "
-                    + "weeklyEveningEntries={} signInSucceededCount={} signInFailedCount={} "
-                    + "recordLibraryViewedCount={} markdownExportedCount={} "
-                    + "pdfExportViewedCount={} averageWritingDaysPerActiveUser={} "
-                    + "averageEntryCompletionsPerActiveUser={} goalCompletionRatePercent={}",
+                    + "weeklyEveningEntries={} weeklyPlanReviewCompletedDays={} signInSucceededCount={} "
+                    + "signInFailedCount={} weeklyReviewViewedCount={} markdownExportedCount={} "
+                    + "pdfExportViewedCount={} exportingUsers={} newWorkspaceActivatedUsers={} "
+                    + "averageWritingDaysPerActiveUser={} averageEntryCompletionsPerActiveUser={} "
+                    + "planReviewConversionRatePercent={} newWorkspaceActivationRatePercent={} "
+                    + "goalCompletionRatePercent={}",
                 weeklyOperationsSummary.getWeekStartDate(),
                 weeklyOperationsSummary.getWeekEndDate(),
                 weeklyOperationsSummary.getTotalRegisteredUsers(),
@@ -62,13 +64,18 @@ public class WeeklyOperationsSummaryScheduler {
                 weeklyOperationsSummary.getWeeklyWritingDays(),
                 weeklyOperationsSummary.getWeeklyMorningEntries(),
                 weeklyOperationsSummary.getWeeklyEveningEntries(),
+                weeklyOperationsSummary.getWeeklyPlanReviewCompletedDays(),
                 weeklyOperationsSummary.getSignInSucceededCount(),
                 weeklyOperationsSummary.getSignInFailedCount(),
-                weeklyOperationsSummary.getRecordLibraryViewedCount(),
+                weeklyOperationsSummary.getWeeklyReviewViewedCount(),
                 weeklyOperationsSummary.getMarkdownExportedCount(),
                 weeklyOperationsSummary.getPdfExportViewedCount(),
+                weeklyOperationsSummary.getExportingUsers(),
+                weeklyOperationsSummary.getNewWorkspaceActivatedUsers(),
                 formatMetric(weeklyOperationsSummary.getAverageWritingDaysPerActiveUser()),
                 formatMetric(weeklyOperationsSummary.getAverageEntryCompletionsPerActiveUser()),
+                formatMetric(weeklyOperationsSummary.getPlanReviewConversionRatePercent()),
+                formatMetric(weeklyOperationsSummary.getNewWorkspaceActivationRatePercent()),
                 formatMetric(weeklyOperationsSummary.getGoalCompletionRatePercent())
             );
         } catch (RuntimeException runtimeException) {

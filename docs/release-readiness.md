@@ -147,6 +147,8 @@ git diff --check
 - health check는 `/actuator/health/readiness`로 설정합니다.
 - `DAYMARK_ADMINISTRATOR_WORKSPACE_IDS`에 운영자 Workspace ID를 지정하고 `/admin/operations` 접근을 확인합니다.
 - 운영 지표가 `operation_usage_event`와 `weekly_operation_metric_snapshot`에 저장되는지 확인합니다.
+- 관리자 화면에서 Growth, Routine, Goal Completion, Export, Security 지표가 보이는지 확인합니다.
+- 운영자 계정 활동이 관리자 통계에서 제외되는지 확인합니다.
 - 실제 운영 데이터, secret, webhook URL은 퍼블릭 저장소에 커밋하지 않습니다.
 
 ## 내보내기 점검

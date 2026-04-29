@@ -128,6 +128,10 @@ public class DaymarkEntry {
         return mUserAccount.getUserAccountId();
     }
 
+    public UserAccount getUserAccount() {
+        return mUserAccount;
+    }
+
     public boolean hasMorningEntry() {
         return hasMorningContent();
     }

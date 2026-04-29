@@ -122,9 +122,11 @@ class WeeklyOperationsSummaryServiceTests {
         );
         recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, firstUser);
         recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, firstUser);
+        recordUserEvent(EOperationEventType.WEEKLY_REVIEW_VIEWED, firstUser);
         recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, firstUser);
         recordUserEvent(EOperationEventType.SIGN_IN_SUCCEEDED, adminUser);
         recordUserEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, adminUser);
+        recordUserEvent(EOperationEventType.WEEKLY_REVIEW_VIEWED, adminUser);
         recordUserEvent(EOperationEventType.MARKDOWN_EXPORTED, adminUser);
         mOperationUsageEventService.recordAnonymousEvent(EOperationEventType.SIGN_IN_FAILED);
 
@@ -138,13 +140,23 @@ class WeeklyOperationsSummaryServiceTests {
         assertEquals(3L, weeklyOperationsSummary.getWeeklyWritingDays());
         assertEquals(2L, weeklyOperationsSummary.getWeeklyMorningEntries());
         assertEquals(2L, weeklyOperationsSummary.getWeeklyEveningEntries());
+        assertEquals(1L, weeklyOperationsSummary.getWeeklyPlanReviewCompletedDays());
         assertEquals(1L, weeklyOperationsSummary.getSignInSucceededCount());
         assertEquals(1L, weeklyOperationsSummary.getSignInFailedCount());
+        assertEquals(1L, weeklyOperationsSummary.getWeeklyReviewViewedCount());
         assertEquals(1L, weeklyOperationsSummary.getRecordLibraryViewedCount());
         assertEquals(1L, weeklyOperationsSummary.getMarkdownExportedCount());
         assertEquals(0L, weeklyOperationsSummary.getPdfExportViewedCount());
+        assertEquals(1L, weeklyOperationsSummary.getExportingUsers());
+        assertEquals(1L, weeklyOperationsSummary.getNewWorkspaceActivatedUsers());
         assertEquals(1.5, weeklyOperationsSummary.getAverageWritingDaysPerActiveUser(), 0.0001);
         assertEquals(2.0, weeklyOperationsSummary.getAverageEntryCompletionsPerActiveUser(), 0.0001);
+        assertEquals(50.0, weeklyOperationsSummary.getPlanReviewConversionRatePercent(), 0.0001);
+        assertEquals(
+            33.333333333333336,
+            weeklyOperationsSummary.getNewWorkspaceActivationRatePercent(),
+            0.0001
+        );
         assertEquals(66.66666666666667, weeklyOperationsSummary.getGoalCompletionRatePercent(), 0.0001);
 
         mWeeklyOperationMetricSnapshotService.saveWeeklySnapshot(weeklyOperationsSummary);

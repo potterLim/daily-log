@@ -13,8 +13,6 @@ final class OperationsTrendRawPointDto {
     private final long mWeeklyActiveUsers;
     private final long mWeeklyWritingUsers;
     private final long mWeeklyWritingDays;
-    private final long mSignInSucceededCount;
-    private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
     private final double mGoalCompletionRatePercent;
@@ -27,8 +25,6 @@ final class OperationsTrendRawPointDto {
         long weeklyActiveUsers,
         long weeklyWritingUsers,
         long weeklyWritingDays,
-        long signInSucceededCount,
-        long recordLibraryViewedCount,
         long markdownExportedCount,
         long pdfExportViewedCount,
         double goalCompletionRatePercent
@@ -40,8 +36,6 @@ final class OperationsTrendRawPointDto {
         mWeeklyActiveUsers = weeklyActiveUsers;
         mWeeklyWritingUsers = weeklyWritingUsers;
         mWeeklyWritingDays = weeklyWritingDays;
-        mSignInSucceededCount = signInSucceededCount;
-        mRecordLibraryViewedCount = recordLibraryViewedCount;
         mMarkdownExportedCount = markdownExportedCount;
         mPdfExportViewedCount = pdfExportViewedCount;
         mGoalCompletionRatePercent = goalCompletionRatePercent;
@@ -58,8 +52,6 @@ final class OperationsTrendRawPointDto {
             weeklyOperationMetricSnapshot.getWeeklyActiveUsers(),
             weeklyOperationMetricSnapshot.getWeeklyWritingUsers(),
             weeklyOperationMetricSnapshot.getWeeklyWritingDays(),
-            weeklyOperationMetricSnapshot.getSignInSucceededCount(),
-            weeklyOperationMetricSnapshot.getRecordLibraryViewedCount(),
             weeklyOperationMetricSnapshot.getMarkdownExportedCount(),
             weeklyOperationMetricSnapshot.getPdfExportViewedCount(),
             weeklyOperationMetricSnapshot.getGoalCompletionRatePercent()
@@ -75,8 +67,6 @@ final class OperationsTrendRawPointDto {
             weeklyOperationsSummary.getWeeklyActiveUsers(),
             weeklyOperationsSummary.getWeeklyWritingUsers(),
             weeklyOperationsSummary.getWeeklyWritingDays(),
-            weeklyOperationsSummary.getSignInSucceededCount(),
-            weeklyOperationsSummary.getRecordLibraryViewedCount(),
             weeklyOperationsSummary.getMarkdownExportedCount(),
             weeklyOperationsSummary.getPdfExportViewedCount(),
             weeklyOperationsSummary.getGoalCompletionRatePercent()
@@ -111,14 +101,6 @@ final class OperationsTrendRawPointDto {
         return mWeeklyWritingDays;
     }
 
-    long getSignInSucceededCount() {
-        return mSignInSucceededCount;
-    }
-
-    long getRecordLibraryViewedCount() {
-        return mRecordLibraryViewedCount;
-    }
-
     long getMarkdownExportedCount() {
         return mMarkdownExportedCount;
     }
@@ -127,11 +109,11 @@ final class OperationsTrendRawPointDto {
         return mPdfExportViewedCount;
     }
 
-    double getGoalCompletionRatePercent() {
-        return mGoalCompletionRatePercent;
+    long getExportCount() {
+        return mMarkdownExportedCount + mPdfExportViewedCount;
     }
 
-    long getEngagementCount() {
-        return mSignInSucceededCount + mRecordLibraryViewedCount + mMarkdownExportedCount + mPdfExportViewedCount;
+    double getGoalCompletionRatePercent() {
+        return mGoalCompletionRatePercent;
     }
 }

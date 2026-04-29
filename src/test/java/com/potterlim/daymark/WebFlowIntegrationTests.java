@@ -793,7 +793,7 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("계정")))
             .andExpect(content().string(containsString("가입 Google 메일")))
             .andExpect(content().string(containsString("Workspace ID")))
-            .andExpect(content().string(containsString("생성일")))
+            .andExpect(content().string(containsString("Workspace 생성일")))
             .andExpect(content().string(containsString("reviewer")))
             .andExpect(content().string(containsString("reviewer@example.com")))
             .andExpect(content().string(not(containsString(">Google</span>"))))
@@ -991,22 +991,53 @@ class WebFlowIntegrationTests {
             EOperationEventType.RECORD_LIBRARY_VIEWED,
             adminUser.getUserAccountId()
         );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.WEEKLY_REVIEW_VIEWED,
+            firstUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.MARKDOWN_EXPORTED,
+            firstUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.PDF_EXPORT_VIEWED,
+            secondUser.getUserAccountId()
+        );
+        mOperationUsageEventService.recordUserEvent(
+            EOperationEventType.MARKDOWN_EXPORTED,
+            adminUser.getUserAccountId()
+        );
 
         mMockMvc.perform(get("/admin/operations")
                 .with(SecurityMockMvcRequestPostProcessors.user(adminUser)))
             .andExpect(status().isOk())
-            .andExpect(content().string(containsString("작성 2명")))
+            .andExpect(content().string(containsString("Growth")))
+            .andExpect(content().string(containsString("Routine")))
+            .andExpect(content().string(containsString("Goal Completion")))
+            .andExpect(content().string(containsString("Export")))
+            .andExpect(content().string(containsString("Security")))
+            .andExpect(content().string(containsString("Active Workspace")))
+            .andExpect(content().string(containsString("New Workspace")))
+            .andExpect(content().string(containsString("Routine Days")))
+            .andExpect(content().string(containsString("Morning Plan")))
+            .andExpect(content().string(containsString("Evening Review")))
+            .andExpect(content().string(containsString("Plan → Review")))
+            .andExpect(content().string(containsString("Weekly Review")))
+            .andExpect(content().string(containsString("Exporting Workspace")))
+            .andExpect(content().string(containsString("Markdown")))
+            .andExpect(content().string(containsString("PDF")))
             .andExpect(content().string(containsString("50.0%")))
             .andExpect(content().string(not(containsString("66.7%"))))
+            .andExpect(content().string(not(containsString("Records Viewed"))))
+            .andExpect(content().string(not(containsString("Quality"))))
             .andExpect(content().string(containsString("주차별 성장 추이")))
             .andExpect(content().string(containsString("Base Date")))
             .andExpect(content().string(containsString("12W")))
             .andExpect(content().string(containsString("trend-line-active")))
             .andExpect(content().string(containsString("trend-line-goal")))
             .andExpect(content().string(containsString("<span>Sign In</span>")))
-            .andExpect(content().string(containsString("<strong>2</strong>")))
-            .andExpect(content().string(containsString("<span>Records Viewed</span>")))
-            .andExpect(content().string(containsString("<strong>1</strong>")));
+            .andExpect(content().string(containsString("<span>Failed Sign In</span>")))
+            .andExpect(content().string(containsString("<strong>2</strong>")));
     }
 
     @Test
@@ -1070,13 +1101,19 @@ class WebFlowIntegrationTests {
             2L,
             2L,
             1L,
+            1L,
             2L,
             1L,
             1L,
+            1L,
+            1L,
             0L,
-            0L,
+            1L,
+            1L,
             2.0,
             3.0,
+            50.0,
+            100.0,
             goalCompletionRatePercent
         );
         WeeklyOperationMetricSnapshot weeklyOperationMetricSnapshot =

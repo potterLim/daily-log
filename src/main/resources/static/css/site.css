@@ -1775,7 +1775,7 @@ ol {
 
 .account-info-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
 }
 
@@ -2453,7 +2453,7 @@ ol {
     background: linear-gradient(180deg, #72ddb6, #0f9f6e);
 }
 
-.operations-bar-engagement {
+.operations-bar-export {
     background: linear-gradient(180deg, #ffd58a, #f59e0b);
 }
 

@@ -12,7 +12,7 @@ Daymark는 매일의 목표를 세우고 하루를 돌아보는 개인 워크스
 - 기록 라이브러리: 날짜 범위와 키워드로 장기 기록 탐색
 - 내보내기: 선택한 기록을 Markdown으로 다운로드하거나 PDF 저장용 보고서로 확인
 - 계정: Google 계정 확인, Workspace ID, 비밀번호 로그인, 비밀번호 변경
-- 운영 지표: 관리자 전용 화면에서 활성 사용자, 기록 흐름, 내보내기 사용량 확인
+- 운영 지표: 관리자 전용 화면에서 Workspace 성장, 루틴 수행, 목표 완료율, 내보내기, 로그인 상태 확인
 
 ## 기술 구성
 
@@ -99,6 +99,14 @@ build/libs/daymark.jar
 - `weekly_operation_metric_snapshot`
 
 관리자 지표 화면은 `ADMIN` 권한 계정으로 로그인한 뒤 `/admin/operations`에서 확인합니다. 운영자 Workspace ID는 `DAYMARK_ADMINISTRATOR_WORKSPACE_IDS`로 지정하며, 지정된 계정 활동은 운영 지표에서 제외됩니다.
+
+관리자 화면은 다음 흐름을 중심으로 구성합니다.
+
+- Growth: 전체 Workspace, 신규 Workspace, 활성 Workspace, 신규 Workspace의 첫 작성 비율
+- Routine: 작성 Workspace, 루틴 수행일, Morning Plan, Evening Review, Plan → Review 전환율
+- Goal Completion: 저녁 체크리스트 기준 목표 완료율과 활성 Workspace당 평균 루틴 수행일
+- Export: Markdown/PDF 내보내기와 내보내기를 실행한 Workspace
+- Security: 로그인 성공과 실패 흐름
 
 ## 운영과 보안
 

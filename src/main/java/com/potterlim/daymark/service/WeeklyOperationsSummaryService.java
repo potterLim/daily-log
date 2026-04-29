@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,9 +49,11 @@ public class WeeklyOperationsSummaryService {
             EXCLUDED_OPERATION_USER_ROLE
         );
         Set<Long> weeklyWritingUserIds = new HashSet<>();
+        Set<Long> newWorkspaceActivatedUserIds = new HashSet<>();
         long weeklyWritingDays = 0L;
         long weeklyMorningEntries = 0L;
         long weeklyEveningEntries = 0L;
+        long weeklyPlanReviewCompletedDays = 0L;
         int totalTrackedGoals = 0;
         int completedTrackedGoals = 0;
 
@@ -62,12 +65,26 @@ public class WeeklyOperationsSummaryService {
             weeklyWritingUserIds.add(daymarkEntry.getUserAccountId().getValue());
             weeklyWritingDays += 1L;
 
-            if (daymarkEntry.hasMorningEntry()) {
+            boolean hasMorningEntry = daymarkEntry.hasMorningEntry();
+            boolean hasEveningEntry = daymarkEntry.hasEveningEntry();
+            if (hasMorningEntry) {
                 weeklyMorningEntries += 1L;
             }
 
-            if (daymarkEntry.hasEveningEntry()) {
+            if (hasEveningEntry) {
                 weeklyEveningEntries += 1L;
+            }
+
+            if (hasMorningEntry && hasEveningEntry) {
+                weeklyPlanReviewCompletedDays += 1L;
+            }
+
+            if (hasMorningEntry && isNewWorkspaceWithinRange(
+                daymarkEntry.getUserAccount().getCreatedAt(),
+                weekStartDateTime,
+                weekEndExclusiveDateTime
+            )) {
+                newWorkspaceActivatedUserIds.add(daymarkEntry.getUserAccountId().getValue());
             }
 
             GoalCompletionAccumulator goalCompletionAccumulator =
@@ -92,6 +109,7 @@ public class WeeklyOperationsSummaryService {
             weekEndExclusiveDateTime,
             EXCLUDED_OPERATION_USER_ROLE
         );
+        long newWorkspaceActivatedUsers = newWorkspaceActivatedUserIds.size();
 
         double averageWritingDaysPerActiveUser = weeklyActiveUsers == 0
             ? 0.0
@@ -99,6 +117,12 @@ public class WeeklyOperationsSummaryService {
         double averageEntryCompletionsPerActiveUser = weeklyActiveUsers == 0
             ? 0.0
             : (double) (weeklyMorningEntries + weeklyEveningEntries) / weeklyActiveUsers;
+        double planReviewConversionRatePercent = weeklyMorningEntries == 0L
+            ? 0.0
+            : (double) weeklyPlanReviewCompletedDays * 100.0 / weeklyMorningEntries;
+        double newWorkspaceActivationRatePercent = newlyRegisteredUsers == 0L
+            ? 0.0
+            : (double) newWorkspaceActivatedUsers * 100.0 / newlyRegisteredUsers;
         double goalCompletionRatePercent = totalTrackedGoals == 0
             ? 0.0
             : (double) completedTrackedGoals * 100.0 / totalTrackedGoals;
@@ -113,13 +137,19 @@ public class WeeklyOperationsSummaryService {
             weeklyWritingDays,
             weeklyMorningEntries,
             weeklyEveningEntries,
+            weeklyPlanReviewCompletedDays,
             countEvent(EOperationEventType.SIGN_IN_SUCCEEDED, weekStartDateTime, weekEndExclusiveDateTime),
             countEvent(EOperationEventType.SIGN_IN_FAILED, weekStartDateTime, weekEndExclusiveDateTime),
+            countEvent(EOperationEventType.WEEKLY_REVIEW_VIEWED, weekStartDateTime, weekEndExclusiveDateTime),
             countEvent(EOperationEventType.RECORD_LIBRARY_VIEWED, weekStartDateTime, weekEndExclusiveDateTime),
             countEvent(EOperationEventType.MARKDOWN_EXPORTED, weekStartDateTime, weekEndExclusiveDateTime),
             countEvent(EOperationEventType.PDF_EXPORT_VIEWED, weekStartDateTime, weekEndExclusiveDateTime),
+            countExportingUsers(weekStartDateTime, weekEndExclusiveDateTime),
+            newWorkspaceActivatedUsers,
             averageWritingDaysPerActiveUser,
             averageEntryCompletionsPerActiveUser,
+            planReviewConversionRatePercent,
+            newWorkspaceActivationRatePercent,
             goalCompletionRatePercent
         );
     }
@@ -153,6 +183,25 @@ public class WeeklyOperationsSummaryService {
             weekEndExclusiveDateTime,
             EXCLUDED_OPERATION_USER_ROLE
         );
+    }
+
+    private long countExportingUsers(LocalDateTime weekStartDateTime, LocalDateTime weekEndExclusiveDateTime) {
+        return mOperationUsageEventRepository.countDistinctUserAccountIdsByEventTypesWithinExcludingUserRole(
+            EnumSet.of(EOperationEventType.MARKDOWN_EXPORTED, EOperationEventType.PDF_EXPORT_VIEWED),
+            weekStartDateTime,
+            weekEndExclusiveDateTime,
+            EXCLUDED_OPERATION_USER_ROLE
+        );
+    }
+
+    private static boolean isNewWorkspaceWithinRange(
+        LocalDateTime createdAtOrNull,
+        LocalDateTime startDateTime,
+        LocalDateTime endExclusiveDateTime
+    ) {
+        return createdAtOrNull != null
+            && !createdAtOrNull.isBefore(startDateTime)
+            && createdAtOrNull.isBefore(endExclusiveDateTime);
     }
 
     private static GoalCompletionAccumulator analyzeGoalCompletion(String eveningGoalsText) {

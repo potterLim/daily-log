@@ -13,13 +13,19 @@ public final class WeeklyOperationsSummary {
     private final long mWeeklyWritingDays;
     private final long mWeeklyMorningEntries;
     private final long mWeeklyEveningEntries;
+    private final long mWeeklyPlanReviewCompletedDays;
     private final long mSignInSucceededCount;
     private final long mSignInFailedCount;
+    private final long mWeeklyReviewViewedCount;
     private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
+    private final long mExportingUsers;
+    private final long mNewWorkspaceActivatedUsers;
     private final double mAverageWritingDaysPerActiveUser;
     private final double mAverageEntryCompletionsPerActiveUser;
+    private final double mPlanReviewConversionRatePercent;
+    private final double mNewWorkspaceActivationRatePercent;
     private final double mGoalCompletionRatePercent;
 
     public WeeklyOperationsSummary(
@@ -32,13 +38,19 @@ public final class WeeklyOperationsSummary {
         long weeklyWritingDays,
         long weeklyMorningEntries,
         long weeklyEveningEntries,
+        long weeklyPlanReviewCompletedDays,
         long signInSucceededCount,
         long signInFailedCount,
+        long weeklyReviewViewedCount,
         long recordLibraryViewedCount,
         long markdownExportedCount,
         long pdfExportViewedCount,
+        long exportingUsers,
+        long newWorkspaceActivatedUsers,
         double averageWritingDaysPerActiveUser,
         double averageEntryCompletionsPerActiveUser,
+        double planReviewConversionRatePercent,
+        double newWorkspaceActivationRatePercent,
         double goalCompletionRatePercent
     ) {
         mWeekStartDate = weekStartDate;
@@ -50,13 +62,19 @@ public final class WeeklyOperationsSummary {
         mWeeklyWritingDays = weeklyWritingDays;
         mWeeklyMorningEntries = weeklyMorningEntries;
         mWeeklyEveningEntries = weeklyEveningEntries;
+        mWeeklyPlanReviewCompletedDays = weeklyPlanReviewCompletedDays;
         mSignInSucceededCount = signInSucceededCount;
         mSignInFailedCount = signInFailedCount;
+        mWeeklyReviewViewedCount = weeklyReviewViewedCount;
         mRecordLibraryViewedCount = recordLibraryViewedCount;
         mMarkdownExportedCount = markdownExportedCount;
         mPdfExportViewedCount = pdfExportViewedCount;
+        mExportingUsers = exportingUsers;
+        mNewWorkspaceActivatedUsers = newWorkspaceActivatedUsers;
         mAverageWritingDaysPerActiveUser = averageWritingDaysPerActiveUser;
         mAverageEntryCompletionsPerActiveUser = averageEntryCompletionsPerActiveUser;
+        mPlanReviewConversionRatePercent = planReviewConversionRatePercent;
+        mNewWorkspaceActivationRatePercent = newWorkspaceActivationRatePercent;
         mGoalCompletionRatePercent = goalCompletionRatePercent;
     }
 
@@ -96,12 +114,20 @@ public final class WeeklyOperationsSummary {
         return mWeeklyEveningEntries;
     }
 
+    public long getWeeklyPlanReviewCompletedDays() {
+        return mWeeklyPlanReviewCompletedDays;
+    }
+
     public long getSignInSucceededCount() {
         return mSignInSucceededCount;
     }
 
     public long getSignInFailedCount() {
         return mSignInFailedCount;
+    }
+
+    public long getWeeklyReviewViewedCount() {
+        return mWeeklyReviewViewedCount;
     }
 
     public long getRecordLibraryViewedCount() {
@@ -116,12 +142,32 @@ public final class WeeklyOperationsSummary {
         return mPdfExportViewedCount;
     }
 
+    public long getExportCount() {
+        return mMarkdownExportedCount + mPdfExportViewedCount;
+    }
+
+    public long getExportingUsers() {
+        return mExportingUsers;
+    }
+
+    public long getNewWorkspaceActivatedUsers() {
+        return mNewWorkspaceActivatedUsers;
+    }
+
     public double getAverageWritingDaysPerActiveUser() {
         return mAverageWritingDaysPerActiveUser;
     }
 
     public double getAverageEntryCompletionsPerActiveUser() {
         return mAverageEntryCompletionsPerActiveUser;
+    }
+
+    public double getPlanReviewConversionRatePercent() {
+        return mPlanReviewConversionRatePercent;
+    }
+
+    public double getNewWorkspaceActivationRatePercent() {
+        return mNewWorkspaceActivationRatePercent;
     }
 
     public double getGoalCompletionRatePercent() {

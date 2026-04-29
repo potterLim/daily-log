@@ -1,6 +1,7 @@
 package com.potterlim.daymark.repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import com.potterlim.daymark.entity.EOperationEventType;
 import com.potterlim.daymark.entity.EUserRole;
@@ -46,6 +47,26 @@ public interface IOperationUsageEventRepository extends JpaRepository<OperationU
             )
         """)
     List<Long> findDistinctUserAccountIdsWithinExcludingUserRole(
+        @Param("startDateTime") LocalDateTime startDateTime,
+        @Param("endExclusiveDateTime") LocalDateTime endExclusiveDateTime,
+        @Param("excludedUserRole") EUserRole excludedUserRole
+    );
+
+    @Query("""
+        select count(distinct operationUsageEvent.mUserAccountId)
+        from OperationUsageEvent operationUsageEvent
+        where operationUsageEvent.mEventType in :eventTypes
+            and operationUsageEvent.mOccurredAt >= :startDateTime
+            and operationUsageEvent.mOccurredAt < :endExclusiveDateTime
+            and operationUsageEvent.mUserAccountId is not null
+            and operationUsageEvent.mUserAccountId in (
+                select userAccount.mId
+                from UserAccount userAccount
+                where userAccount.mUserRole <> :excludedUserRole
+            )
+        """)
+    long countDistinctUserAccountIdsByEventTypesWithinExcludingUserRole(
+        @Param("eventTypes") Collection<EOperationEventType> eventTypes,
         @Param("startDateTime") LocalDateTime startDateTime,
         @Param("endExclusiveDateTime") LocalDateTime endExclusiveDateTime,
         @Param("excludedUserRole") EUserRole excludedUserRole

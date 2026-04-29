@@ -17,7 +17,7 @@
                     </strong>
                 </div>
                 <div class="workspace-meta-card">
-                    <span class="workspace-meta-label">활성</span>
+                    <span class="workspace-meta-label">Active Workspace</span>
                     <strong th:text="${currentWeeklySummary.weeklyActiveUsers} + '명'">0명</strong>
                 </div>
             </div>
@@ -26,21 +26,30 @@
 
     <div class="summary-grid summary-grid-premium operations-summary-grid">
         <div class="surface-panel summary-card summary-card-featured">
-            <span class="summary-label">활성 사용자</span>
+            <span class="summary-label">Active Workspace</span>
             <strong class="summary-value" th:text="${currentWeeklySummary.weeklyActiveUsers}">0</strong>
             <div class="summary-kpi-row">
-                <span class="info-pill" th:text="'작성 ' + ${currentWeeklySummary.weeklyWritingUsers} + '명'">작성 0명</span>
-                <span class="info-pill" th:text="'신규 ' + ${currentWeeklySummary.newlyRegisteredUsers} + '명'">신규 0명</span>
+                <span class="info-pill" th:text="'New ' + ${currentWeeklySummary.newlyRegisteredUsers}">New 0</span>
+                <span class="info-pill" th:text="'Total ' + ${currentWeeklySummary.totalRegisteredUsers}">Total 0</span>
             </div>
         </div>
         <div class="surface-panel summary-card summary-card-stat">
-            <span class="summary-label">기록일</span>
+            <span class="summary-label">Routine Days</span>
             <strong class="summary-value" th:text="${currentWeeklySummary.weeklyWritingDays}">0</strong>
+            <div class="summary-kpi-row">
+                <span class="info-pill" th:text="'Writing ' + ${currentWeeklySummary.weeklyWritingUsers}">Writing 0</span>
+                <span class="info-pill"
+                      th:text="'Avg ' + ${#numbers.formatDecimal(currentWeeklySummary.averageWritingDaysPerActiveUser, 1, 1)}">Avg 0.0</span>
+            </div>
         </div>
         <div class="surface-panel summary-card summary-card-stat">
-            <span class="summary-label">목표 완료율</span>
+            <span class="summary-label">Goal Completion</span>
             <strong class="summary-value"
                     th:text="${#numbers.formatDecimal(currentWeeklySummary.goalCompletionRatePercent, 1, 1)} + '%'">0.0%</strong>
+            <div class="summary-kpi-row">
+                <span class="info-pill"
+                      th:text="'Plan → Review ' + ${#numbers.formatDecimal(currentWeeklySummary.planReviewConversionRatePercent, 1, 1)} + '%'">Plan → Review 0.0%</span>
+            </div>
         </div>
     </div>
 
@@ -70,7 +79,8 @@
                 </form>
                 <div class="operations-delta-strip" th:if="${operationsTrendViewDto.hasPreviousTrendPoint()}">
                     <span>Active <strong th:text="${operationsTrendViewDto.activeUserDeltaText}">+0</strong></span>
-                    <span>Writing <strong th:text="${operationsTrendViewDto.writingUserDeltaText}">+0</strong></span>
+                    <span>Routine <strong th:text="${operationsTrendViewDto.writingUserDeltaText}">+0</strong></span>
+                    <span>Export <strong th:text="${operationsTrendViewDto.exportDeltaText}">+0</strong></span>
                     <span>Goal <strong th:text="${operationsTrendViewDto.goalCompletionDeltaText}">+0.0p</strong></span>
                 </div>
             </div>
@@ -82,7 +92,7 @@
                     <span>Growth</span>
                     <div class="operations-chart-legend">
                         <span><i class="legend-active"></i>Active</span>
-                        <span><i class="legend-writing"></i>Writing</span>
+                        <span><i class="legend-writing"></i>Routine</span>
                         <span><i class="legend-new"></i>New</span>
                     </div>
                 </div>
@@ -117,9 +127,9 @@
 
             <div class="operations-chart-card operations-chart-card-soft">
                 <div class="operations-chart-head">
-                    <span>Quality</span>
+                    <span>Goal Completion</span>
                     <div class="operations-chart-legend">
-                        <span><i class="legend-goal"></i>Goal Rate</span>
+                        <span><i class="legend-goal"></i>Completion</span>
                     </div>
                 </div>
                 <svg class="operations-line-chart"
@@ -152,11 +162,11 @@
                           th:style="'height: ' + ${trendPoint.activeUserBarPercent} + '%'"></span>
                     <span class="operations-bar operations-bar-writing"
                           th:style="'height: ' + ${trendPoint.writingUserBarPercent} + '%'"></span>
-                    <span class="operations-bar operations-bar-engagement"
-                          th:style="'height: ' + ${trendPoint.engagementBarPercent} + '%'"></span>
+                    <span class="operations-bar operations-bar-export"
+                          th:style="'height: ' + ${trendPoint.exportBarPercent} + '%'"></span>
                 </div>
                 <strong th:text="${#temporals.format(trendPoint.weekStartDate, 'MM. dd.')}">04. 01.</strong>
-                <span th:text="${trendPoint.weeklyActiveUsers} + ' / ' + ${trendPoint.weeklyWritingUsers}">0 / 0</span>
+                <span th:text="'A ' + ${trendPoint.weeklyActiveUsers} + ' · R ' + ${trendPoint.weeklyWritingUsers} + ' · E ' + ${trendPoint.exportCount}">A 0 · R 0 · E 0</span>
             </div>
         </div>
     </section>
@@ -164,16 +174,12 @@
     <div class="operations-grid">
         <section class="surface-panel operations-panel">
             <div class="operations-panel-header">
-                <h2>가입과 로그인</h2>
+                <h2>Growth</h2>
             </div>
             <div class="operations-metric-list">
                 <div class="operations-metric-row">
-                    <span>Sign In</span>
-                    <strong th:text="${currentWeeklySummary.signInSucceededCount}">0</strong>
-                </div>
-                <div class="operations-metric-row">
-                    <span>Failed Sign In</span>
-                    <strong th:text="${currentWeeklySummary.signInFailedCount}">0</strong>
+                    <span>Active Workspace</span>
+                    <strong th:text="${currentWeeklySummary.weeklyActiveUsers}">0</strong>
                 </div>
                 <div class="operations-metric-row">
                     <span>New Workspace</span>
@@ -183,17 +189,69 @@
                     <span>Total Workspace</span>
                     <strong th:text="${currentWeeklySummary.totalRegisteredUsers}">0</strong>
                 </div>
+                <div class="operations-metric-row">
+                    <span>New Activation</span>
+                    <strong th:text="${#numbers.formatDecimal(currentWeeklySummary.newWorkspaceActivationRatePercent, 1, 1)} + '%'">0.0%</strong>
+                </div>
             </div>
         </section>
 
         <section class="surface-panel operations-panel">
             <div class="operations-panel-header">
-                <h2>라이브러리와 내보내기</h2>
+                <h2>Routine</h2>
             </div>
             <div class="operations-metric-list">
                 <div class="operations-metric-row">
-                    <span>Records Viewed</span>
-                    <strong th:text="${currentWeeklySummary.recordLibraryViewedCount}">0</strong>
+                    <span>Writing Workspace</span>
+                    <strong th:text="${currentWeeklySummary.weeklyWritingUsers}">0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Routine Days</span>
+                    <strong th:text="${currentWeeklySummary.weeklyWritingDays}">0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Morning Plan</span>
+                    <strong th:text="${currentWeeklySummary.weeklyMorningEntries}">0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Evening Review</span>
+                    <strong th:text="${currentWeeklySummary.weeklyEveningEntries}">0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Plan → Review</span>
+                    <strong th:text="${#numbers.formatDecimal(currentWeeklySummary.planReviewConversionRatePercent, 1, 1)} + '%'">0.0%</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface-panel operations-panel">
+            <div class="operations-panel-header">
+                <h2>Goal Completion</h2>
+            </div>
+            <div class="operations-metric-list">
+                <div class="operations-metric-row">
+                    <span>Goal Completion</span>
+                    <strong th:text="${#numbers.formatDecimal(currentWeeklySummary.goalCompletionRatePercent, 1, 1)} + '%'">0.0%</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Avg Routine Days</span>
+                    <strong th:text="${#numbers.formatDecimal(currentWeeklySummary.averageWritingDaysPerActiveUser, 1, 1)}">0.0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Weekly Review</span>
+                    <strong th:text="${currentWeeklySummary.weeklyReviewViewedCount}">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface-panel operations-panel">
+            <div class="operations-panel-header">
+                <h2>Export</h2>
+            </div>
+            <div class="operations-metric-list">
+                <div class="operations-metric-row">
+                    <span>Exporting Workspace</span>
+                    <strong th:text="${currentWeeklySummary.exportingUsers}">0</strong>
                 </div>
                 <div class="operations-metric-row">
                     <span>Markdown</span>
@@ -202,6 +260,22 @@
                 <div class="operations-metric-row">
                     <span>PDF</span>
                     <strong th:text="${currentWeeklySummary.pdfExportViewedCount}">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface-panel operations-panel">
+            <div class="operations-panel-header">
+                <h2>Security</h2>
+            </div>
+            <div class="operations-metric-list">
+                <div class="operations-metric-row">
+                    <span>Sign In</span>
+                    <strong th:text="${currentWeeklySummary.signInSucceededCount}">0</strong>
+                </div>
+                <div class="operations-metric-row">
+                    <span>Failed Sign In</span>
+                    <strong th:text="${currentWeeklySummary.signInFailedCount}">0</strong>
                 </div>
             </div>
         </section>
@@ -220,10 +294,10 @@
                 <tr>
                     <th>기간</th>
                     <th>활성</th>
-                    <th>작성</th>
+                    <th>루틴</th>
                     <th>신규</th>
-                    <th>목표율</th>
-                    <th>PDF</th>
+                    <th>Goal</th>
+                    <th>Export</th>
                     <th>저장 시각</th>
                 </tr>
                 </thead>
@@ -235,10 +309,10 @@
                         <span th:text="${#temporals.format(snapshot.weekEndDate, 'yyyy. MM. dd.')}">2026. 04. 26.</span>
                     </td>
                     <td th:text="${snapshot.weeklyActiveUsers}">0</td>
-                    <td th:text="${snapshot.weeklyWritingUsers}">0</td>
+                    <td th:text="${snapshot.weeklyWritingDays}">0</td>
                     <td th:text="${snapshot.newlyRegisteredUsers}">0</td>
                     <td th:text="${#numbers.formatDecimal(snapshot.goalCompletionRatePercent, 1, 1)} + '%'">0.0%</td>
-                    <td th:text="${snapshot.pdfExportViewedCount}">0</td>
+                    <td th:text="${snapshot.exportCount}">0</td>
                     <td th:text="${#temporals.format(snapshot.generatedAt, 'yyyy. MM. dd. HH:mm')}">2026. 04. 27. 09:00</td>
                 </tr>
                 </tbody>

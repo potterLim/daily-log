@@ -19,6 +19,7 @@ public final class OperationsTrendViewDto {
     private final String mGoalCompletionLinePoints;
     private final String mActiveUserDeltaText;
     private final String mWritingUserDeltaText;
+    private final String mExportDeltaText;
     private final String mGoalCompletionDeltaText;
     private final boolean mHasPreviousTrendPoint;
 
@@ -30,6 +31,7 @@ public final class OperationsTrendViewDto {
         String goalCompletionLinePoints,
         String activeUserDeltaText,
         String writingUserDeltaText,
+        String exportDeltaText,
         String goalCompletionDeltaText,
         boolean hasPreviousTrendPoint
     ) {
@@ -40,6 +42,7 @@ public final class OperationsTrendViewDto {
         mGoalCompletionLinePoints = goalCompletionLinePoints;
         mActiveUserDeltaText = activeUserDeltaText;
         mWritingUserDeltaText = writingUserDeltaText;
+        mExportDeltaText = exportDeltaText;
         mGoalCompletionDeltaText = goalCompletionDeltaText;
         mHasPreviousTrendPoint = hasPreviousTrendPoint;
     }
@@ -61,11 +64,11 @@ public final class OperationsTrendViewDto {
             currentWeeklySummary
         );
         long maximumUserCount = calculateMaximumUserCount(rawTrendPoints);
-        long maximumEngagementCount = calculateMaximumEngagementCount(rawTrendPoints);
+        long maximumExportCount = calculateMaximumExportCount(rawTrendPoints);
         List<OperationsTrendPointDto> trendPoints = createTrendPoints(
             rawTrendPoints,
             maximumUserCount,
-            maximumEngagementCount
+            maximumExportCount
         );
 
         OperationsTrendPointDto latestTrendPoint = trendPoints.get(trendPoints.size() - 1);
@@ -85,6 +88,10 @@ public final class OperationsTrendViewDto {
             formatLongDelta(
                 latestTrendPoint.getWeeklyWritingUsers(),
                 previousTrendPointOrNull == null ? null : previousTrendPointOrNull.getWeeklyWritingUsers()
+            ),
+            formatLongDelta(
+                latestTrendPoint.getExportCount(),
+                previousTrendPointOrNull == null ? null : previousTrendPointOrNull.getExportCount()
             ),
             formatPercentPointDelta(
                 latestTrendPoint.getGoalCompletionRatePercent(),
@@ -120,6 +127,10 @@ public final class OperationsTrendViewDto {
 
     public String getWritingUserDeltaText() {
         return mWritingUserDeltaText;
+    }
+
+    public String getExportDeltaText() {
+        return mExportDeltaText;
     }
 
     public String getGoalCompletionDeltaText() {
@@ -170,19 +181,19 @@ public final class OperationsTrendViewDto {
         return maximumUserCount;
     }
 
-    private static long calculateMaximumEngagementCount(List<OperationsTrendRawPointDto> rawTrendPoints) {
-        long maximumEngagementCount = 1L;
+    private static long calculateMaximumExportCount(List<OperationsTrendRawPointDto> rawTrendPoints) {
+        long maximumExportCount = 1L;
         for (OperationsTrendRawPointDto rawTrendPoint : rawTrendPoints) {
-            maximumEngagementCount = Math.max(maximumEngagementCount, rawTrendPoint.getEngagementCount());
+            maximumExportCount = Math.max(maximumExportCount, rawTrendPoint.getExportCount());
         }
 
-        return maximumEngagementCount;
+        return maximumExportCount;
     }
 
     private static List<OperationsTrendPointDto> createTrendPoints(
         List<OperationsTrendRawPointDto> rawTrendPoints,
         long maximumUserCount,
-        long maximumEngagementCount
+        long maximumExportCount
     ) {
         List<OperationsTrendPointDto> trendPoints = new ArrayList<>();
         for (int pointIndex = 0; pointIndex < rawTrendPoints.size(); pointIndex += 1) {
@@ -191,7 +202,7 @@ public final class OperationsTrendViewDto {
                 pointIndex,
                 rawTrendPoints.size(),
                 maximumUserCount,
-                maximumEngagementCount
+                maximumExportCount
             ));
         }
 

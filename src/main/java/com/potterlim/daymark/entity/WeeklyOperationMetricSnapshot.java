@@ -58,11 +58,17 @@ public class WeeklyOperationMetricSnapshot {
     @Column(name = "weekly_evening_entries", nullable = false)
     private long mWeeklyEveningEntries;
 
+    @Column(name = "weekly_plan_review_completed_days", nullable = false)
+    private long mWeeklyPlanReviewCompletedDays;
+
     @Column(name = "sign_in_succeeded_count", nullable = false)
     private long mSignInSucceededCount;
 
     @Column(name = "sign_in_failed_count", nullable = false)
     private long mSignInFailedCount;
+
+    @Column(name = "weekly_review_viewed_count", nullable = false)
+    private long mWeeklyReviewViewedCount;
 
     @Column(name = "record_library_viewed_count", nullable = false)
     private long mRecordLibraryViewedCount;
@@ -73,11 +79,23 @@ public class WeeklyOperationMetricSnapshot {
     @Column(name = "pdf_export_viewed_count", nullable = false)
     private long mPdfExportViewedCount;
 
+    @Column(name = "exporting_users", nullable = false)
+    private long mExportingUsers;
+
+    @Column(name = "new_workspace_activated_users", nullable = false)
+    private long mNewWorkspaceActivatedUsers;
+
     @Column(name = "average_writing_days_per_active_user", nullable = false)
     private double mAverageWritingDaysPerActiveUser;
 
     @Column(name = "average_entry_completions_per_active_user", nullable = false)
     private double mAverageEntryCompletionsPerActiveUser;
+
+    @Column(name = "plan_review_conversion_rate_percent", nullable = false)
+    private double mPlanReviewConversionRatePercent;
+
+    @Column(name = "new_workspace_activation_rate_percent", nullable = false)
+    private double mNewWorkspaceActivationRatePercent;
 
     @Column(name = "goal_completion_rate_percent", nullable = false)
     private double mGoalCompletionRatePercent;
@@ -127,13 +145,19 @@ public class WeeklyOperationMetricSnapshot {
         mWeeklyWritingDays = weeklyOperationsSummary.getWeeklyWritingDays();
         mWeeklyMorningEntries = weeklyOperationsSummary.getWeeklyMorningEntries();
         mWeeklyEveningEntries = weeklyOperationsSummary.getWeeklyEveningEntries();
+        mWeeklyPlanReviewCompletedDays = weeklyOperationsSummary.getWeeklyPlanReviewCompletedDays();
         mSignInSucceededCount = weeklyOperationsSummary.getSignInSucceededCount();
         mSignInFailedCount = weeklyOperationsSummary.getSignInFailedCount();
+        mWeeklyReviewViewedCount = weeklyOperationsSummary.getWeeklyReviewViewedCount();
         mRecordLibraryViewedCount = weeklyOperationsSummary.getRecordLibraryViewedCount();
         mMarkdownExportedCount = weeklyOperationsSummary.getMarkdownExportedCount();
         mPdfExportViewedCount = weeklyOperationsSummary.getPdfExportViewedCount();
+        mExportingUsers = weeklyOperationsSummary.getExportingUsers();
+        mNewWorkspaceActivatedUsers = weeklyOperationsSummary.getNewWorkspaceActivatedUsers();
         mAverageWritingDaysPerActiveUser = weeklyOperationsSummary.getAverageWritingDaysPerActiveUser();
         mAverageEntryCompletionsPerActiveUser = weeklyOperationsSummary.getAverageEntryCompletionsPerActiveUser();
+        mPlanReviewConversionRatePercent = weeklyOperationsSummary.getPlanReviewConversionRatePercent();
+        mNewWorkspaceActivationRatePercent = weeklyOperationsSummary.getNewWorkspaceActivationRatePercent();
         mGoalCompletionRatePercent = weeklyOperationsSummary.getGoalCompletionRatePercent();
     }
 
@@ -177,12 +201,20 @@ public class WeeklyOperationMetricSnapshot {
         return mWeeklyEveningEntries;
     }
 
+    public long getWeeklyPlanReviewCompletedDays() {
+        return mWeeklyPlanReviewCompletedDays;
+    }
+
     public long getSignInSucceededCount() {
         return mSignInSucceededCount;
     }
 
     public long getSignInFailedCount() {
         return mSignInFailedCount;
+    }
+
+    public long getWeeklyReviewViewedCount() {
+        return mWeeklyReviewViewedCount;
     }
 
     public long getRecordLibraryViewedCount() {
@@ -197,12 +229,32 @@ public class WeeklyOperationMetricSnapshot {
         return mPdfExportViewedCount;
     }
 
+    public long getExportCount() {
+        return mMarkdownExportedCount + mPdfExportViewedCount;
+    }
+
+    public long getExportingUsers() {
+        return mExportingUsers;
+    }
+
+    public long getNewWorkspaceActivatedUsers() {
+        return mNewWorkspaceActivatedUsers;
+    }
+
     public double getAverageWritingDaysPerActiveUser() {
         return mAverageWritingDaysPerActiveUser;
     }
 
     public double getAverageEntryCompletionsPerActiveUser() {
         return mAverageEntryCompletionsPerActiveUser;
+    }
+
+    public double getPlanReviewConversionRatePercent() {
+        return mPlanReviewConversionRatePercent;
+    }
+
+    public double getNewWorkspaceActivationRatePercent() {
+        return mNewWorkspaceActivationRatePercent;
     }
 
     public double getGoalCompletionRatePercent() {

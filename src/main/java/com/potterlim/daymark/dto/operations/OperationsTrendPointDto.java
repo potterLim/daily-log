@@ -17,15 +17,13 @@ public final class OperationsTrendPointDto {
     private final long mWeeklyActiveUsers;
     private final long mWeeklyWritingUsers;
     private final long mWeeklyWritingDays;
-    private final long mSignInSucceededCount;
-    private final long mRecordLibraryViewedCount;
     private final long mMarkdownExportedCount;
     private final long mPdfExportViewedCount;
     private final double mGoalCompletionRatePercent;
     private final int mActiveUserBarPercent;
     private final int mWritingUserBarPercent;
     private final int mNewUserBarPercent;
-    private final int mEngagementBarPercent;
+    private final int mExportBarPercent;
     private final double mXAxisCoordinate;
     private final double mActiveUserYAxisCoordinate;
     private final double mWritingUserYAxisCoordinate;
@@ -37,7 +35,7 @@ public final class OperationsTrendPointDto {
         int pointIndex,
         int pointCount,
         long maximumUserCount,
-        long maximumEngagementCount
+        long maximumExportCount
     ) {
         mWeekStartDate = operationsTrendRawPointDto.getWeekStartDate();
         mWeekEndDate = operationsTrendRawPointDto.getWeekEndDate();
@@ -46,8 +44,6 @@ public final class OperationsTrendPointDto {
         mWeeklyActiveUsers = operationsTrendRawPointDto.getWeeklyActiveUsers();
         mWeeklyWritingUsers = operationsTrendRawPointDto.getWeeklyWritingUsers();
         mWeeklyWritingDays = operationsTrendRawPointDto.getWeeklyWritingDays();
-        mSignInSucceededCount = operationsTrendRawPointDto.getSignInSucceededCount();
-        mRecordLibraryViewedCount = operationsTrendRawPointDto.getRecordLibraryViewedCount();
         mMarkdownExportedCount = operationsTrendRawPointDto.getMarkdownExportedCount();
         mPdfExportViewedCount = operationsTrendRawPointDto.getPdfExportViewedCount();
         mGoalCompletionRatePercent = operationsTrendRawPointDto.getGoalCompletionRatePercent();
@@ -59,7 +55,7 @@ public final class OperationsTrendPointDto {
         mActiveUserBarPercent = calculateBarPercent(mWeeklyActiveUsers, maximumUserCount);
         mWritingUserBarPercent = calculateBarPercent(mWeeklyWritingUsers, maximumUserCount);
         mNewUserBarPercent = calculateBarPercent(mNewlyRegisteredUsers, maximumUserCount);
-        mEngagementBarPercent = calculateBarPercent(getEngagementCount(), maximumEngagementCount);
+        mExportBarPercent = calculateBarPercent(getExportCount(), maximumExportCount);
     }
 
     public LocalDate getWeekStartDate() {
@@ -90,14 +86,6 @@ public final class OperationsTrendPointDto {
         return mWeeklyWritingDays;
     }
 
-    public long getSignInSucceededCount() {
-        return mSignInSucceededCount;
-    }
-
-    public long getRecordLibraryViewedCount() {
-        return mRecordLibraryViewedCount;
-    }
-
     public long getMarkdownExportedCount() {
         return mMarkdownExportedCount;
     }
@@ -114,10 +102,6 @@ public final class OperationsTrendPointDto {
         return mMarkdownExportedCount + mPdfExportViewedCount;
     }
 
-    public long getEngagementCount() {
-        return mSignInSucceededCount + mRecordLibraryViewedCount + getExportCount();
-    }
-
     public int getActiveUserBarPercent() {
         return mActiveUserBarPercent;
     }
@@ -130,8 +114,8 @@ public final class OperationsTrendPointDto {
         return mNewUserBarPercent;
     }
 
-    public int getEngagementBarPercent() {
-        return mEngagementBarPercent;
+    public int getExportBarPercent() {
+        return mExportBarPercent;
     }
 
     public double getXAxisCoordinate() {
