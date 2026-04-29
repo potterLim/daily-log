@@ -3938,7 +3938,9 @@ ol {
 
     .primary-nav {
         justify-content: flex-start;
-        flex-wrap: wrap;
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
     }
 
     .topbar-actions,
@@ -4003,6 +4005,7 @@ ol {
     }
 
     .operations-period-control {
+        width: 100%;
         justify-content: flex-start;
     }
 
@@ -4018,6 +4021,32 @@ ol {
     .operations-week-selector {
         align-items: flex-start;
         flex-direction: column;
+        width: 100%;
+    }
+
+    .operations-week-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .operations-week-buttons button {
+        min-width: 0;
+        padding: 0 8px;
+    }
+
+    .operations-period-control label {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .operations-chart-card {
+        overflow-x: auto;
+    }
+
+    .operations-line-chart,
+    .operations-chart-axis {
+        min-width: 560px;
     }
 }
 
