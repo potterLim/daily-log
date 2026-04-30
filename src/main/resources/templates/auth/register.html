@@ -10,7 +10,9 @@
         </div>
 
         <div th:if="${!hasPendingGoogleRegistration}" class="form-stack auth-provider-stack">
-            <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
+            <a class="btn btn-google btn-lg w-100"
+               th:href="@{/oauth2/authorization/google}"
+               data-google-oauth-link>
                 <img class="google-mark" th:src="@{/images/google-g.svg}" alt="" width="20" height="20" />
                 <span>Continue with Google</span>
             </a>

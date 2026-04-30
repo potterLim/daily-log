@@ -112,6 +112,8 @@ class WebFlowIntegrationTests {
         mMockMvc.perform(get("/register"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("Continue with Google")))
+            .andExpect(content().string(containsString("data-google-oauth-link")))
+            .andExpect(content().string(containsString("외부 브라우저가 필요해요")))
             .andExpect(content().string(containsString("google-g.svg")))
             .andExpect(content().string(containsString("Google 계정 확인 후 Workspace ID를 만듭니다.")))
             .andExpect(content().string(not(containsString("사용할 워크스페이스 ID를 입력하세요"))));
@@ -227,6 +229,28 @@ class WebFlowIntegrationTests {
             .andExpect(content().string(containsString("Google로 접속 후 Account에서 비밀번호를 변경하세요.")))
             .andExpect(content().string(containsString("Continue with Google")))
             .andExpect(content().string(containsString("google-g.svg")));
+    }
+
+    @Test
+    void externalBrowserRequiredPageShouldRenderCopyGuidance() throws Exception {
+        mMockMvc.perform(get("/external-browser-required").param("returnTo", "/register"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("외부 브라우저가 필요해요")))
+            .andExpect(content().string(containsString("외부 브라우저에서 Daymark를 열어주세요.")))
+            .andExpect(content().string(containsString("주소 복사하기")))
+            .andExpect(content().string(containsString("http://localhost/register")));
+    }
+
+    @Test
+    void googleOAuthStartShouldRedirectEmbeddedBrowserToGuidancePage() throws Exception {
+        mMockMvc.perform(get("/oauth2/authorization/google")
+                .header("User-Agent", "Mozilla/5.0 KAKAOTALK 10.0.0")
+                .header("Referer", "https://usedaymark.com/register"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(header().string(
+                "Location",
+                containsString("/external-browser-required?returnTo=%2Fregister")
+            ));
     }
 
     @Test

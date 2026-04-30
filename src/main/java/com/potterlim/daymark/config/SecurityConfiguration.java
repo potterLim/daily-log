@@ -1,6 +1,7 @@
 package com.potterlim.daymark.config;
 
 import java.io.IOException;
+import com.potterlim.daymark.security.ExternalBrowserRequiredFilter;
 import com.potterlim.daymark.security.SecurityUserDetailsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import org.springframework.security.web.authentication.rememberme.TokenBasedReme
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
@@ -63,6 +65,7 @@ public class SecurityConfiguration {
                         "/js/**",
                         "/favicon.ico",
                         "/error",
+                        "/external-browser-required",
                         "/login",
                         "/oauth2/**",
                         "/login/oauth2/**",
@@ -110,6 +113,10 @@ public class SecurityConfiguration {
                 .referrerPolicy(referrerPolicy -> referrerPolicy.policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .frameOptions(frameOptions -> frameOptions.sameOrigin()))
             .rememberMe(rememberMe -> rememberMe.rememberMeServices(rememberMeServices))
+            .addFilterBefore(
+                new ExternalBrowserRequiredFilter(),
+                OAuth2AuthorizationRequestRedirectFilter.class
+            )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/?logout")

@@ -148,6 +148,46 @@
     </div>
 </footer>
 
+<div class="external-browser-dialog"
+     data-external-browser-dialog
+     hidden
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="external-browser-dialog-title">
+    <div class="external-browser-backdrop" data-external-browser-close></div>
+    <div class="surface-panel external-browser-card">
+        <button type="button"
+                class="external-browser-close"
+                data-external-browser-close
+                aria-label="닫기">
+            <span aria-hidden="true">×</span>
+        </button>
+
+        <div class="external-browser-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48">
+                <rect x="7" y="10" width="34" height="28" rx="8" fill="none" stroke="currentColor" stroke-width="3" />
+                <path d="M8.5 18.5h31" fill="none" stroke="currentColor" stroke-width="3" />
+                <path d="M16 28h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3" />
+            </svg>
+        </div>
+
+        <div class="external-browser-copy">
+            <h2 id="external-browser-dialog-title">외부 브라우저가 필요해요</h2>
+            <p>Google 로그인을 안전하게 진행하려면 외부 브라우저에서 Daymark를 열어주세요.</p>
+            <small>
+                <span>Chrome, Safari 또는 Samsung Internet과 같은</span>
+                <span>브라우저에서 계속 이용할 수 있습니다.</span>
+            </small>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary btn-lg w-100"
+                data-copy-url-button>
+            주소 복사하기
+        </button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>

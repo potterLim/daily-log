@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::section}, '외부 브라우저 안내')}">
+<section class="auth-layout auth-layout-centered">
+    <div class="surface-panel auth-card external-browser-page-card">
+        <a class="external-browser-close"
+           th:href="@{${externalBrowserReturnPath}}"
+           aria-label="닫기">
+            <span aria-hidden="true">×</span>
+        </a>
+
+        <div class="external-browser-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48">
+                <rect x="7" y="10" width="34" height="28" rx="8" fill="none" stroke="currentColor" stroke-width="3" />
+                <path d="M8.5 18.5h31" fill="none" stroke="currentColor" stroke-width="3" />
+                <path d="M16 28h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3" />
+            </svg>
+        </div>
+
+        <div class="external-browser-copy">
+            <h2>외부 브라우저가 필요해요</h2>
+            <p>Google 로그인을 안전하게 진행하려면 외부 브라우저에서 Daymark를 열어주세요.</p>
+            <small>
+                <span>Chrome, Safari 또는 Samsung Internet과 같은</span>
+                <span>브라우저에서 계속 이용할 수 있습니다.</span>
+            </small>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary btn-lg w-100"
+                data-copy-url-button
+                th:attr="data-copy-url=${externalBrowserCopyUrl}">
+            주소 복사하기
+        </button>
+    </div>
+</section>
+</html>

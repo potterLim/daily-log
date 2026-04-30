@@ -12,7 +12,9 @@
         <div class="form-stack auth-provider-stack">
             <p class="auth-support-copy">Google로 접속 후 Account에서 비밀번호를 변경하세요.</p>
 
-            <a class="btn btn-google btn-lg w-100" th:href="@{/oauth2/authorization/google}">
+            <a class="btn btn-google btn-lg w-100"
+               th:href="@{/oauth2/authorization/google}"
+               data-google-oauth-link>
                 <img class="google-mark" th:src="@{/images/google-g.svg}" alt="" width="20" height="20" />
                 <span>Continue with Google</span>
             </a>
